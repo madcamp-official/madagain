@@ -24,6 +24,6 @@ Assets/MindHexer/
 
 ## 열기 전에
 
-- Unity 2022.3 LTS (`ProjectSettings/ProjectVersion.txt` 참고).
+- Unity 6000.5.4f1 (`ProjectSettings/ProjectVersion.txt` 참고).
 - 수동 의존성(Cardboard, WebSocketSharp, DOTween): [../docs/SETUP.md](../docs/SETUP.md) 3절.
 - 공유 프로토콜은 `com.mindhexer.shared` 패키지에서 온다 — 여기서 재정의하지 말 것.

@@ -34,6 +34,7 @@ HUD의 **IP 직접 입력 → 연결**(폴백). 연결이 끊기면 지수 백�
 
 ## 열기 전에
 
-- Unity 2022.3 LTS (`ProjectSettings/ProjectVersion.txt` 참고).
+- Unity 6000.5.4f1 (`ProjectSettings/ProjectVersion.txt` 참고).
+- **Player 설정 → Active Input Handling = Both** (레거시 Input.gyro/Input.touch 사용).
 - NativeWebSocket은 UPM git URL로 자동 복원(`Packages/manifest.json`).
 - 공유 프로토콜은 `com.mindhexer.shared` 패키지에서 온다 — 여기서 재정의하지 말 것.

@@ -2,9 +2,15 @@
 
 ## 0. 공통
 
-- **Unity 2022.3 LTS** (Android Build Support + OpenJDK + Android SDK/NDK 모듈 포함).
-  두 프로젝트 모두 동일 버전을 쓸 것 — 공유 패키지가 같은 컴파일러/API 레벨에서 돌아야 함.
-- 두 폰(S24+, S10e) USB 디버깅 활성화.
+- **Unity 6000.5.4f1 (Unity 6)** — Android Build Support + OpenJDK + Android SDK/NDK 모듈 포함.
+  두 프로젝트 모두 이 버전으로 연다(`ProjectSettings/ProjectVersion.txt`에 고정됨).
+- 두 폰(S24+, S10e) USB 디버깅 활성화. (유심 없는 공기계도 USB 빌드/설치는 가능)
+
+### 0.1 Active Input Handling = Both (필수)
+
+컨트롤러가 레거시 입력(`Input.gyro`, `Input.touch`)을 쓰므로:
+**Project Settings → Player → Other Settings → Active Input Handling = Both** 로 설정.
+(Input System 패키지도 함께 쓰므로 "Both"가 맞다. "Input System Package (New)" 단독이면 레거시 Input이 런타임 예외.)
 
 ## 1. 공유 패키지 참조 확인
 
@@ -16,11 +22,17 @@
 
 두 프로젝트를 열면 Unity가 자동으로 임베드 패키지로 인식한다. 별도 작업 불필요.
 
-## 2. UPM으로 자동 설치되는 패키지
+## 2. UPM으로 자동 설치되는 패키지 (Unity 6 기준)
 
-`manifest.json`에 이미 선언됨 → 프로젝트 열면 자동 복원:
+`manifest.json`에 Unity 6 기준 버전으로 선언됨 → 프로젝트 열면 자동 복원:
 
-- URP, Input System, XR Interaction Toolkit, ProBuilder, Unity Behavior, Shader Graph, VFX Graph.
+- URP / Shader Graph / VFX Graph **17.x**, Input System **1.11.x**, XR Interaction Toolkit **3.x**,
+  ProBuilder **6.x**, Unity Behavior **1.0.x**, Test Framework **1.4.x**.
+
+> **버전 정렬**: manifest의 SRP 계열(URP/ShaderGraph/VFX) 값은 최소 기준선이며, 에디터에 종속되어
+> 6000.5.4f1로 처음 열 때 Package Manager가 에디터 버전으로 자동 정렬한다.
+> 혹시 특정 패키지 버전이 "not found"로 뜨면, **Window → Package Manager**에서 해당 패키지를
+> 에디터 권장 버전으로 **Update** 한 번 하면 된다. (필요 시 `Packages/packages-lock.json` 삭제 후 재열기로 재해결)
 
 ## 3. 수동 설치가 필요한 의존성 ⚠️
 

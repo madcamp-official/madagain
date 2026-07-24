@@ -29,7 +29,7 @@ madagain/
 
 ## 시작하기
 
-1. **Unity 2022.3 LTS**(Android Build Support 모듈 포함) 설치. 두 프로젝트 모두 동일 버전 권장.
+1. **Unity 6000.5.4f1**(Android Build Support 모듈 포함) 설치. 두 프로젝트 모두 이 버전으로 연다.
 2. Cardboard XR Plugin, WebSocketSharp(DLL) 등 **UPM 밖에서 받아야 하는 의존성**은
    [docs/SETUP.md](docs/SETUP.md)의 안내를 따를 것.
 3. 두 폰을 같은 로컬망(또는 S24+ 핫스팟)에 두고 빌드/실행. 연결 절차는 [docs/NETWORK_PROTOCOL.md](docs/NETWORK_PROTOCOL.md) 참고.

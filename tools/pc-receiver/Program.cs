@@ -89,16 +89,28 @@ namespace MindHexer.PcReceiver
         private static void PrintBanner(string localIp)
         {
             Console.WriteLine("================ MINDHEXER PC 수신기 (S24+ 시뮬레이터) ================");
-            Console.WriteLine($" 이 PC IP        : {localIp}");
+            Console.WriteLine($" 주 IP(인터넷쪽): {localIp}");
+            Console.WriteLine(" 이 PC의 모든 IPv4 (폰이 붙은 네트워크의 IP를 고르세요):");
+            var all = LocalIPv4.AllIPv4();
+            if (all.Count == 0) Console.WriteLine("   (열거 실패 — 위 주 IP 사용)");
+            foreach (var (iface, ip) in all)
+            {
+                string hint = ip.StartsWith("192.168.137.") ? "  ← Windows 모바일 핫스팟(폰이 여기 붙음)"
+                            : ip.StartsWith("10.") || ip.StartsWith("172.") ? "  (캠퍼스/관리망일 수 있음: 단말격리 주의)"
+                            : "";
+                Console.WriteLine($"   - {ip,-15} [{iface}]{hint}");
+            }
+            Console.WriteLine("----------------------------------------------------------------------");
             Console.WriteLine($" UDP InputPort   : {NetworkConstants.UdpInputPort}  (S10e→PC 6DoF 스트림)");
             Console.WriteLine($" UDP RttPort     : {NetworkConstants.UdpRttPort}  (RTT Ping/Pong)");
             Console.WriteLine($" UDP Discovery   : {NetworkConstants.UdpDiscoveryPort} (PC→서브넷 브로드캐스트)");
-            Console.WriteLine($" WebSocket       : ws://{localIp}:{NetworkConstants.WebSocketPort}{NetworkConstants.WebSocketPath}");
+            Console.WriteLine($" WebSocket 포트  : {NetworkConstants.WebSocketPort}  (경로 {NetworkConstants.WebSocketPath})");
             Console.WriteLine($" ProtocolVersion : {NetworkConstants.ProtocolVersion} (72B 6DoF)");
             Console.WriteLine("----------------------------------------------------------------------");
-            Console.WriteLine(" S10e 연결: 같은 Wi-Fi(또는 PC를 폰 핫스팟에) 두고,");
-            Console.WriteLine($"  - 자동: PC 디스커버리 비콘을 폰이 수신 → 자동 페어링, 또는");
-            Console.WriteLine($"  - 수동: 폰 HUD의 IP 입력란에 위 'PC IP'({localIp}) 입력 후 [연결].");
+            Console.WriteLine(" 서비스는 0.0.0.0(모든 인터페이스)에 바인딩되어 어느 IP로도 수신됩니다.");
+            Console.WriteLine(" S10e 연결(수동 권장): 폰 HUD의 IP 입력란에 폰과 같은 서브넷의 위 IP를 넣고 [연결].");
+            Console.WriteLine("   · PC 모바일 핫스팟 사용 시 → 192.168.137.1 사용");
+            Console.WriteLine("   · 도달성 확인: 폰 브라우저로 http://<그 IP>:" + NetworkConstants.WebSocketPort + "/ 접속 → alive 페이지");
             Console.WriteLine(" 방화벽에서 위 UDP 포트(인바운드)와 TCP WebSocket 포트를 허용하세요.");
             Console.WriteLine(" (Ctrl+C 종료)\n");
         }

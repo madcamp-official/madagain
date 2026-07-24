@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
 namespace MindHexer.Shared.Net
@@ -21,6 +23,31 @@ namespace MindHexer.Shared.Net
             }
             catch { /* 오프라인 등 → fallback */ }
             return fallback;
+        }
+
+        /// <summary>
+        /// 활성 인터페이스의 모든 IPv4를 (인터페이스명, IP)로 열거한다. 루프백 제외.
+        /// 다중 네트워크(캠퍼스 Wi-Fi + PC 핫스팟 등)에서 폰이 붙을 IP를 사람이 직접 고를 수 있게 한다.
+        /// </summary>
+        public static List<(string iface, string ip)> AllIPv4()
+        {
+            var result = new List<(string, string)>();
+            try
+            {
+                foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+                {
+                    if (ni.OperationalStatus != OperationalStatus.Up) continue;
+                    if (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback) continue;
+                    foreach (var ua in ni.GetIPProperties().UnicastAddresses)
+                    {
+                        if (ua.Address.AddressFamily != AddressFamily.InterNetwork) continue;
+                        if (IPAddress.IsLoopback(ua.Address)) continue;
+                        result.Add((ni.Name, ua.Address.ToString()));
+                    }
+                }
+            }
+            catch { /* 권한/플랫폼 이슈 → 빈 목록 */ }
+            return result;
         }
     }
 }

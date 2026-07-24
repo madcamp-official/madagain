@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using MindHexer.Shared.Net;
+using MindHexer.Shared.Protocol;
 
 namespace MindHexer.PcReceiver
 {
@@ -91,7 +92,23 @@ namespace MindHexer.PcReceiver
                 if (line.Substring(0, c).Trim().Equals("Sec-WebSocket-Key", StringComparison.OrdinalIgnoreCase))
                     key = line.Substring(c + 1).Trim();
             }
-            if (string.IsNullOrEmpty(key)) return false;
+            if (string.IsNullOrEmpty(key))
+            {
+                // WebSocket 업그레이드가 아니면(예: 폰 브라우저로 접속) 도달성 확인용 HTTP 200을 돌려준다.
+                // → 폰 브라우저에서 http://<PC IP>:45712/ 열어 이 페이지가 보이면 폰→PC TCP 경로 정상.
+                string body = "MindHexer pc-receiver alive. WebSocket으로 " +
+                              NetworkConstants.WebSocketPath + " 에 접속하면 페어링됩니다.";
+                byte[] bodyBytes = Encoding.UTF8.GetBytes(body);
+                string http = "HTTP/1.1 200 OK\r\n" +
+                              "Content-Type: text/plain; charset=utf-8\r\n" +
+                              "Content-Length: " + bodyBytes.Length + "\r\n" +
+                              "Connection: close\r\n\r\n";
+                byte[] head = Encoding.ASCII.GetBytes(http);
+                stream.Write(head, 0, head.Length);
+                stream.Write(bodyBytes, 0, bodyBytes.Length);
+                stream.Flush();
+                return false;
+            }
 
             string accept;
             using (var sha1 = SHA1.Create())
