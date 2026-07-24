@@ -21,6 +21,10 @@ namespace MindHexer.Controller.Net
         [SerializeField] private RttProbeBehaviour _rttProbe;
         [SerializeField] private TouchGyroCapture _capture;
 
+        [Tooltip("부팅 시 자동 접속할 기본 서버 IP. Windows PC 모바일 핫스팟 호스트는 항상 192.168.137.1. " +
+                 "비우면 디스커버리/수동입력만 사용. 디스커버리·수동입력이 오면 그 값으로 덮어씀.")]
+        public string DefaultServerIp = "192.168.137.1";
+
         private enum FlowState { NoTarget, Connecting, Paired, Rejected }
         private FlowState _state = FlowState.NoTarget;
 
@@ -62,6 +66,12 @@ namespace MindHexer.Controller.Net
                 _ws.Rejected += OnRejected;
                 _ws.Disconnected += OnDisconnected;
             }
+
+            // 기본 서버 IP가 설정돼 있으면 부팅 즉시 자동 접속 시도.
+            // (자동 디스커버리가 안 되는 PC-핫스팟 구성에서 폰 조작 없이 붙게 함.
+            //  디스커버리/수동입력이 오면 SetTarget이 대상을 덮어씀.)
+            if (!string.IsNullOrWhiteSpace(DefaultServerIp))
+                SetTarget(DefaultServerIp.Trim(), NetworkConstants.WebSocketPort);
         }
 
         private void OnDisable()
