@@ -46,9 +46,8 @@ namespace MindHexer.Headset.Gameplay
                 for (int i = 0; i < TargetPattern.Count; i++)
                     if (_input[i] != TargetPattern[i]) { success = false; break; }
 
-            var payload = new PatternResultPayload { success = success, patternId = 0 };
-            var msg = new EventMessage(EventType.PatternResult, JsonUtility.ToJson(payload));
-            _wsServer?.SendEvent(msg);
+            // 페어링된 모든 클라이언트(S10e)에 판정 결과 통보.
+            _wsServer?.Broadcast(EventMessage.PatternResult(success, patternId: 0));
 
             _input.Clear();
         }

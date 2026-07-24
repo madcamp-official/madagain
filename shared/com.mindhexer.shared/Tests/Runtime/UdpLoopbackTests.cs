@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Diagnostics;
+using System.Net;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -99,6 +100,35 @@ namespace MindHexer.Shared.Tests
             Assert.AreEqual(pings, responder.EchoedCount, "응답기 에코");
             Assert.GreaterOrEqual(probe.LastRttMs, 0.0, "RTT 측정값 존재");
             Assert.IsTrue(probe.MeetsTarget, "루프백 RTT 목표 충족");
+        }
+
+        [UnityTest]
+        public IEnumerator Discovery_BeaconIsReceivedAndParsed()
+        {
+            const int discPort = 47723;
+            using var listener = new DiscoveryListener(discPort);
+            DiscoveredServer found = default; int hits = 0;
+            listener.ServerDiscovered += s => { found = s; hits++; };
+            listener.Start();
+            yield return new WaitForSeconds(0.05f);
+
+            // 결정성을 위해 브로드캐스트 대상을 127.0.0.1로(실코드 기본은 255.255.255.255).
+            using var broadcaster = new DiscoveryBroadcaster(
+                "192.168.1.50", NetworkConstants.WebSocketPort,
+                discoveryPort: discPort, targetAddress: IPAddress.Loopback);
+
+            for (int i = 0; i < 5 && !listener.HasServer; i++)
+            {
+                broadcaster.BroadcastOnce();
+                yield return new WaitForSeconds(0.03f);
+            }
+            yield return WaitUntil(() => listener.HasServer, 2f);
+
+            Assert.IsTrue(listener.HasServer, "서버 발견");
+            Assert.AreEqual("192.168.1.50", found.Ip);
+            Assert.AreEqual(NetworkConstants.WebSocketPort, found.WebSocketPort);
+            Assert.AreEqual(NetworkConstants.ProtocolVersion, found.ProtocolVersion);
+            Assert.AreEqual(1, hits, "동일 서버는 1회만 발견 이벤트");
         }
     }
 }

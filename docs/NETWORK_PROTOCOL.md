@@ -52,21 +52,30 @@
 
 `RttPacket` 와이어(리틀 엔디언, 16바이트): Magic(`MHXP`) uint32 | Nonce uint32 | OriginTimestamp int64.
 
-## WebSocket `EventMessage` (JSON)
+## WebSocket `EventMessage` (플랫 JSON)
+
+의존성 없는 **플랫(중첩 없는) 문자열:문자열 오브젝트**로 인코딩된다(`EventMessage.Encode/TryDecode`). Unity `JsonUtility` 비의존 → 순수 .NET에서 검증 가능. 값은 모두 문자열이며 타입 게터(`GetInt/GetBool/GetFloat/GetByte`)로 변환.
 
 ```json
-{ "type": "PairRequest | PairAck | PatternResult | BatteryWarning | Disconnect", "payload": { ... } }
+{"type":"PatternResult","success":"true","patternId":"0"}
 ```
 
-- `PairRequest` / `PairAck`: 페어링 수립/해제.
-- `PatternResult`: `{ "success": bool, "patternId": int }` — 해킹 패턴 판정 결과(S24+ → S10e).
-- `BatteryWarning`: `{ "level": float }`.
+| type | 방향 | 필드 |
+| --- | --- | --- |
+| `PairRequest` | S10e→S24+ | `protocolVersion`, `deviceName` |
+| `PairAck` | S24+→S10e | `protocolVersion` |
+| `PairReject` | S24+→S10e | `reason` (버전 불일치 등) |
+| `PatternResult` | S24+→S10e | `success`(bool), `patternId`(int) |
+| `BatteryWarning` | 양방향 | `level`(float, 0..1) |
+| `Disconnect` | 양방향 | `reason` |
+
+페어링 핸드셰이크: S10e가 `PairRequest{protocolVersion}` 송신 → S24+가 버전 일치 시 `PairAck`, 불일치 시 `PairReject`. 로직은 `PairingClient`(S10e)/`PairingServer`(S24+)에 있고 WebSocket 라이브러리는 `IEventChannel` 뒤로 격리된다.
 
 ## 연결 수립 순서 (SPEC 2.3)
 
-1. S24+ : WebSocket 서버 기동 + `DiscoveryBeacon` UDP 브로드캐스트 시작.
-2. S10e : 비콘 수신 → 서버 IP 획득 → WebSocket 연결 → 성공 시 UDP `InputPacket` 스트리밍 시작.
-3. **폴백**: 비콘 미수신 시 S10e에서 **IP 직접 입력 UI**로 연결.
+1. S24+ : WebSocket 서버(`WebSocketServerHost`, WebSocketSharp) 기동 + `DiscoveryBroadcaster`가 `DiscoveryBeacon` UDP 브로드캐스트.
+2. S10e : `DiscoveryListener`가 비콘 수신 → `PairingFlow`가 UDP/RTT 대상 설정 + `WsClient`(NativeWebSocket) 연결 → `PairAck` 수신 시 **UDP `InputPacket` 스트리밍 + RTT 프로브 시작**.
+3. **폴백**: 비콘 미수신 시 `PairingFlow.ConnectManually(ip)` — **IP 직접 입력 UI**로 연결.
 4. 공유 Wi-Fi 없으면 S24+ **모바일 핫스팟**에 S10e 연결(코드 변경 없음, 같은 서브넷 전제).
 
 ## 예외 처리 (SPEC 5)
