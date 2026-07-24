@@ -5,30 +5,37 @@ using MindHexer.Headset.Net;
 namespace MindHexer.Headset.Input
 {
     /// <summary>
-    /// 수신된 <see cref="InputPacket"/>을 게임 입력으로 변환한다. (SPEC 3.3)
+    /// 수신된 6DoF <see cref="InputPacket"/>을 게임 입력으로 변환한다. (SPEC 3.3)
     ///  - 터치 정규화 좌표: Lerp 보간 → 3x3 해킹 그리드 좌표계 매핑
-    ///  - 자이로 회전값: Slerp 보간 → 해킹 보조 연출 (헤드트래킹 아님 — SPEC 5.5)
+    ///  - 6DoF 위치: Lerp 보간 (Vector3)
+    ///  - 6DoF 회전: Slerp 보간 (Quaternion) → 조준/동적 해킹 조작
+    /// 위치·회전 함께 보간해 패킷 유실 시에도 부드러운 6DoF 포즈를 유지한다.
+    /// 헤드트래킹(시점)은 S24+ 자체 센서 전담이며, 이 포즈는 컨트롤러 입력용(SPEC 5.5).
     ///
-    /// TODO(담당자 A, 4일차): 그리드 매핑/패턴 입력 이벤트 연결, 지터 버퍼 튜닝.
+    /// TODO(담당자 A, 4일차): 그리드 매핑/조준 레이 연결, 지터 버퍼 튜닝.
     /// </summary>
     public sealed class InputBridge : MonoBehaviour
     {
         [SerializeField] private UdpReceiver _receiver;
 
-        [Tooltip("좌표 Lerp 보간 계수(프레임당). 값이 클수록 반응 빠르고 끊김 큼.")]
+        [Tooltip("좌표/위치 Lerp 보간 계수(프레임당). 값이 클수록 반응 빠르고 끊김 큼.")]
         [Range(0.01f, 1f)] public float PositionLerp = 0.35f;
 
-        [Tooltip("자이로 Slerp 보간 계수(프레임당).")]
+        [Tooltip("회전 Slerp 보간 계수(프레임당).")]
         [Range(0.01f, 1f)] public float RotationSlerp = 0.35f;
 
-        private Vector2 _smoothedPos;
+        private Vector2 _smoothedUv;
+        private Vector3 _smoothedPos;
         private Quaternion _smoothedRot = Quaternion.identity;
 
         /// <summary>보간된 정규화 좌표(0..1). 그리드 매핑 입력.</summary>
-        public Vector2 SmoothedNormalizedPos => _smoothedPos;
+        public Vector2 SmoothedNormalizedPos => _smoothedUv;
 
-        /// <summary>보간된 보조 자이로 회전.</summary>
-        public Quaternion SmoothedGyro => _smoothedRot;
+        /// <summary>보간된 6DoF 위치.</summary>
+        public Vector3 SmoothedPosition => _smoothedPos;
+
+        /// <summary>보간된 6DoF 회전.</summary>
+        public Quaternion SmoothedRotation => _smoothedRot;
 
         private void Update()
         {
@@ -42,10 +49,11 @@ namespace MindHexer.Headset.Input
 
             if (!_receiver.TryGetLatest(out var p)) return;
 
-            _smoothedPos = Vector2.Lerp(_smoothedPos, p.NormalizedPos, PositionLerp);
-            _smoothedRot = Quaternion.Slerp(_smoothedRot, p.GyroRotation, RotationSlerp);
+            _smoothedUv = Vector2.Lerp(_smoothedUv, p.NormalizedPos, PositionLerp);
+            _smoothedPos = Vector3.Lerp(_smoothedPos, p.Position, PositionLerp);
+            _smoothedRot = Quaternion.Slerp(_smoothedRot, p.Rotation, RotationSlerp);
 
-            // TODO: _smoothedPos → 3x3 그리드 셀 매핑 → HackGrid에 입력 이벤트 발행.
+            // TODO: _smoothedUv → 3x3 그리드 셀 매핑, _smoothedPos/_smoothedRot → 조준 레이 발행.
         }
     }
 }

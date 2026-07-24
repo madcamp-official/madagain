@@ -12,5 +12,8 @@
 
     "_comment_note": "S10e 컨트롤러는 그래픽 최소 구성. URP/XR 불필요(오버레이 UI + 센서 캡처).",
     "_comment_gyro": "자이로/가속도는 Unity 내장 Input.gyro API — 별도 패키지 없음."
-  }
+  },
+  "testables": [
+    "com.mindhexer.shared"
+  ]
 }

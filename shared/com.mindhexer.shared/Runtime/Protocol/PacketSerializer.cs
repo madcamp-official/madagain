@@ -25,14 +25,17 @@ namespace MindHexer.Shared.Protocol
             buffer[o++] = 0; buffer[o++] = 0; buffer[o++] = 0;           // 21 padding
             WriteFloat(buffer, ref o, p.NormalizedPos.x);                // 24
             WriteFloat(buffer, ref o, p.NormalizedPos.y);                // 28
-            WriteFloat(buffer, ref o, p.GyroRotation.x);                 // 32
-            WriteFloat(buffer, ref o, p.GyroRotation.y);                 // 36
-            WriteFloat(buffer, ref o, p.GyroRotation.z);                 // 40
-            WriteFloat(buffer, ref o, p.GyroRotation.w);                 // 44
-            WriteFloat(buffer, ref o, p.Acceleration.x);                 // 48
-            WriteFloat(buffer, ref o, p.Acceleration.y);                 // 52
-            WriteFloat(buffer, ref o, p.Acceleration.z);                 // 56
-            // total 60
+            WriteFloat(buffer, ref o, p.Position.x);                     // 32
+            WriteFloat(buffer, ref o, p.Position.y);                     // 36
+            WriteFloat(buffer, ref o, p.Position.z);                     // 40
+            WriteFloat(buffer, ref o, p.Rotation.x);                     // 44
+            WriteFloat(buffer, ref o, p.Rotation.y);                     // 48
+            WriteFloat(buffer, ref o, p.Rotation.z);                     // 52
+            WriteFloat(buffer, ref o, p.Rotation.w);                     // 56
+            WriteFloat(buffer, ref o, p.Acceleration.x);                 // 60
+            WriteFloat(buffer, ref o, p.Acceleration.y);                 // 64
+            WriteFloat(buffer, ref o, p.Acceleration.z);                 // 68
+            // total 72
         }
 
         /// <summary>새 버퍼를 할당해 직렬화(편의 오버로드). 핫패스에서는 버퍼 재사용 버전을 쓸 것.</summary>
@@ -62,14 +65,18 @@ namespace MindHexer.Shared.Protocol
             packet.TouchId = ReadInt(buffer, ref o);
             packet.Phase = (TouchPhaseCode)buffer[o++];
             o += 3; // padding
-            float px = ReadFloat(buffer, ref o);
-            float py = ReadFloat(buffer, ref o);
-            packet.NormalizedPos = new Vector2(px, py);
+            float ux = ReadFloat(buffer, ref o);
+            float uy = ReadFloat(buffer, ref o);
+            packet.NormalizedPos = new Vector2(ux, uy);
+            float posx = ReadFloat(buffer, ref o);
+            float posy = ReadFloat(buffer, ref o);
+            float posz = ReadFloat(buffer, ref o);
+            packet.Position = new Vector3(posx, posy, posz);
             float qx = ReadFloat(buffer, ref o);
             float qy = ReadFloat(buffer, ref o);
             float qz = ReadFloat(buffer, ref o);
             float qw = ReadFloat(buffer, ref o);
-            packet.GyroRotation = new Quaternion(qx, qy, qz, qw);
+            packet.Rotation = new Quaternion(qx, qy, qz, qw);
             float ax = ReadFloat(buffer, ref o);
             float ay = ReadFloat(buffer, ref o);
             float az = ReadFloat(buffer, ref o);

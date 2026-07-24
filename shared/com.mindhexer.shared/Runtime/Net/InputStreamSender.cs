@@ -35,11 +35,11 @@ namespace MindHexer.Shared.Net
         public void SetTarget(string targetIp) => Connect(targetIp, NetworkConstants.UdpInputPort);
 
         /// <summary>
-        /// 한 프레임의 입력 상태를 전송. 시퀀스는 자동 부여(단조 증가), 나머지는 인자로 받는다.
+        /// 한 프레임의 6DoF 입력 상태를 전송. 시퀀스는 자동 부여(단조 증가), 나머지는 인자로 받는다.
         /// Connect 전에 호출하면 false.
         /// </summary>
         public bool Send(TouchPhaseCode phase, int touchId, Vector2 normalized,
-                         Quaternion gyro, Vector3 accel, long timestampMs)
+                         Vector3 position, Quaternion rotation, Vector3 accel, long timestampMs)
         {
             if (_udp == null) return false;
 
@@ -50,7 +50,8 @@ namespace MindHexer.Shared.Net
                 TouchId = touchId,
                 Phase = phase,
                 NormalizedPos = normalized,
-                GyroRotation = gyro,
+                Position = position,
+                Rotation = rotation,
                 Acceleration = accel
             };
 

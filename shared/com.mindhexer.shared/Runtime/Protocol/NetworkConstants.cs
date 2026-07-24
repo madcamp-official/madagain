@@ -12,6 +12,12 @@ namespace MindHexer.Shared.Protocol
         /// <summary>DiscoveryBeacon 매직 넘버 'MHXB'.</summary>
         public const uint DiscoveryMagic = 0x4258484D; // 'M''H''X''B'
 
+        /// <summary>RttPacket(Ping/Pong) 매직 넘버 'MHXP'.</summary>
+        public const uint RttMagic = 0x5058484D; // 'M''H''X''P'
+
+        /// <summary>고정 길이 RttPacket 바이트 수.</summary>
+        public const int RttPacketSize = 16;
+
         /// <summary>S10e → S24+ UDP InputPacket 수신 포트.</summary>
         public const int UdpInputPort = 45710;
 
@@ -21,11 +27,14 @@ namespace MindHexer.Shared.Protocol
         /// <summary>S24+ 내장 WebSocket 서버 리슨 포트.</summary>
         public const int WebSocketPort = 45712;
 
+        /// <summary>RTT 측정용 UDP Ping/Pong 포트(입력 스트림과 분리). S24+가 리슨·에코.</summary>
+        public const int UdpRttPort = 45713;
+
         /// <summary>WebSocket 이벤트 채널 경로.</summary>
         public const string WebSocketPath = "/mhx";
 
-        /// <summary>고정 길이 InputPacket 바이트 수. (NETWORK_PROTOCOL.md 와이어 포맷)</summary>
-        public const int InputPacketSize = 60;
+        /// <summary>고정 길이 InputPacket 바이트 수. (NETWORK_PROTOCOL.md 와이어 포맷) v2(6DoF): 72바이트.</summary>
+        public const int InputPacketSize = 72;
 
         /// <summary>UDP 미수신 경고 임계값(초). SPEC 5.1.</summary>
         public const float UdpTimeoutSeconds = 1.0f;
@@ -33,7 +42,7 @@ namespace MindHexer.Shared.Protocol
         /// <summary>RTT 목표(ms). SPEC 5.4.</summary>
         public const int TargetRttMs = 50;
 
-        /// <summary>프로토콜 버전 — 양쪽 불일치 시 페어링 거부 판단에 사용.</summary>
-        public const byte ProtocolVersion = 1;
+        /// <summary>프로토콜 버전 — 양쪽 불일치 시 페어링 거부 판단에 사용. v2: 6DoF(위치+회전) 포즈 도입.</summary>
+        public const byte ProtocolVersion = 2;
     }
 }

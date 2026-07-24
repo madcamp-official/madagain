@@ -37,11 +37,11 @@ namespace MindHexer.Controller.Net
             _core?.SetTarget(ip);
         }
 
-        /// <summary>한 프레임의 입력 상태를 전송. 시퀀스/타임스탬프는 코어가 부여.</summary>
+        /// <summary>한 프레임의 6DoF 입력 상태를 전송. 시퀀스는 코어가 부여.</summary>
         public void Send(TouchPhaseCode phase, int touchId, Vector2 normalized,
-                         Quaternion gyro, Vector3 accel, long timestampMs)
+                         Vector3 position, Quaternion rotation, Vector3 accel, long timestampMs)
         {
-            _core?.Send(phase, touchId, normalized, gyro, accel, timestampMs);
+            _core?.Send(phase, touchId, normalized, position, rotation, accel, timestampMs);
         }
     }
 }

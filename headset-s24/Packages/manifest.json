@@ -18,5 +18,8 @@
     "_comment_cardboard": "Google Cardboard XR Plugin: googlevr/cardboard 릴리스 tarball import 또는 git URL. UPM 미배포.",
     "_comment_websocketsharp": "WebSocketSharp: DLL을 Assets/Plugins/ 에 배치. UPM 미배포.",
     "_comment_dotween": "DOTween: Asset Store 임포트 후 DOTween Utility Panel에서 Setup 실행. UPM 미배포."
-  }
+  },
+  "testables": [
+    "com.mindhexer.shared"
+  ]
 }
