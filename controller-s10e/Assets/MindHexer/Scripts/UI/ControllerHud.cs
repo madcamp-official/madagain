@@ -81,8 +81,8 @@ namespace MindHexer.Controller.UI
 
         private void DrawTouchHighlight()
         {
-            if (Input.touchCount == 0) return;
-            Touch t = Input.GetTouch(0);
+            if (UnityEngine.Input.touchCount == 0) return;
+            Touch t = UnityEngine.Input.GetTouch(0);
             Vector2 norm = new Vector2(t.position.x / Screen.width, t.position.y / Screen.height);
             int cell = HackGridMath.ToCellIndex(norm);
 

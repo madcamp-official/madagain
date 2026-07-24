@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -11,7 +12,7 @@ namespace MindHexer.Shared.Net
     /// 백그라운드 스레드에서 수신·매직검증·시퀀스검증을 하고, 최신 유효 패킷을 원자적으로 보관한다.
     /// MonoBehaviour(headset-s24의 UdpReceiver)가 이 클래스를 감싸 Unity 메인 스레드로 노출한다.
     ///
-    /// 시간은 Environment.TickCount64(순수 .NET)를 쓰므로 Unity Time 의존이 없다 →
+    /// 시간은 Stopwatch(모노토닉, 순수 .NET)를 쓰므로 Unity Time 의존이 없다 →
     /// 콘솔 하니스로 단독 검증 가능.
     /// </summary>
     public sealed class InputStreamReceiver : IDisposable
@@ -31,7 +32,7 @@ namespace MindHexer.Shared.Net
         // 외부에서 읽을 수 있게 volatile 처리.
         private long _acceptedCount;
         private long _discardedCount;
-        private long _lastAcceptTicks; // Environment.TickCount64 기준
+        private long _lastAcceptTicks; // Stopwatch.GetTimestamp() 기준(모노토닉). Unity .NET에 TickCount64가 없어 Stopwatch 사용.
 
         /// <summary>수용된(유효·최신) 패킷 수.</summary>
         public long AcceptedCount => Interlocked.Read(ref _acceptedCount);
@@ -102,7 +103,7 @@ namespace MindHexer.Shared.Net
                         _hasLatest = true;
                     }
                     Interlocked.Increment(ref _acceptedCount);
-                    Interlocked.Exchange(ref _lastAcceptTicks, Environment.TickCount64);
+                    Interlocked.Exchange(ref _lastAcceptTicks, Stopwatch.GetTimestamp());
                     PacketReceived?.Invoke(packet); // 옵션: 수신 스레드에서 호출
                 }
                 catch (SocketException) when (!_running) { break; } // 종료 중 Close
@@ -132,7 +133,8 @@ namespace MindHexer.Shared.Net
         {
             if (!_hasLatest) return true;
             long last = Interlocked.Read(ref _lastAcceptTicks);
-            return Environment.TickCount64 - last > timeoutMs;
+            long elapsedMs = (Stopwatch.GetTimestamp() - last) * 1000L / Stopwatch.Frequency;
+            return elapsedMs > timeoutMs;
         }
 
         /// <summary>재페어링 시 시퀀스/통계 상태 초기화.</summary>

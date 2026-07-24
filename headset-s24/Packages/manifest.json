@@ -1,25 +1,16 @@
 {
   "dependencies": {
     "com.mindhexer.shared": "file:../../shared/com.mindhexer.shared",
-
     "com.unity.render-pipelines.universal": "17.0.4",
     "com.unity.shadergraph": "17.0.4",
     "com.unity.visualeffectgraph": "17.0.4",
-    "com.unity.inputsystem": "1.11.2",
+    "com.unity.inputsystem": "1.20.0",
     "com.unity.xr.interaction.toolkit": "3.0.8",
     "com.unity.probuilder": "6.0.4",
     "com.unity.behavior": "1.0.11",
-
     "com.unity.ide.visualstudio": "2.0.23",
     "com.unity.ide.rider": "3.0.34",
-    "com.unity.test-framework": "1.4.6",
-
-    "_comment_unity": "Unity 6000.5.4f1(Unity 6) 기준. SRP 계열(URP/ShaderGraph/VFX)은 에디터에 종속되어 처음 열 때 Package Manager가 에디터 버전(17.x)으로 자동 정렬한다. 여기 값은 최소 기준선.",
-    "_comment_input": "레거시 Input 사용 → Active Input Handling을 'Both'로(docs/SETUP.md).",
-    "_comment_manual_1": "수동 설치 필요 — docs/SETUP.md 3절 참고",
-    "_comment_cardboard": "Google Cardboard XR Plugin: googlevr/cardboard 릴리스 tarball import 또는 git URL. UPM 미배포.",
-    "_comment_websocketsharp": "WebSocketSharp: DLL을 Assets/Plugins/ 에 배치. UPM 미배포.",
-    "_comment_dotween": "DOTween: Asset Store 임포트 후 DOTween Utility Panel에서 Setup 실행. UPM 미배포."
+    "com.unity.test-framework": "1.4.6"
   },
   "testables": [
     "com.mindhexer.shared"
