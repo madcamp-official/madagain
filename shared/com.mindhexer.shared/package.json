@@ -1,0 +1,16 @@
+{
+  "name": "com.mindhexer.shared",
+  "version": "0.1.0",
+  "displayName": "MindHexer Shared Protocol",
+  "description": "S24+ 헤드셋과 S10e 컨트롤러가 공유하는 패킷 구조체, 직렬화, 시퀀스 검증, 프로토콜 상수. 단일 진실 원천(single source of truth).",
+  "unity": "2022.3",
+  "keywords": [
+    "mindhexer",
+    "protocol",
+    "udp",
+    "networking"
+  ],
+  "author": {
+    "name": "madagain / 26s-w4-c3-02"
+  }
+}

@@ -1,0 +1,18 @@
+{
+    "name": "MindHexer.Controller",
+    "rootNamespace": "MindHexer.Controller",
+    "references": [
+        "MindHexer.Shared",
+        "Unity.InputSystem",
+        "NativeWebSocket"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
