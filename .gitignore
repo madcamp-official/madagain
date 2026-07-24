@@ -62,6 +62,11 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
+# ---- .NET diagnostic tools under tools/ (pc-receiver 등) ----
+tools/**/bin/
+tools/**/obj/
+tools/**/live_out.txt
+
 # ---- Secrets / local ----
 *.keystore
 !user.keystore

@@ -7,6 +7,7 @@
 | `Editor/ProtocolTests.cs` | **EditMode** (NUnit) | 직렬화 6DoF 라운드트립, 매직/길이 폐기, 시퀀스 역전·중복·wrap-around, Discovery 비콘, RttPacket |
 | `Editor/EventCodecTests.cs` | **EditMode** | 이벤트 플랫 JSON 코덱 라운드트립·이스케이프·거부 |
 | `Editor/PairingTests.cs` | **EditMode** | 페어링 핸드셰이크(in-memory 채널): 성공/버전불일치 거부/양방향 이벤트 |
+| `Editor/ReconnectAndGridTests.cs` | **EditMode** | 재연결 지수 백오프, 3x3 그리드 매핑·클램프·중심좌표 왕복 |
 | `Runtime/UdpLoopbackTests.cs` | **PlayMode** (`[UnityTest]`) | 실제 127.0.0.1: UDP 단조 수용·역전/중복 폐기, RTT Ping/Pong, 디스커버리 비콘 |
 
 ## 실행 방법

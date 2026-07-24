@@ -34,6 +34,9 @@ namespace MindHexer.Controller.Net
         /// <summary>페어링 후 서버(S24+)에서 온 이벤트(PatternResult 등).</summary>
         public event Action<EventMessage> ServerEventReceived;
 
+        /// <summary>연결이 끊겼을 때(WS OnClose). PairingFlow가 재연결 판단에 사용.</summary>
+        public event Action Disconnected;
+
         public PairingState State => _pairing?.State ?? PairingState.Idle;
 
         void IEventChannel.Send(string json)
@@ -66,7 +69,11 @@ namespace MindHexer.Controller.Net
                 Received?.Invoke(json); // PairingClient가 구독 중
             };
             _ws.OnError += err => Debug.LogWarning($"[WS] error: {err}");
-            _ws.OnClose += _ => Closed?.Invoke();
+            _ws.OnClose += _ =>
+            {
+                Closed?.Invoke();      // PairingClient 내부용
+                Disconnected?.Invoke(); // PairingFlow 재연결용
+            };
 
             await _ws.Connect();
         }

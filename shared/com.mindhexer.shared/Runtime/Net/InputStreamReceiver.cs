@@ -45,6 +45,14 @@ namespace MindHexer.Shared.Net
         /// <summary>유효 패킷을 한 번이라도 받았는지.</summary>
         public bool HasReceived => _hasLatest;
 
+        /// <summary>
+        /// 유효 패킷을 수용할 때마다 발생(옵션). **수신 스레드에서 호출**되므로,
+        /// Unity에서 이 이벤트로 UI/게임 오브젝트를 만지려면 MainThreadDispatcher를 경유할 것.
+        /// (Unity 어댑터 UdpReceiver는 이 이벤트를 쓰지 않고 TryGetLatest 폴링을 유지한다.)
+        /// PC 측정 도구처럼 스레드 제약이 없는 곳에서 패킷별 로깅/통계에 쓰기 좋다.
+        /// </summary>
+        public event System.Action<InputPacket> PacketReceived;
+
         public InputStreamReceiver(int port) => _port = port;
 
         public InputStreamReceiver() : this(NetworkConstants.UdpInputPort) { }
@@ -95,6 +103,7 @@ namespace MindHexer.Shared.Net
                     }
                     Interlocked.Increment(ref _acceptedCount);
                     Interlocked.Exchange(ref _lastAcceptTicks, Environment.TickCount64);
+                    PacketReceived?.Invoke(packet); // 옵션: 수신 스레드에서 호출
                 }
                 catch (SocketException) when (!_running) { break; } // 종료 중 Close
                 catch (ObjectDisposedException) { break; }

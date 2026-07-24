@@ -1,1 +1,2 @@
-# Main.unity — 3x3 터치 그리드 오버레이 + 연결 상태 UI(IP 직접 입력 폴백 포함).
+# 씬은 비어 있어도 된다. ControllerBootstrap이 런타임에 컨트롤러(HUD 포함)를 자동 조립한다.
+# (빈 SampleScene을 빌드에 포함하면 그대로 동작. 필요 시 uGUI 씬으로 교체.)

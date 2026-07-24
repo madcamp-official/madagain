@@ -39,3 +39,8 @@ madagain/
 - `main`은 항상 빌드 가능 상태 유지. 기능 작업은 `feat/*`, 버그는 `fix/*`.
 - 패킷 구조체·프로토콜 상수를 바꾸면 **반드시 `shared` 패키지에서** 바꾼다(양쪽 자동 반영).
 - 2인/7일 작업 분배는 [docs/SPEC.md](docs/SPEC.md) 6절 참고. **1일차 UDP Ping-Pong 검증이 최우선 마감 항목.**
+
+## 실기기 전 PC 실측
+
+S24+에 올리기 전에, 이 PC가 S24+ 역할을 대신해 S10e의 6DoF 수신을 실측할 수 있다:
+[tools/pc-receiver](tools/pc-receiver/README.md) (실행법 + S10e↔PC UDP/WebSocket 연결 가이드).

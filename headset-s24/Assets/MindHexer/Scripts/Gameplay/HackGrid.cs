@@ -21,13 +21,8 @@ namespace MindHexer.Headset.Gameplay
 
         private readonly List<int> _input = new List<int>();
 
-        /// <summary>정규화 좌표(0..1)를 3x3 셀 인덱스(0..8)로 변환.</summary>
-        public static int ToCellIndex(Vector2 normalized)
-        {
-            int col = Mathf.Clamp((int)(normalized.x * 3f), 0, 2);
-            int row = Mathf.Clamp((int)(normalized.y * 3f), 0, 2);
-            return row * 3 + col;
-        }
+        /// <summary>정규화 좌표(0..1)를 3x3 셀 인덱스(0..8)로 변환. 매핑은 공유 <see cref="HackGridMath"/>.</summary>
+        public static int ToCellIndex(Vector2 normalized) => HackGridMath.ToCellIndex(normalized);
 
         /// <summary>한 셀 입력을 기록. 패턴이 완성되면 판정 후 결과를 통보.</summary>
         public void OnCellInput(int cellIndex)

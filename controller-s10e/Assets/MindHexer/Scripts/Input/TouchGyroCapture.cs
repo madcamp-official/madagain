@@ -24,6 +24,11 @@ namespace MindHexer.Controller.Input
         [Tooltip("6DoF 트래커(ARCore 등)가 갱신하는 디바이스 포즈. 미할당 시 자이로 회전만 사용(3DoF 폴백).")]
         [SerializeField] private Transform poseSource;
 
+        private void Awake()
+        {
+            if (_sender == null) _sender = GetComponent<UdpSender>();
+        }
+
         private void Start()
         {
             if (SystemInfo.supportsGyroscope)
