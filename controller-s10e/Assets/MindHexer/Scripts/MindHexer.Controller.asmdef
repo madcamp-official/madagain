@@ -3,7 +3,6 @@
     "rootNamespace": "MindHexer.Controller",
     "references": [
         "MindHexer.Shared",
-        "Unity.InputSystem",
         "endel.nativewebsocket"
     ],
     "includePlatforms": [],

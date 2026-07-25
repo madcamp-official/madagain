@@ -6,11 +6,14 @@
   두 프로젝트 모두 이 버전으로 연다(`ProjectSettings/ProjectVersion.txt`에 고정됨).
 - 두 폰(S24+, S10e) USB 디버깅 활성화. (유심 없는 공기계도 USB 빌드/설치는 가능)
 
-### 0.1 Active Input Handling = Both (필수)
+### 0.1 Active Input Handling = Input Manager (Old) (필수)
 
 컨트롤러가 레거시 입력(`Input.gyro`, `Input.touch`)을 쓰므로:
-**Project Settings → Player → Other Settings → Active Input Handling = Both** 로 설정.
-(Input System 패키지도 함께 쓰므로 "Both"가 맞다. "Input System Package (New)" 단독이면 레거시 Input이 런타임 예외.)
+**Project Settings → Player → Other Settings → Active Input Handling = Input Manager (Old)** 로 설정.
+
+- **"Both"는 Android에서 지원되지 않아 빌드 경고/문제**를 일으킨다 → 반드시 "Old".
+- "Input System Package (New)" 단독이면 레거시 `Input.*`가 런타임 예외.
+- 값은 `ProjectSettings/ProjectSettings.asset`의 `activeInputHandler`(0=Old, 1=New, 2=Both). **변경 후 Unity 재시작 필요**(스크립팅 디파인이 바뀜).
 
 ## 1. 공유 패키지 참조 확인
 
