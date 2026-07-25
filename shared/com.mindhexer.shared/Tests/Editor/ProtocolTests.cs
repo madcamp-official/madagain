@@ -21,7 +21,8 @@ namespace MindHexer.Shared.Tests
             NormalizedPos = new Vector2(0.25f, 0.75f),
             Position = new Vector3(0.11f, -0.22f, 1.33f),
             Rotation = new Quaternion(0.1f, -0.2f, 0.3f, 0.9f),
-            Acceleration = new Vector3(-1.5f, 0.03f, 9.81f)
+            Acceleration = new Vector3(-1.5f, 0.03f, 9.81f),
+            MoveAxis = new Vector2(0.66f, -0.42f)
         };
 
         [Test]
@@ -30,8 +31,8 @@ namespace MindHexer.Shared.Tests
             var p = Sample(42);
             byte[] bytes = PacketSerializer.Serialize(in p);
 
-            Assert.AreEqual(NetworkConstants.InputPacketSize, bytes.Length, "고정 길이(72B)");
-            Assert.AreEqual(72, NetworkConstants.InputPacketSize, "v2 6DoF 크기");
+            Assert.AreEqual(NetworkConstants.InputPacketSize, bytes.Length, "고정 길이(80B)");
+            Assert.AreEqual(80, NetworkConstants.InputPacketSize, "v3 크기");
 
             Assert.IsTrue(PacketSerializer.TryDeserialize(bytes, bytes.Length, out var q));
             Assert.AreEqual(p.Sequence, q.Sequence);
@@ -50,6 +51,8 @@ namespace MindHexer.Shared.Tests
             Assert.AreEqual(p.Acceleration.x, q.Acceleration.x);
             Assert.AreEqual(p.Acceleration.y, q.Acceleration.y);
             Assert.AreEqual(p.Acceleration.z, q.Acceleration.z);
+            Assert.AreEqual(p.MoveAxis.x, q.MoveAxis.x);
+            Assert.AreEqual(p.MoveAxis.y, q.MoveAxis.y);
         }
 
         [Test]

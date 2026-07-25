@@ -20,6 +20,20 @@ namespace MindHexer.Headset.Gameplay
         /// <summary>목표 패턴 (2x2 노드 인덱스 0..3 시퀀스). 예: 0→1→3→2 (ㄷ자).</summary>
         public List<int> TargetPattern = new List<int> { 0, 1, 3, 2 };
 
+        private void Awake()
+        {
+            if (_wsServer == null) _wsServer = GetComponent<WebSocketServerHost>();
+            if (_wsServer != null) _wsServer.PatternSubmitted += OnPatternSubmitted;
+        }
+
+        private void OnDestroy()
+        {
+            if (_wsServer != null) _wsServer.PatternSubmitted -= OnPatternSubmitted;
+        }
+
+        // 컨트롤러가 스와이프로 완성한 패턴 수신 → 판정.
+        private void OnPatternSubmitted(int[] nodes) => SubmitPattern(nodes);
+
         /// <summary>완성된 스와이프 패턴을 판정하고 결과를 페어링된 클라이언트에 통보.</summary>
         public bool SubmitPattern(IReadOnlyList<int> nodes)
         {

@@ -29,11 +29,12 @@ namespace MindHexer.Shared.Protocol
         public Vector3 Position;           // 6DoF 위치(컨트롤러 로컬 원점 기준, meter).
         public Quaternion Rotation;        // 6DoF 회전(디바이스 자세). 해킹 조작/조준 등 동적 입력에 사용.
         public Vector3 Acceleration;       // 선형 가속도. 데드레커닝/예측 보정용.
+        public Vector2 MoveAxis;           // v3: 플로팅 조이스틱 이동축(-1..1 디스크, x오른쪽/y위쪽). 캐릭터 이동.
 
         public override string ToString()
         {
             return $"InputPacket(seq={Sequence}, t={TimestampMs}ms, touch#{TouchId} {Phase}, " +
-                   $"uv={NormalizedPos}, pos={Position}, rot={Rotation.eulerAngles}, acc={Acceleration})";
+                   $"uv={NormalizedPos}, move={MoveAxis}, pos={Position}, rot={Rotation.eulerAngles}, acc={Acceleration})";
         }
     }
 }

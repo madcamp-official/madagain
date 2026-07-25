@@ -26,15 +26,17 @@
 | 32 | Position (x,y,z, meter) | float×3 | 12 |
 | 44 | Rotation (x,y,z,w, 쿼터니언) | float×4 | 16 |
 | 60 | Accel (x,y,z) | float×3 | 12 |
-| — | **총** | | **72** |
+| 72 | MoveAxis (x,y, 조이스틱 -1..1) | float×2 | 8 |
+| — | **총** | | **80** |
 
 - **Magic**: 잘못된/타 앱 패킷 방어. 불일치 시 폐기.
 - **Sequence**: 단조 증가. 수신측은 지금까지 본 최대 시퀀스보다 작거나 같으면 폐기(역전/중복 방지).
 - **Timestamp**: 지터 계산·보간 기준. 두 폰 시계가 안 맞을 수 있으므로 **절대시각 비교 금지**, 상대 간격만 사용.
 - **Position**: 컨트롤러 로컬 원점 기준 6DoF 위치. 산출원(ARCore VIO 등)은 컨트롤러 앱 책임. 트래커 미가동 시 0(3DoF 폴백).
 - **Rotation**: 6DoF 디바이스 자세. 헤드트래킹이 아니라 **컨트롤러 조준/동적 해킹 입력**용(SPEC 5.5).
+- **MoveAxis**(v3): 플로팅 조이스틱 이동축(-1..1 디스크, x오른쪽/y위쪽). 캐릭터 이동. 조이스틱 미조작 시 0.
 
-> **버전 불일치**: v1(60B) ↔ v2(72B)는 길이가 달라 상호 역직렬화가 실패(폐기)한다. 페어링 시 `ProtocolVersion`을 교환해 조기 거부할 것.
+> **버전**: v3(80B)에서 MoveAxis 추가. 길이가 다른 버전끼리는 역직렬화가 실패(폐기)하므로, 페어링 시 `ProtocolVersion`(현재 3) 교환으로 조기 거부.
 
 ## 보간 규칙 (수신측, SPEC 2.1)
 
@@ -65,15 +67,20 @@
 | `PairRequest` | S10e→S24+ | `protocolVersion`, `deviceName` |
 | `PairAck` | S24+→S10e | `protocolVersion` |
 | `PairReject` | S24+→S10e | `reason` (버전 불일치 등) |
+| `PatternSubmit` | S10e→S24+ | `nodes` (완성된 스와이프 노드 시퀀스, 예 `"0,1,3,2"`) |
 | `PatternResult` | S24+→S10e | `success`(bool), `patternId`(int) |
 | `BatteryWarning` | 양방향 | `level`(float, 0..1) |
 | `Disconnect` | 양방향 | `reason` |
 
-페어링 핸드셰이크: S10e가 `PairRequest{protocolVersion}` 송신 → S24+가 버전 일치 시 `PairAck`, 불일치 시 `PairReject`. 로직은 `PairingClient`(S10e)/`PairingServer`(S24+)에 있고 WebSocket 라이브러리는 `IEventChannel` 뒤로 격리된다.
+페어링 핸드셰이크: S10e가 `PairRequest{protocolVersion}` 송신 → S24+가 버전 일치 시 `PairAck`, 불일치 시 `PairReject`. 로직은 `PairingClient`(S10e)/`PairingServer`(S24+)에 있고 WebSocket 전송은 `IEventChannel` 뒤로 격리된다.
+
+패턴: S10e가 오른쪽 패드에서 스와이프로 완성한 2x2 노드 시퀀스를 `PatternSubmit`으로 송신 → S24+ `HackGrid.SubmitPattern`이 판정 → `PatternResult`로 응답.
+
+> **S24+ WebSocket 서버는 외부 DLL 없이** shared `TcpWebSocketServer`(TcpListener 기반 RFC6455)로 구동된다. WebSocketSharp 불필요.
 
 ## 연결 수립 순서 (SPEC 2.3)
 
-1. S24+ : WebSocket 서버(`WebSocketServerHost`, WebSocketSharp) 기동 + `DiscoveryBroadcaster`가 `DiscoveryBeacon` UDP 브로드캐스트.
+1. S24+ : WebSocket 서버(`WebSocketServerHost` → shared `TcpWebSocketServer`, 외부 DLL 없음) 기동 + `DiscoveryBroadcaster`가 `DiscoveryBeacon` UDP 브로드캐스트.
 2. S10e : `DiscoveryListener`가 비콘 수신 → `PairingFlow`가 UDP/RTT 대상 설정 + `WsClient`(NativeWebSocket) 연결 → `PairAck` 수신 시 **UDP `InputPacket` 스트리밍 + RTT 프로브 시작**.
 3. **폴백**: 비콘 미수신 시 `PairingFlow.ConnectManually(ip)` — **IP 직접 입력 UI**로 연결.
 4. 공유 Wi-Fi 없으면 S24+ **모바일 핫스팟**에 S10e 연결(코드 변경 없음, 같은 서브넷 전제).

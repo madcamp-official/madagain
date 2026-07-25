@@ -35,7 +35,9 @@ namespace MindHexer.Shared.Protocol
             WriteFloat(buffer, ref o, p.Acceleration.x);                 // 60
             WriteFloat(buffer, ref o, p.Acceleration.y);                 // 64
             WriteFloat(buffer, ref o, p.Acceleration.z);                 // 68
-            // total 72
+            WriteFloat(buffer, ref o, p.MoveAxis.x);                     // 72
+            WriteFloat(buffer, ref o, p.MoveAxis.y);                     // 76
+            // total 80
         }
 
         /// <summary>새 버퍼를 할당해 직렬화(편의 오버로드). 핫패스에서는 버퍼 재사용 버전을 쓸 것.</summary>
@@ -81,6 +83,9 @@ namespace MindHexer.Shared.Protocol
             float ay = ReadFloat(buffer, ref o);
             float az = ReadFloat(buffer, ref o);
             packet.Acceleration = new Vector3(ax, ay, az);
+            float mvx = ReadFloat(buffer, ref o);
+            float mvy = ReadFloat(buffer, ref o);
+            packet.MoveAxis = new Vector2(mvx, mvy);
             return true;
         }
 

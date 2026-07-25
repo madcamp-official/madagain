@@ -39,7 +39,7 @@ namespace MindHexer.Shared.Tests
             for (int i = 0; i < n; i++)
             {
                 tx.Send(TouchPhaseCode.Move, 0, new Vector2(i / 50f, 0.5f),
-                        new Vector3(i * 0.01f, 0f, 1f), Quaternion.identity, Vector3.zero, i);
+                        new Vector3(i * 0.01f, 0f, 1f), Quaternion.identity, Vector3.zero, Vector2.zero, i);
                 yield return null;
             }
 

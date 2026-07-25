@@ -44,7 +44,7 @@ UPM 레지스트리에 없거나 특수 배포라 **직접 받아야 함**:
 | 패키지 | 대상 프로젝트 | 설치 방법 |
 | --- | --- | --- |
 | **Google Cardboard XR Plugin** | headset-s24 | GitHub `googlevr/cardboard` 릴리스의 Unity 패키지를 받아 `Package Manager → Add from tarball/disk`, 또는 매니페스트에 git URL 추가. 공식 지원 종료됐으나 오픈소스로 동작. |
-| **WebSocketSharp** | headset-s24 | `websocket-sharp` DLL을 `headset-s24/Assets/Plugins/`에 배치. (NuGet `WebSocketSharp` 또는 GitHub 빌드) |
+| ~~WebSocketSharp~~ | ~~headset-s24~~ | **불필요** — S24+ WebSocket 서버는 shared `TcpWebSocketServer`(외부 DLL 없음)로 구동. |
 | **NativeWebSocket** | controller-s10e | 매니페스트에 git URL(`https://github.com/endel/NativeWebSocket.git#upm`) 추가. (이미 주석으로 표기됨) |
 | **DOTween** | headset-s24 | Unity Asset Store에서 임포트 후 `Tools → Demigiant → DOTween Utility Panel`에서 Setup 실행. |
 

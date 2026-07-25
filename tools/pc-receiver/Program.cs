@@ -37,7 +37,7 @@ namespace MindHexer.PcReceiver
             var pairing = new PairingServer(NetworkConstants.ProtocolVersion);
             pairing.ClientPaired += id => Console.WriteLine($"\n[페어링됨] client={id} → 이제 S10e가 6DoF UDP 스트리밍을 시작합니다.\n");
 
-            var ws = new MiniWebSocketServer(NetworkConstants.WebSocketPort);
+            var ws = new TcpWebSocketServer(NetworkConstants.WebSocketPort);
             ws.ClientConnected += (id, ch) =>
             {
                 Console.WriteLine($"[WS 연결] {id}");
@@ -76,7 +76,7 @@ namespace MindHexer.PcReceiver
                 var snap = stats.Snapshot();
                 string line = snap.HasData
                     ? $"pkts={total} rate={rate,5:0.0}/s loss={snap.Lost} | " +
-                      $"pos={snap.Position} rotQ={snap.Rotation} |q|={snap.RotMagnitude:0.###} " +
+                      $"move={snap.Move} pos={snap.Position} rotQ={snap.Rotation} |q|={snap.RotMagnitude:0.###} " +
                       $"touch={snap.Phase}@{snap.NormalizedPos}"
                     : $"pkts=0 (S10e 페어링/스트리밍 대기 중… paired={pairing.PairedCount})";
                 Console.WriteLine(line);
@@ -105,7 +105,7 @@ namespace MindHexer.PcReceiver
             Console.WriteLine($" UDP RttPort     : {NetworkConstants.UdpRttPort}  (RTT Ping/Pong)");
             Console.WriteLine($" UDP Discovery   : {NetworkConstants.UdpDiscoveryPort} (PC→서브넷 브로드캐스트)");
             Console.WriteLine($" WebSocket 포트  : {NetworkConstants.WebSocketPort}  (경로 {NetworkConstants.WebSocketPath})");
-            Console.WriteLine($" ProtocolVersion : {NetworkConstants.ProtocolVersion} (72B 6DoF)");
+            Console.WriteLine($" ProtocolVersion : {NetworkConstants.ProtocolVersion} (80B v3: 6DoF+이동축)");
             Console.WriteLine("----------------------------------------------------------------------");
             Console.WriteLine(" 서비스는 0.0.0.0(모든 인터페이스)에 바인딩되어 어느 IP로도 수신됩니다.");
             Console.WriteLine(" S10e 연결(수동 권장): 폰 HUD의 IP 입력란에 폰과 같은 서브넷의 위 IP를 넣고 [연결].");
@@ -129,7 +129,7 @@ namespace MindHexer.PcReceiver
             bool serverPaired = false;
             pairing.ClientPaired += _ => serverPaired = true;
 
-            var ws = new MiniWebSocketServer(wsPort);
+            var ws = new TcpWebSocketServer(wsPort);
             ws.ClientConnected += (id, ch) => pairing.Register(id, ch);
             ws.Start();
 
@@ -140,7 +140,7 @@ namespace MindHexer.PcReceiver
 
             Thread.Sleep(100);
 
-            // 표준 ClientWebSocket으로 접속 → 우리 MiniWebSocketServer 핸드셰이크/프레이밍 검증
+            // 표준 ClientWebSocket으로 접속 → 공유 TcpWebSocketServer 핸드셰이크/프레이밍 검증
             using var cw = new ClientWebSocket();
             await cw.ConnectAsync(new Uri($"ws://127.0.0.1:{wsPort}{NetworkConstants.WebSocketPath}"), CancellationToken.None);
             Check(cw.State == WebSocketState.Open, "WebSocket 핸드셰이크 성공");
@@ -157,7 +157,7 @@ namespace MindHexer.PcReceiver
             tx.Connect("127.0.0.1", udpPort);
             var pos = new Vector3(0.12f, -0.34f, 1.56f);
             var rot = new Quaternion(0.1f, 0.2f, 0.3f, 0.9f);
-            tx.Send(TouchPhaseCode.Move, 3, new Vector2(0.4f, 0.6f), pos, rot, Vector3.zero, 1234);
+            tx.Send(TouchPhaseCode.Move, 3, new Vector2(0.4f, 0.6f), pos, rot, Vector3.zero, new Vector2(0.7f, -0.3f), 1234);
             for (int i = 0; i < 100 && got == null; i++) Thread.Sleep(5);
 
             Check(got != null, "UDP 6DoF 패킷 수신");
@@ -166,6 +166,7 @@ namespace MindHexer.PcReceiver
                 var p = got.Value;
                 Check(p.Position.x == pos.x && p.Position.y == pos.y && p.Position.z == pos.z, "Position 일치");
                 Check(p.Rotation.x == rot.x && p.Rotation.w == rot.w, "Rotation 일치");
+                Check(p.MoveAxis.x == 0.7f && p.MoveAxis.y == -0.3f, "MoveAxis(조이스틱) 일치");
                 Check(p.TouchId == 3 && p.Phase == TouchPhaseCode.Move, "터치 필드 일치");
             }
 
@@ -227,7 +228,8 @@ namespace MindHexer.PcReceiver
                         Rotation = q.ToString(),
                         RotMagnitude = mag,
                         Phase = _latest.Phase.ToString(),
-                        NormalizedPos = _latest.NormalizedPos.ToString()
+                        NormalizedPos = _latest.NormalizedPos.ToString(),
+                        Move = _latest.MoveAxis.ToString()
                     };
                 }
             }
@@ -236,7 +238,7 @@ namespace MindHexer.PcReceiver
             {
                 public bool HasData;
                 public long Lost;
-                public string Position, Rotation, Phase, NormalizedPos;
+                public string Position, Rotation, Phase, NormalizedPos, Move;
                 public double RotMagnitude;
             }
         }

@@ -10,7 +10,8 @@ namespace MindHexer.Shared.Events
         PairRequest,
         PairAck,
         PairReject,
-        PatternResult,
+        PatternSubmit,   // S10e→S24+ : 완성된 스와이프 패턴(노드 시퀀스)
+        PatternResult,   // S24+→S10e : 판정 결과
         BatteryWarning,
         Disconnect,
         Unknown
@@ -30,6 +31,7 @@ namespace MindHexer.Shared.Events
         public const string KeyDeviceName = "deviceName";
         public const string KeySuccess = "success";
         public const string KeyPatternId = "patternId";
+        public const string KeyNodes = "nodes";
         public const string KeyLevel = "level";
         public const string KeyReason = "reason";
 
@@ -59,6 +61,13 @@ namespace MindHexer.Shared.Events
         {
             var m = new EventMessage(EventType.PairReject);
             m.Fields[KeyReason] = reason ?? "";
+            return m;
+        }
+
+        public static EventMessage PatternSubmit(int[] nodes)
+        {
+            var m = new EventMessage(EventType.PatternSubmit);
+            m.Fields[KeyNodes] = JoinInts(nodes);
             return m;
         }
 
@@ -100,6 +109,29 @@ namespace MindHexer.Shared.Events
 
         public bool GetBool(string key, bool fallback = false)
             => Fields.TryGetValue(key, out var v) ? v == "true" || v == "1" : fallback;
+
+        /// <summary>콤마로 이어진 정수 배열 필드를 파싱(예: "0,1,3,2"). 없으면 빈 배열.</summary>
+        public int[] GetIntArray(string key)
+        {
+            if (!Fields.TryGetValue(key, out var v) || string.IsNullOrEmpty(v)) return new int[0];
+            var parts = v.Split(',');
+            var list = new List<int>(parts.Length);
+            foreach (var s in parts)
+                if (int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var n)) list.Add(n);
+            return list.ToArray();
+        }
+
+        private static string JoinInts(int[] a)
+        {
+            if (a == null || a.Length == 0) return "";
+            var sb = new StringBuilder();
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (i > 0) sb.Append(',');
+                sb.Append(a[i].ToString(CultureInfo.InvariantCulture));
+            }
+            return sb.ToString();
+        }
 
         // ---- 코덱 (의존성 없는 플랫 JSON) ----
 
@@ -162,6 +194,7 @@ namespace MindHexer.Shared.Events
                 case "PairRequest": return EventType.PairRequest;
                 case "PairAck": return EventType.PairAck;
                 case "PairReject": return EventType.PairReject;
+                case "PatternSubmit": return EventType.PatternSubmit;
                 case "PatternResult": return EventType.PatternResult;
                 case "BatteryWarning": return EventType.BatteryWarning;
                 case "Disconnect": return EventType.Disconnect;

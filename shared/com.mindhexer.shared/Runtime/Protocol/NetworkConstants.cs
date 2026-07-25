@@ -33,8 +33,8 @@ namespace MindHexer.Shared.Protocol
         /// <summary>WebSocket 이벤트 채널 경로.</summary>
         public const string WebSocketPath = "/mhx";
 
-        /// <summary>고정 길이 InputPacket 바이트 수. (NETWORK_PROTOCOL.md 와이어 포맷) v2(6DoF): 72바이트.</summary>
-        public const int InputPacketSize = 72;
+        /// <summary>고정 길이 InputPacket 바이트 수. v3(6DoF + 조이스틱 이동축): 80바이트.</summary>
+        public const int InputPacketSize = 80;
 
         /// <summary>UDP 미수신 경고 임계값(초). SPEC 5.1.</summary>
         public const float UdpTimeoutSeconds = 1.0f;
@@ -42,7 +42,7 @@ namespace MindHexer.Shared.Protocol
         /// <summary>RTT 목표(ms). SPEC 5.4.</summary>
         public const int TargetRttMs = 50;
 
-        /// <summary>프로토콜 버전 — 양쪽 불일치 시 페어링 거부 판단에 사용. v2: 6DoF(위치+회전) 포즈 도입.</summary>
-        public const byte ProtocolVersion = 2;
+        /// <summary>프로토콜 버전 — 양쪽 불일치 시 페어링 거부 판단에 사용. v3: 조이스틱 이동축(MoveAxis) 추가.</summary>
+        public const byte ProtocolVersion = 3;
     }
 }

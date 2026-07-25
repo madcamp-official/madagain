@@ -6,7 +6,7 @@
 
 - Cardboard XR 스테레오 렌더 · 헤드트래킹(자체 자이로)
 - UDP `InputPacket` 수신 → 시퀀스 검증 → Lerp/Slerp 보간 → 게임 입력
-- WebSocket **서버**(WebSocketSharp) 내장 + 확정 이벤트 송수신
+- WebSocket **서버**(shared `TcpWebSocketServer`, 외부 DLL 없음) 내장 + 확정 이벤트 송수신
 - 3x3 해킹 그리드/패턴 판정, 적 AI(드론/터렛/CCTV, Unity Behavior), 레벨(ProBuilder), 암살 기믹
 
 ## 폴더
@@ -19,11 +19,11 @@ Assets/MindHexer/
 │   └── Gameplay/  HackGrid (3x3 패턴 판정) 등
 ├── Scenes/        Main.unity (TODO)
 ├── Prefabs/
-└── Plugins/       WebSocketSharp.dll 배치 (docs/SETUP.md)
+└── Plugins/       (WebSocketSharp DLL 불필요 — 서버는 shared TcpWebSocketServer)
 ```
 
 ## 열기 전에
 
 - Unity 6000.5.4f1 (`ProjectSettings/ProjectVersion.txt` 참고).
-- 수동 의존성(Cardboard, WebSocketSharp, DOTween): [../docs/SETUP.md](../docs/SETUP.md) 3절.
+- 수동 의존성(Cardboard, DOTween): [../docs/SETUP.md](../docs/SETUP.md) 3절. (WebSocketSharp는 이제 불필요)
 - 공유 프로토콜은 `com.mindhexer.shared` 패키지에서 온다 — 여기서 재정의하지 말 것.

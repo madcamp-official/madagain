@@ -43,6 +43,15 @@ namespace MindHexer.Shared.Tests
         }
 
         [Test]
+        public void PatternSubmit_RoundTripsNodeSequence()
+        {
+            var m = EventMessage.PatternSubmit(new[] { 0, 1, 3, 2 });
+            Assert.IsTrue(EventMessage.TryDecode(m.Encode(), out var d));
+            Assert.AreEqual(EventType.PatternSubmit, d.Type);
+            CollectionAssert.AreEqual(new[] { 0, 1, 3, 2 }, d.GetIntArray(EventMessage.KeyNodes));
+        }
+
+        [Test]
         public void RejectsMalformedAndTypeless()
         {
             Assert.IsFalse(EventMessage.TryDecode("{not json", out _));

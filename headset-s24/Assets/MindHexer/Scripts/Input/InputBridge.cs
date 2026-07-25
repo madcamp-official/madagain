@@ -24,9 +24,13 @@ namespace MindHexer.Headset.Input
         [Tooltip("회전 Slerp 보간 계수(프레임당).")]
         [Range(0.01f, 1f)] public float RotationSlerp = 0.35f;
 
+        [Tooltip("이동축(조이스틱) Lerp 보간 계수(프레임당).")]
+        [Range(0.05f, 1f)] public float MoveLerp = 0.5f;
+
         private Vector2 _smoothedUv;
         private Vector3 _smoothedPos;
         private Quaternion _smoothedRot = Quaternion.identity;
+        private Vector2 _smoothedMove;
 
         /// <summary>보간된 정규화 좌표(0..1). 그리드 매핑 입력.</summary>
         public Vector2 SmoothedNormalizedPos => _smoothedUv;
@@ -36,6 +40,14 @@ namespace MindHexer.Headset.Input
 
         /// <summary>보간된 6DoF 회전.</summary>
         public Quaternion SmoothedRotation => _smoothedRot;
+
+        /// <summary>보간된 조이스틱 이동축(-1..1 디스크). 캐릭터 이동 입력.</summary>
+        public Vector2 MoveAxis => _smoothedMove;
+
+        private void Awake()
+        {
+            if (_receiver == null) _receiver = GetComponent<UdpReceiver>();
+        }
 
         private void Update()
         {
@@ -52,8 +64,9 @@ namespace MindHexer.Headset.Input
             _smoothedUv = Vector2.Lerp(_smoothedUv, p.NormalizedPos, PositionLerp);
             _smoothedPos = Vector3.Lerp(_smoothedPos, p.Position, PositionLerp);
             _smoothedRot = Quaternion.Slerp(_smoothedRot, p.Rotation, RotationSlerp);
+            _smoothedMove = Vector2.Lerp(_smoothedMove, p.MoveAxis, MoveLerp);
 
-            // TODO: _smoothedUv → 3x3 그리드 셀 매핑, _smoothedPos/_smoothedRot → 조준 레이 발행.
+            // TODO: _smoothedMove → 캐릭터 이동, _smoothedPos/_smoothedRot → 조준 레이 발행.
         }
     }
 }

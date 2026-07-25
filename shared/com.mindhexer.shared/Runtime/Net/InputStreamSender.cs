@@ -39,7 +39,7 @@ namespace MindHexer.Shared.Net
         /// Connect 전에 호출하면 false.
         /// </summary>
         public bool Send(TouchPhaseCode phase, int touchId, Vector2 normalized,
-                         Vector3 position, Quaternion rotation, Vector3 accel, long timestampMs)
+                         Vector3 position, Quaternion rotation, Vector3 accel, Vector2 moveAxis, long timestampMs)
         {
             if (_udp == null) return false;
 
@@ -52,7 +52,8 @@ namespace MindHexer.Shared.Net
                 NormalizedPos = normalized,
                 Position = position,
                 Rotation = rotation,
-                Acceleration = accel
+                Acceleration = accel,
+                MoveAxis = moveAxis
             };
 
             PacketSerializer.Serialize(in packet, _buffer);

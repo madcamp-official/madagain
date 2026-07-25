@@ -20,6 +20,7 @@ namespace MindHexer.Controller.Net
         [SerializeField] private UdpSender _udpSender;
         [SerializeField] private RttProbeBehaviour _rttProbe;
         [SerializeField] private TouchGyroCapture _capture;
+        [SerializeField] private PatternPadInput _pattern;
 
         [Tooltip("부팅 시 자동 접속할 기본 서버 IP. Windows PC 모바일 핫스팟 호스트는 항상 192.168.137.1. " +
                  "비우면 디스커버리/수동입력만 사용. 디스커버리·수동입력이 오면 그 값으로 덮어씀.")]
@@ -53,6 +54,7 @@ namespace MindHexer.Controller.Net
             if (_udpSender == null) _udpSender = GetComponent<UdpSender>();
             if (_rttProbe == null) _rttProbe = GetComponent<RttProbeBehaviour>();
             if (_capture == null) _capture = GetComponent<TouchGyroCapture>();
+            if (_pattern == null) _pattern = GetComponent<PatternPadInput>();
         }
 
         private void OnEnable()
@@ -66,6 +68,7 @@ namespace MindHexer.Controller.Net
                 _ws.Rejected += OnRejected;
                 _ws.Disconnected += OnDisconnected;
             }
+            if (_pattern != null) _pattern.PatternCompleted += OnPatternCompleted;
 
             // 기본 서버 IP가 설정돼 있으면 부팅 즉시 자동 접속 시도.
             // (자동 디스커버리가 안 되는 PC-핫스팟 구성에서 폰 조작 없이 붙게 함.
@@ -83,6 +86,14 @@ namespace MindHexer.Controller.Net
                 _ws.Rejected -= OnRejected;
                 _ws.Disconnected -= OnDisconnected;
             }
+            if (_pattern != null) _pattern.PatternCompleted -= OnPatternCompleted;
+        }
+
+        // 스와이프 패턴 완성 → 페어링돼 있으면 서버로 전송(WebSocket 확정 이벤트).
+        private void OnPatternCompleted(int[] nodes)
+        {
+            if (_state != FlowState.Paired || _ws == null) return;
+            _ws.SendPattern(nodes);
         }
 
         private void Update()

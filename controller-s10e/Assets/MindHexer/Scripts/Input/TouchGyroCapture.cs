@@ -20,6 +20,7 @@ namespace MindHexer.Controller.Input
     public sealed class TouchGyroCapture : MonoBehaviour
     {
         [SerializeField] private UdpSender _sender;
+        [SerializeField] private FloatingJoystickInput _joystick;
 
         [Tooltip("6DoF 트래커(ARCore 등)가 갱신하는 디바이스 포즈. 미할당 시 자이로 회전만 사용(3DoF 폴백).")]
         [SerializeField] private Transform poseSource;
@@ -27,6 +28,7 @@ namespace MindHexer.Controller.Input
         private void Awake()
         {
             if (_sender == null) _sender = GetComponent<UdpSender>();
+            if (_joystick == null) _joystick = GetComponent<FloatingJoystickInput>();
         }
 
         private void Start()
@@ -41,6 +43,7 @@ namespace MindHexer.Controller.Input
 
             long ts = (long)(Time.realtimeSinceStartupAsDouble * 1000.0);
             Vector3 accel = UnityEngine.Input.acceleration;
+            Vector2 move = _joystick != null ? _joystick.MoveAxis : Vector2.zero; // 조이스틱 이동축
 
             // 6DoF 포즈: 트래커가 있으면 위치+회전을, 없으면 자이로 회전 + 0 위치(3DoF 폴백).
             Vector3 position;
@@ -61,8 +64,8 @@ namespace MindHexer.Controller.Input
             int touchCount = UnityEngine.Input.touchCount;
             if (touchCount == 0)
             {
-                // 터치가 없어도 6DoF 포즈는 계속 흘려보낸다(동적 인식 유지).
-                _sender.Send(TouchPhaseCode.None, -1, Vector2.zero, position, rotation, accel, ts);
+                // 터치가 없어도 6DoF 포즈 + 조이스틱 값은 계속 흘려보낸다(이동 유지).
+                _sender.Send(TouchPhaseCode.None, -1, Vector2.zero, position, rotation, accel, move, ts);
                 return;
             }
 
@@ -83,7 +86,7 @@ namespace MindHexer.Controller.Input
                     _ => TouchPhaseCode.None
                 };
 
-                _sender.Send(phase, t.fingerId, norm, position, rotation, accel, ts);
+                _sender.Send(phase, t.fingerId, norm, position, rotation, accel, move, ts);
             }
         }
     }

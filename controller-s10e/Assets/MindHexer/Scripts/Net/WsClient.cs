@@ -84,6 +84,9 @@ namespace MindHexer.Controller.Net
         /// <summary>확정 이벤트를 서버로 송신(페어링 이후).</summary>
         public void SendEvent(EventMessage message) => _pairing?.SendEvent(message);
 
+        /// <summary>완성된 스와이프 패턴(노드 시퀀스)을 서버로 송신.</summary>
+        public void SendPattern(int[] nodes) => SendEvent(EventMessage.PatternSubmit(nodes));
+
         private void Update()
         {
 #if !UNITY_WEBGL || UNITY_EDITOR
