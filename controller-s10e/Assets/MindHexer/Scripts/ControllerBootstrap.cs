@@ -22,6 +22,13 @@ namespace MindHexer.Controller
         {
             if (GameObject.Find(RootName) != null) return; // 중복 방지
 
+            // 컨트롤러는 가로(landscape) 고정: 왼쪽 조이스틱 + 오른쪽 패턴 스와이프 패드 레이아웃 기준.
+            Screen.orientation = ScreenOrientation.LandscapeLeft;
+            Screen.autorotateToLandscapeLeft = true;
+            Screen.autorotateToLandscapeRight = true;
+            Screen.autorotateToPortrait = false;
+            Screen.autorotateToPortraitUpsideDown = false;
+
             // 비활성 상태로 생성 → 모든 컴포넌트 추가 후 활성화 →
             // Awake가 전부 갖춰진 뒤 실행되어 GetComponent 자동 연결이 안전하다.
             var go = new GameObject(RootName);
@@ -32,6 +39,8 @@ namespace MindHexer.Controller
             go.AddComponent<RttProbeBehaviour>();
             go.AddComponent<DiscoveryListenerBehaviour>();
             go.AddComponent<TouchGyroCapture>();
+            go.AddComponent<FloatingJoystickInput>();
+            go.AddComponent<PatternPadInput>();
             go.AddComponent<PairingFlow>();
             go.AddComponent<ControllerHud>();
 

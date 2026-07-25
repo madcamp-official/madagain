@@ -41,5 +41,24 @@ namespace MindHexer.Shared.Tests
             for (int i = 0; i < HackGridMath.CellCount; i++)
                 Assert.AreEqual(i, HackGridMath.ToCellIndex(HackGridMath.CellCenter(i)), $"cell {i}");
         }
+
+        [Test]
+        public void HackGridMath_PadMapsInsideAndRejectsOutside()
+        {
+            float cx = HackGridMath.PadX + HackGridMath.PadW * 0.5f; // 패드 중앙
+            float cy = HackGridMath.PadY + HackGridMath.PadH * 0.5f;
+            Assert.IsTrue(HackGridMath.TryToCellIndex(cx, cy, out int mid));
+            Assert.AreEqual(4, mid, "패드 중앙 → 셀 4");
+
+            // 패드 좌하단/우상단 모서리
+            Assert.IsTrue(HackGridMath.TryToCellIndex(HackGridMath.PadX + 0.001f, HackGridMath.PadY + 0.001f, out int bl));
+            Assert.AreEqual(0, bl, "좌하단 → 0");
+            Assert.IsTrue(HackGridMath.TryToCellIndex(HackGridMath.PadX + HackGridMath.PadW - 0.001f, HackGridMath.PadY + HackGridMath.PadH - 0.001f, out int tr));
+            Assert.AreEqual(8, tr, "우상단 → 8");
+
+            // 패드 밖(왼쪽 조이스틱 영역 / 상단)은 거부
+            Assert.IsFalse(HackGridMath.TryToCellIndex(0.1f, 0.1f, out _), "좌하단 밖");
+            Assert.IsFalse(HackGridMath.TryToCellIndex(0.75f, 0.9f, out _), "상단 밖");
+        }
     }
 }

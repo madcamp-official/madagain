@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using MindHexer.Shared.Events;
+using MindHexer.Shared.Protocol;
 using MindHexer.Headset.Net;
 
 namespace MindHexer.Headset.Gameplay
@@ -21,8 +22,12 @@ namespace MindHexer.Headset.Gameplay
 
         private readonly List<int> _input = new List<int>();
 
-        /// <summary>정규화 좌표(0..1)를 3x3 셀 인덱스(0..8)로 변환. 매핑은 공유 <see cref="HackGridMath"/>.</summary>
-        public static int ToCellIndex(Vector2 normalized) => HackGridMath.ToCellIndex(normalized);
+        /// <summary>
+        /// 수신한 화면 정규화 좌표(0..1)가 하단 패턴 패드 안이면 셀(0..8)을 채우고 true, 밖이면 false.
+        /// 패드 영역/매핑은 공유 <see cref="HackGridMath"/> (컨트롤러 표시와 동일 판정).
+        /// </summary>
+        public static bool TryCell(Vector2 screenNormalized, out int cell)
+            => HackGridMath.TryToCellIndex(screenNormalized.x, screenNormalized.y, out cell);
 
         /// <summary>한 셀 입력을 기록. 패턴이 완성되면 판정 후 결과를 통보.</summary>
         public void OnCellInput(int cellIndex)
