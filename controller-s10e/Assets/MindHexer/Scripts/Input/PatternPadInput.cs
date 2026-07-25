@@ -1,36 +1,55 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
-using MindHexer.Shared.Protocol;
 using MindHexer.Shared.Input;
 
 namespace MindHexer.Controller.Input
 {
     /// <summary>
-    /// 오른쪽 패턴 패드 — 안드로이드 잠금패턴식 **스와이프** 입력. (가로 화면)
-    /// 패드 안에서 누르면 시작, 드래그로 지나가는 셀을 순서대로 잇고(중간 셀 자동 포함), 떼면 완성.
-    /// 로직은 shared <see cref="SwipePattern"/>(순수/검증됨), 여기서는 터치 라우팅 + IMGUI 표시만.
+    /// 오른쪽 절반 = **플로팅 2x2 스와이프 패턴** 패드. (가로 화면)
+    /// 조이스틱처럼 자유 위치에서 시작하며, **처음 누른 지점이 항상 좌상단 노드(0)** 가 된다.
+    /// 거기서 오른쪽/아래로 2x2 격자가 펼쳐지고, 안드로이드 잠금패턴처럼 노드를 스와이프로 잇는다.
+    /// 로직은 shared <see cref="SwipePattern"/>(size 2), 여기서는 터치 라우팅 + IMGUI 표시만.
+    ///
+    /// 화면 양분: 이 컴포넌트는 <see cref="ActiveRegion"/>(오른쪽 절반)에서 시작한 터치만 받는다.
+    /// (왼쪽 절반은 FloatingJoystickInput 전용.)
+    ///
+    ///   node 0 (첫 터치, 좌상단) ── node 1
+    ///        │                      │
+    ///   node 2 ──────────────── node 3
     /// </summary>
     public sealed class PatternPadInput : MonoBehaviour
     {
+        [Tooltip("패턴 인식 영역(정규화 0..1). 기본: 화면 오른쪽 절반.")]
+        public Rect ActiveRegion = new Rect(0.5f, 0f, 0.5f, 1f);
+
+        [Tooltip("노드 간격 = 화면 높이 × 이 비율.")]
+        [Range(0.08f, 0.35f)] public float NodeSpacingFraction = 0.20f;
+
+        [Tooltip("노드 히트 반경 = 간격 × 이 비율.")]
+        [Range(0.2f, 0.5f)] public float HitRadiusFraction = 0.42f;
+
         [Range(1f, 4f)] public float UiScale = 2f;
-        public Color PadBg = new Color(0f, 0f, 0f, 0.35f);
-        public Color GridLine = new Color(1f, 1f, 1f, 0.30f);
         public Color NodeIdle = new Color(1f, 1f, 1f, 0.35f);
         public Color NodeOn = new Color(0.2f, 0.85f, 1f, 0.95f);
         public Color PathLine = new Color(0.2f, 0.85f, 1f, 0.85f);
 
-        private readonly SwipePattern _pattern = new SwipePattern();
+        private const int Nodes = 4; // 2x2
+
+        private readonly SwipePattern _pattern = new SwipePattern(2);
+        private readonly Vector2[] _nodeScreen = new Vector2[Nodes]; // 화면(y-up) 노드 좌표
         private int _fingerId = -1;
         private bool _drawing;
-        private Vector2 _liveGui; // 현재 손가락 위치(GUI 좌표)
+        private bool _hasAnchor;
+        private Vector2 _liveScreen;
 
         private Texture2D _white;
         private Texture2D _circle;
 
-        /// <summary>현재(또는 마지막) 패턴 셀 순서.</summary>
-        public System.Collections.Generic.IReadOnlyList<int> CurrentPattern => _pattern.Path;
+        /// <summary>현재(또는 마지막) 패턴 노드 순서.</summary>
+        public IReadOnlyList<int> CurrentPattern => _pattern.Path;
 
-        /// <summary>스와이프 완성 시(손 뗌) 발생. 인자는 셀 시퀀스.</summary>
+        /// <summary>스와이프 완성 시(손 뗌) 발생. 인자는 노드 시퀀스(0..3).</summary>
         public event Action<int[]> PatternCompleted;
 
         private void Awake()
@@ -45,48 +64,74 @@ namespace MindHexer.Controller.Input
             if (_circle != null) Destroy(_circle);
         }
 
+        private float Spacing => NodeSpacingFraction * Screen.height;
+        private float HitRadius => Spacing * HitRadiusFraction;
+
         private void Update()
         {
             int count = UnityEngine.Input.touchCount;
 
             if (_fingerId < 0)
             {
-                // 패드 안에서 시작된 터치를 잡는다.
                 for (int i = 0; i < count; i++)
                 {
                     Touch t = UnityEngine.Input.GetTouch(i);
                     if (t.phase != TouchPhase.Began) continue;
-                    if (!InPadCell(t.position, out int cell)) continue;
-                    _pattern.Begin();
-                    _pattern.AddCell(cell);
+                    if (!InRegion(t.position)) continue;
+                    StartPattern(t.position);
                     _fingerId = t.fingerId;
-                    _drawing = true;
-                    _liveGui = ToGui(t.position);
                     break;
                 }
                 return;
             }
 
-            // 내 손가락 추적.
             bool found = false;
             for (int i = 0; i < count; i++)
             {
                 Touch t = UnityEngine.Input.GetTouch(i);
                 if (t.fingerId != _fingerId) continue;
                 found = true;
-                _liveGui = ToGui(t.position);
+                _liveScreen = t.position;
 
                 if (t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled)
-                {
                     Complete();
-                }
-                else if (InPadCell(t.position, out int cell))
-                {
-                    _pattern.AddCell(cell); // 새 셀만 추가(중간 셀 자동 포함)
-                }
+                else
+                    HitTestAndAdd(t.position);
                 break;
             }
-            if (!found) Complete(); // 업 이벤트 놓친 경우 방어
+            if (!found) Complete();
+        }
+
+        private void StartPattern(Vector2 press)
+        {
+            float s = Spacing;
+            // 첫 터치 = 좌상단 노드(0). 오른쪽(+x)/아래(-y, 화면 y-up)로 2x2 전개.
+            _nodeScreen[0] = new Vector2(press.x, press.y);         // TL
+            _nodeScreen[1] = new Vector2(press.x + s, press.y);     // TR
+            _nodeScreen[2] = new Vector2(press.x, press.y - s);     // BL
+            _nodeScreen[3] = new Vector2(press.x + s, press.y - s); // BR
+            _hasAnchor = true;
+            _drawing = true;
+            _liveScreen = press;
+
+            _pattern.Begin();
+            _pattern.AddCell(0); // 시작 노드
+        }
+
+        private void HitTestAndAdd(Vector2 screenPos)
+        {
+            float hr = HitRadius;
+            int best = -1;
+            float bestSq = hr * hr;
+            for (int k = 0; k < Nodes; k++)
+            {
+                if (_pattern.Contains(k)) continue;
+                float dx = screenPos.x - _nodeScreen[k].x;
+                float dy = screenPos.y - _nodeScreen[k].y;
+                float sq = dx * dx + dy * dy;
+                if (sq <= bestSq) { bestSq = sq; best = k; }
+            }
+            if (best >= 0) _pattern.AddCell(best);
         }
 
         private void Complete()
@@ -95,93 +140,45 @@ namespace MindHexer.Controller.Input
             _fingerId = -1;
             if (_pattern.Count > 0)
                 PatternCompleted?.Invoke(_pattern.Snapshot());
-            // 경로는 다음 Begin 전까지 화면에 남겨 사용자가 확인하게 둔다.
+            // 경로/노드는 다음 시작 전까지 화면에 남겨 확인하게 둔다.
         }
 
-        private bool InPadCell(Vector2 screenPos, out int cell)
+        private bool InRegion(Vector2 screenPos)
         {
             float nx = screenPos.x / Screen.width;
             float ny = screenPos.y / Screen.height;
-            return HackGridMath.TryToCellIndex(nx, ny, out cell);
+            return ActiveRegion.Contains(new Vector2(nx, ny));
         }
 
         // ---- 그리기 ----
 
         private void OnGUI()
         {
-            if (_white == null) return;
-            Rect pad = PadGuiRect();
-            float th = Mathf.Max(1f, UiScale);
+            if (!_hasAnchor || _white == null) return;
 
-            DrawRect(pad, PadBg);
-            // 테두리
-            DrawRect(new Rect(pad.x, pad.y, pad.width, th), GridLine);
-            DrawRect(new Rect(pad.x, pad.yMax - th, pad.width, th), GridLine);
-            DrawRect(new Rect(pad.x, pad.y, th, pad.height), GridLine);
-            DrawRect(new Rect(pad.xMax - th, pad.y, th, pad.height), GridLine);
-            // 내부 분할선
-            for (int i = 1; i < HackGridMath.Size; i++)
-            {
-                float vx = pad.x + pad.width * i / HackGridMath.Size;
-                DrawRect(new Rect(vx - th / 2f, pad.y, th, pad.height), GridLine);
-                float hy = pad.y + pad.height * i / HackGridMath.Size;
-                DrawRect(new Rect(pad.x, hy - th / 2f, pad.width, th), GridLine);
-            }
-
-            // 스와이프 경로 선
             var path = _pattern.Path;
             float lineW = 6f * UiScale;
+
+            // 스와이프 경로 선
             for (int i = 1; i < path.Count; i++)
-                DrawLine(CellCenterGui(pad, path[i - 1]), CellCenterGui(pad, path[i]), lineW, PathLine);
-            // 라이브 세그먼트(마지막 노드 → 현재 손가락)
+                DrawLine(ToGui(_nodeScreen[path[i - 1]]), ToGui(_nodeScreen[path[i]]), lineW, PathLine);
+            // 라이브 세그먼트
             if (_drawing && path.Count > 0)
-                DrawLine(CellCenterGui(pad, path[path.Count - 1]), _liveGui, lineW, PathLine);
+                DrawLine(ToGui(_nodeScreen[path[path.Count - 1]]), ToGui(_liveScreen), lineW, PathLine);
 
-            // 노드 점(방문=밝게)
-            float dot = pad.width / HackGridMath.Size * 0.30f;
-            for (int cell = 0; cell < HackGridMath.CellCount; cell++)
-            {
-                Vector2 c = CellCenterGui(pad, cell);
-                Color col = _pattern.Contains(cell) ? NodeOn : NodeIdle;
-                DrawDisc(c, dot, col);
-            }
-        }
-
-        private Rect PadGuiRect()
-        {
-            float w = Screen.width, h = Screen.height;
-            float x = HackGridMath.PadX * w;
-            float pw = HackGridMath.PadW * w;
-            float ph = HackGridMath.PadH * h;
-            float guiY = h - (HackGridMath.PadY + HackGridMath.PadH) * h;
-            return new Rect(x, guiY, pw, ph);
-        }
-
-        private static Vector2 CellCenterGui(Rect pad, int cell)
-        {
-            float cw = pad.width / HackGridMath.Size;
-            float ch = pad.height / HackGridMath.Size;
-            int col = cell % HackGridMath.Size;
-            int row = cell / HackGridMath.Size;              // 0 = 하단(화면 y-up)
-            int rowFromTop = HackGridMath.Size - 1 - row;    // GUI는 위가 y작음
-            return new Vector2(pad.x + (col + 0.5f) * cw, pad.y + (rowFromTop + 0.5f) * ch);
+            // 노드 점
+            float dot = Spacing * 0.28f;
+            for (int k = 0; k < Nodes; k++)
+                DrawDisc(ToGui(_nodeScreen[k]), dot, _pattern.Contains(k) ? NodeOn : NodeIdle);
         }
 
         private static Vector2 ToGui(Vector2 screenPos) => new Vector2(screenPos.x, Screen.height - screenPos.y);
 
-        private void DrawRect(Rect r, Color c)
+        private void DrawDisc(Vector2 centerGui, float diameter, Color c)
         {
             Color prev = GUI.color;
             GUI.color = c;
-            GUI.DrawTexture(r, _white);
-            GUI.color = prev;
-        }
-
-        private void DrawDisc(Vector2 center, float diameter, Color c)
-        {
-            Color prev = GUI.color;
-            GUI.color = c;
-            GUI.DrawTexture(new Rect(center.x - diameter * 0.5f, center.y - diameter * 0.5f, diameter, diameter), _circle);
+            GUI.DrawTexture(new Rect(centerGui.x - diameter * 0.5f, centerGui.y - diameter * 0.5f, diameter, diameter), _circle);
             GUI.color = prev;
         }
 

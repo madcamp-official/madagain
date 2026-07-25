@@ -1,55 +1,35 @@
 using System.Collections.Generic;
 using UnityEngine;
 using MindHexer.Shared.Events;
-using MindHexer.Shared.Protocol;
 using MindHexer.Headset.Net;
 
 namespace MindHexer.Headset.Gameplay
 {
     /// <summary>
-    /// 3x3 해킹 그리드 + 패턴 판정. (SPEC 3.3 / 6, 담당자 A 3일차)
-    /// 정규화 좌표가 매핑된 셀 시퀀스를 목표 패턴과 비교하고,
-    /// 결과를 WebSocket 확정 이벤트(PatternResult)로 S10e에 통보한다.
+    /// 2x2 해킹 패턴 판정. (SPEC 3.3 / 6, 담당자 A)
+    /// 컨트롤러(S10e)가 플로팅 2x2 스와이프로 완성한 노드 시퀀스(0..3)를 받아 목표 패턴과 비교하고,
+    /// 결과를 WebSocket 확정 이벤트(PatternResult)로 통보한다.
     ///
-    /// TODO: 실제 패턴 정의/입력 타이밍/시각 피드백 구현. 여기서는 판정 골격만.
+    /// 노드 인덱스는 컨트롤러의 <see cref="MindHexer.Shared.Input.SwipePattern"/>과 동일(0=좌상단,1=우상단,2=좌하단,3=우하단).
+    /// 입력 전달(완성 패턴 → 헤드셋)은 아직 배선 전(TODO): WsClient→PairingServer 이벤트 또는 InputPacket 확장.
     /// </summary>
     public sealed class HackGrid : MonoBehaviour
     {
         [SerializeField] private WebSocketServerHost _wsServer;
 
-        /// <summary>목표 패턴 (셀 인덱스 0..8 시퀀스).</summary>
-        public List<int> TargetPattern = new List<int> { 0, 1, 2, 5, 8 };
+        /// <summary>목표 패턴 (2x2 노드 인덱스 0..3 시퀀스). 예: 0→1→3→2 (ㄷ자).</summary>
+        public List<int> TargetPattern = new List<int> { 0, 1, 3, 2 };
 
-        private readonly List<int> _input = new List<int>();
-
-        /// <summary>
-        /// 수신한 화면 정규화 좌표(0..1)가 하단 패턴 패드 안이면 셀(0..8)을 채우고 true, 밖이면 false.
-        /// 패드 영역/매핑은 공유 <see cref="HackGridMath"/> (컨트롤러 표시와 동일 판정).
-        /// </summary>
-        public static bool TryCell(Vector2 screenNormalized, out int cell)
-            => HackGridMath.TryToCellIndex(screenNormalized.x, screenNormalized.y, out cell);
-
-        /// <summary>한 셀 입력을 기록. 패턴이 완성되면 판정 후 결과를 통보.</summary>
-        public void OnCellInput(int cellIndex)
+        /// <summary>완성된 스와이프 패턴을 판정하고 결과를 페어링된 클라이언트에 통보.</summary>
+        public bool SubmitPattern(IReadOnlyList<int> nodes)
         {
-            if (_input.Count == 0 || _input[_input.Count - 1] != cellIndex)
-                _input.Add(cellIndex);
-
-            if (_input.Count >= TargetPattern.Count)
-                Evaluate();
-        }
-
-        private void Evaluate()
-        {
-            bool success = _input.Count == TargetPattern.Count;
+            bool success = nodes != null && nodes.Count == TargetPattern.Count;
             if (success)
                 for (int i = 0; i < TargetPattern.Count; i++)
-                    if (_input[i] != TargetPattern[i]) { success = false; break; }
+                    if (nodes[i] != TargetPattern[i]) { success = false; break; }
 
-            // 페어링된 모든 클라이언트(S10e)에 판정 결과 통보.
             _wsServer?.Broadcast(EventMessage.PatternResult(success, patternId: 0));
-
-            _input.Clear();
+            return success;
         }
     }
 }

@@ -76,5 +76,19 @@ namespace MindHexer.Shared.Tests
             Assert.AreEqual(0, p.Count);
             Assert.IsFalse(p.Contains(3));
         }
+
+        [Test]
+        public void TwoByTwo_NoMidpoints_DistinctNodesOnly()
+        {
+            var p = new SwipePattern(2); // 2x2 = 4노드(0..3)
+            Assert.AreEqual(4, p.NodeCount);
+            p.Begin();
+            p.AddCell(0); p.AddCell(1); p.AddCell(3); p.AddCell(2); // ㄷ자
+            CollectionAssert.AreEqual(new[] { 0, 1, 3, 2 }, p.Snapshot(), "2x2는 중간 노드 자동포함 없음");
+
+            Assert.IsFalse(p.AddCell(0), "재방문 무시");
+            Assert.IsFalse(p.AddCell(4), "범위 밖 무시");
+            Assert.IsTrue(p.Matches(new[] { 0, 1, 3, 2 }));
+        }
     }
 }
