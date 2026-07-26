@@ -32,14 +32,19 @@
 - **`MINDHEXER-forDev/`**: 빈 clean Unity 6.2 프로젝트. MCP 패키지 추가됨. **우리 코드 아직 없음(seed·동기화 필요).** git 미추적(`?? MINDHEXER-forDev/`).
 - → 다음: 두 카피 동기화(MINDHEXER의 현재 코드를 forDev로) 후 병렬 작업 시작.
 
-## ⚠️ 확인 필요 — 동기화(병합) 방식
+## 동기화(병합) 방식 — 확정: (가) 같은 repo + 파일 복사
 
-두 카피를 **어떻게** 합칠지 아직 미확정. 후보:
-- **(가) 같은 git repo, 파일 복사**: 지금처럼 `madagain` repo 안 두 폴더. 병합 = 폴더 간 파일 복사(수동/스크립트).
-- **(나) 각자 git repo + 공유 remote**: 두 폴더가 각각 repo, push/pull로 동기화.
-- **(다) 같은 repo의 두 worktree/branch**: git worktree로 한 repo를 두 폴더에 체크아웃.
-
-→ 이 셋 중 무엇으로 할지 **사용자 결정 필요.** (권장: 규모·단순함 고려해 결정 시 재검토)
+- **정본 = `MINDHEXER/`(git 추적). 미러 = `MINDHEXER-forDev/`(gitignore).** 두 카피를 다 추적하면 파일이
+  2배로 저장돼 diff가 뒤엉키므로, git 집은 MINDHEXER 하나. forDev는 스크립트로 동기화하는 미러.
+- **동기화 단위**: `Assets/` + `Packages/manifest.json`(+lock) + `ProjectSettings/`. **.meta 포함**(GUID 유지).
+  **제외**: `Library/` `Temp/` `Logs/` `obj/` `.utmp/` `UserSettings/` `*.csproj/sln/slnx`, 대형팩(TallCity·Remesh).
+- **스크립트**(`tools/`):
+  - `sync-to-fordev.sh` — MINDHEXER HEAD → forDev 미러(`git archive`, 추적 파일만 → 제외 자동). "받아오기".
+  - `merge-from-fordev.sh` — forDev → MINDHEXER 복사(추가·수정만, 삭제 미반영) → `git add -A && git status`로 검토 후 커밋. "합치기".
+- **충돌 방지 규율**: 두 인스턴스는 서로 다른 파일을 만진다 / 병합 전 MINDHEXER 병렬 작업은 먼저 커밋 / 병합은
+  **git diff 검토가 안전장치**(파일복사라 자동 3-way 병합은 없음 — 같은 파일 동시 편집 금지가 전제).
+- **주의**: 각 스크립트는 대상 Unity 에디터를 **닫고** 실행(파일 잠금·재임포트 충돌 방지). sync-to-fordev는
+  forDev `UnityLockfile` 있으면 자동 중단.
 
 ## 관련
 - [0002-precog-purge.md](0002-precog-purge.md) — MINDHEXER precog 제거(두 카피 모두 clean 유지의 근거)
