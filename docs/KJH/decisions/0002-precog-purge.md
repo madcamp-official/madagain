@@ -76,7 +76,33 @@ ViewmodelCamera·TitleScreen·CutsceneManager·HudCanvas·BgmPlayer 등 ~20개)�
 
 > 정확한 스토어 링크는 미기록. 재설치 시 이름으로 검색. (에셋은 계정 라이브러리에 남아있음.)
 
+## ⚠️ 실행 중 발견 — 코어는 "삭제"가 아니라 "대체" 대상 (2026-07-26)
+
+Phase 1(카타나 자산) 후, 코드 삭제를 시작하며 확인한 구조적 사실:
+
+- **"버릴 것" 코드는 독립 4덩어리가 아니라 하나의 얽힌 클러스터**다:
+  카타나 스크립트 ↔ Pose 전투(PoseCombatDriver·PosePlayer·PoseData) ↔ PredictionController ↔ 웨이브 ↔ 디버그 패널이 서로 참조.
+- **결정타 — `Main.cs`(부트스트랩)가 Prediction 아키텍처 그 자체다:**
+  - `prediction = new PredictionController()` (191행)
+  - `Snapshot.Clone(in world)` 전역 사용 (117·125·149·280·449행)
+  - `prediction.state`가 Update/FixedUpdate 루프 전체를 구동 (333~459행)
+  - `GraphPathfinder` 맵 베이크(226~256), `WaveRunner`(159), `CombatConfig`(181)
+  - → Prediction은 Main.cs의 "기능"이 아니라 **루프 골격**. 지우려면 Main.cs 코어를 재작성해야 함.
+- **추가 제약**: `Main.cs`에는 진행 중인 **C(VR HUD) 작업**이 들어있어, 재작성 시 그 작업이 위험.
+
+### 결론 (수정된 방침)
+`이식_환경 §4`의 "대체되는 순서대로 제거"가 정확히 옳았다. **코어(Prediction·Combat·Pose)는
+MINDHEXER 자체 게임 루프가 Main.cs를 대체한 "뒤에" 삭제 가능**하다. 지금 강제 삭제하면
+그린 베이스라인이 깨진다. → **코어 삭제는 MINDHEXER 부트스트랩 구축 이후로 미룬다.**
+
+지금 안전하게 가능한 것:
+- ✅ 카타나 **자산**(무기·Slash 프리팹·셰이더) — Phase 1 완료(코드 무참조).
+- ⬜ 카타나 **에디터 툴**(GhostSwordTool·GripSetupTool·HandIKToggleTool), 예측 **테스트** — 리프(leaf)라 안전하나 저가치.
+- ⬜ **자동부팅 게이팅** — 씬 하이라이트리스트 필요(어느 게임/타이틀 씬만 부팅). Main.cs 부팅 게이팅은 VR 씬 화이트리스트를 사용자와 확정해야 안전.
+- ⬜ **서드파티 팩 물리 삭제**(Remesh·TallCity) — git엔 이미 없음(gitignore). 디스크 삭제는 base.unity 참조를 깨므로 보류.
+
 ## 실행 로그 (Phase별 커밋)
 
-- baseline `4ac48c4` — purge 직전
-- (이하 Phase 진행하며 추가)
+- `4ac48c4` — baseline (purge 직전, C 작업 보존 체크포인트)
+- `b0d28a0` — [purge 1/9] 카타나 무기·Slash 자산 삭제 (프리팹·셰이더·메시 24파일)
+- **중단** — 코어 삭제는 Main.cs 재작성 필요 → MINDHEXER 부트스트랩 이후로 연기(위 발견 참조)
