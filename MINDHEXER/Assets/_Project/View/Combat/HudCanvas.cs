@@ -431,10 +431,7 @@ namespace Game.View
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
         {
-            // VR: ScreenSpaceOverlay HUD는 스테레오에서 올바로 렌더되지 않는다. milestone에선 띄우지 않는다.
-            //     (정식 World-Space HUD 전환은 기기 검증 후 별도 단계)
-            if (VrMode.Enabled) return;
-
+            // VR: ScreenSpace HUD는 VrHudSpace가 런타임에 World-Space 패널로 변환한다(끄지 않고 생성 유지).
             // [홀로그램 HUD, 2026-07-22] 코드로 그리는 HoloHud가 기본. 아트 프레임 HUD로
             // 되돌리려면 HudStyle.UseHologram = false.
             if (HudStyle.UseHologram)

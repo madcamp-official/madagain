@@ -367,6 +367,7 @@ namespace Game.View
 
         void OnGUI()
         {
+            if (VrMode.Enabled) return;   // IMGUI는 스테레오 변환 불가 → VR에선 화면 디버그 HUD를 그리지 않는다
             int previousDepth = GUI.depth;
             GUI.depth = -200;
             try
@@ -559,6 +560,11 @@ namespace Game.View
                 // prediction.Init 등이 참조하는 gameplayVcam은 만들되(비어 있어도 무해) 카메라는 구동하지 않는다.
                 var vgoVr = new GameObject("GameplayVCam");
                 gameplayVcam = vgoVr.AddComponent<CinemachineCamera>();
+
+                // ScreenSpace HUD를 머리 앞 World-Space 패널로 변환(양안 렌더). 늦게 뜨는 HUD도 매 프레임 처리.
+                var hudGo = new GameObject("[VrHudSpace]");
+                var hud = hudGo.AddComponent<VrHudSpace>();
+                hud.head = cam.transform;
                 return;
             }
 
