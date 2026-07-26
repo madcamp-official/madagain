@@ -113,7 +113,19 @@ MINDHEXER 자체 게임 루프가 Main.cs를 대체한 "뒤에" 삭제 가능**�
     안 뜸 → 카메라 1개, 렌더 에러 0, Precog 폴루터 제거.
   - 남은 무해 자동부팅(BgmPlayer·CombatAudio·ScreenFx 등 로직-only): 유휴 상태, 추후 게이트/삭제.
 
-### 다음(코어 삭제로 가는 길)
-GameBoot이 아직 하는 일은 카메라+해킹뿐. Precog Main의 나머지 역할(플레이어 이동·적·HUD 등)을
-MINDHEXER 방식으로 GameBoot에 채워 넣어 Main을 완전 대체하면, 그때 Prediction/Combat 코어를
-삭제할 수 있다. 그 전까지는 삭제 금지(그린 베이스라인).
+### 코어 완전 삭제 완료 (2026-07-26, 사용자 승인 후)
+사용자 승인(§5 결정 7개 전부 권장대로) 하에 Precog 엔진을 **통째로 제거**. 매 단계 컴파일 green.
+- `f790dc5` [P1] VR 카메라 리그를 Main.cs → GameBoot 이식 (VrMode 분기, FreeLook lookEnabled)
+- `21ab9cd` [P2-P4] Precog 게임엔진 삭제(444파일): Sim·Bridge·Prediction·Tests·View precog 전부·Main·
+  InputReader·Editor precog툴 27. 유지: GameBoot·Hacking·HexInput/Reader·FreeLook·VrMode·VrHudSpace·
+  IRunResettable + 독립 Editor 툴 13 + 자산.
+- `e025e93` [P5] Precog 씬·프리팹 삭제(254파일) + 빈 asmdef 정리. HackSandbox만 유지.
+
+**최종 검증(플레이)**: GameBoot·HackContext 구동, 카메라 1개, Hackable 3, **`Game.View.Main` 타입 자체가
+존재하지 않음** = 예측 엔진 완전 소멸. 콘솔 에러·경고 0.
+
+### 남은 것 / 재추출
+- §1 재활용분(VfxLibrary·EnemyGlow·CombatAudio·NavMeshPathfinder·ArenaRoom·CutsceneManager·
+  RadialInvert·FreezeFx 등)은 **`4ac48c4`에 보존** → 해당 기능 만들 때 `git checkout 4ac48c4 -- <경로>`로 재추출.
+- 서드파티 팩(Remesh·TallCity·Magic Pig): 물리 삭제 안 함(이미 gitignore, decision 6).
+- 무해 자동부팅 잔재(BgmPlayer 등)도 함께 삭제됨 → 씬 오염 없음.
