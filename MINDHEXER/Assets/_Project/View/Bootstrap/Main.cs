@@ -599,7 +599,13 @@ namespace Game.View
     public static class AutoBoot
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void Boot() => EnsureMain();
+        static void Boot()
+        {
+            // MINDHEXER 게임 씬(GameBoot 존재)에선 Precog Main을 자동 부팅하지 않는다 → 부트 충돌 방지.
+            // (docs/KJH/decisions/0002-precog-purge.md — 코어는 GameBoot이 대체 후 삭제 예정)
+            if (Object.FindFirstObjectByType<GameBoot>() != null) return;
+            EnsureMain();
+        }
 
         /// <summary>
         /// 씬의 <see cref="Main"/>을 돌려준다. 없으면 여기서 만든다.

@@ -968,6 +968,7 @@ namespace Game.View
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
         {
+            if (UnityEngine.Object.FindFirstObjectByType<GameBoot>() != null) return;   // MINDHEXER 게임 씬(GameBoot)은 Precog 타이틀·Main을 띄우지 않음
             if (VrMode.Enabled) return;   // VR: PC용 타이틀(ScreenSpace UI)을 띄우지 않고 Main이 게임을 바로 시작
             if (!TitleStyle.ShowOnPlay) return;
             if (UnityEngine.Object.FindFirstObjectByType<TitleScreen>() != null) return;
