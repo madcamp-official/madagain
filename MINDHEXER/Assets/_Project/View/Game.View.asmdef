@@ -2,9 +2,6 @@
     "name": "Game.View",
     "rootNamespace": "Game.View",
     "references": [
-        "Game.Sim",
-        "Game.Bridge",
-        "Game.Prediction",
         "UnityEngine.UI",
         "Unity.InputSystem",
         "Unity.AI.Navigation",
