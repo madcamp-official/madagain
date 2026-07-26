@@ -105,4 +105,15 @@ MINDHEXER 자체 게임 루프가 Main.cs를 대체한 "뒤에" 삭제 가능**�
 
 - `4ac48c4` — baseline (purge 직전, C 작업 보존 체크포인트)
 - `b0d28a0` — [purge 1/9] 카타나 무기·Slash 자산 삭제 (프리팹·셰이더·메시 24파일)
-- **중단** — 코어 삭제는 Main.cs 재작성 필요 → MINDHEXER 부트스트랩 이후로 연기(위 발견 참조)
+- **방침 전환** — 코어 삭제 대신 **MINDHEXER 부트스트랩(GameBoot)부터 구축**(사용자 결정).
+- `a640a4a` — **GameBoot 신설** + Precog Main·TitleScreen 부팅 게이트.
+  - GameBoot = 우리 게임 시동(예측 의존 없음). 씬에 [GameBoot] 하나로 카메라+해킹 구성.
+  - Main.cs·TitleScreen.cs에 `if (FindFirstObjectByType<GameBoot>()) return;` 가드.
+  - 효과: MINDHEXER 씬(HackSandbox)에서 [Main]·[TitleScreen]·[TitleActor](RT카메라)
+    안 뜸 → 카메라 1개, 렌더 에러 0, Precog 폴루터 제거.
+  - 남은 무해 자동부팅(BgmPlayer·CombatAudio·ScreenFx 등 로직-only): 유휴 상태, 추후 게이트/삭제.
+
+### 다음(코어 삭제로 가는 길)
+GameBoot이 아직 하는 일은 카메라+해킹뿐. Precog Main의 나머지 역할(플레이어 이동·적·HUD 등)을
+MINDHEXER 방식으로 GameBoot에 채워 넣어 Main을 완전 대체하면, 그때 Prediction/Combat 코어를
+삭제할 수 있다. 그 전까지는 삭제 금지(그린 베이스라인).
