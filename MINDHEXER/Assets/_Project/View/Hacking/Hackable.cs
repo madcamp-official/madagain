@@ -31,6 +31,14 @@ namespace Game.View
         [Tooltip("하이라이트(초록/청록 발광) 대상 렌더러. EnemyGlow 기법 재사용 예정(§7).")]
         public Renderer[] glowRenderers;
 
+        // === 이음새(런타임 상태) — gameplay가 매 프레임 쓰고, 비주얼(환경 하이라이트)이 읽는다. 단방향. ===
+        // 저장 안 함(런타임 전용). 로직 없이 비주얼만 개발할 땐 HackableStateMock이 이 값들을 수동 세팅.
+        // (기초_설계안 §7 시각 언어 / ADR 계획 v4 이음새 계약)
+        [System.NonSerialized] public float DistanceToPlayer;                        // 테두리 두께
+        [System.NonSerialized] public bool  InRange;                                 // 사거리 안 = 글리치 on
+        [System.NonSerialized] public bool  IsGazed;                                 // 중앙 레티클 조준 = 격화
+        [System.NonSerialized] public CaptureState captureState = CaptureState.None; // 초록→파랑(장악) 전환
+
         /// <summary>실제 사용할 선 개수. patternLineCount 미지정(0 이하) 시 kind 기본값.</summary>
         public int PatternLineCount
         {
