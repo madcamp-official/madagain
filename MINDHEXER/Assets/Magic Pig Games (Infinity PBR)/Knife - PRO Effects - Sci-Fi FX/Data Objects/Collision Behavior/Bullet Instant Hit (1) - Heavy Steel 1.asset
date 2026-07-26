@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad3d69d0c0cc4da7a48d92bc4753022c, type: 3}
+  m_Name: Bullet Instant Hit (1) - Heavy Steel 1
+  m_EditorClassIdentifier: 
+  overrideProjectileCollisionMask: 0
+  customCollisionMask:
+    serializedVersion: 2
+    m_Bits: 0
+  localDirection: {x: 0, y: 0, z: 1}
+  hitCheckDelay: 0
+  maxChecks: 1
+  useSphereCast: 1
+  sphereCastRadius: 0.2
+  maxDistance: 50
+  hitParticle: {fileID: 2056131844261692779, guid: 50f3fa2068b794ab3a8fa691bc7646c4, type: 3}
+  hitParticleLife: 5
+  overrideHitParticleLayerMask: 0
+  hitParticleLayerMask:
+    serializedVersion: 2
+    m_Bits: 129
+  hitDecal: {fileID: 2039551254113871853, guid: 1dae878d9f4167e4aa87b11af2272fc1, type: 3}
+  hitDecalLife: 5
+  overrideHitDecalLayerMask: 0
+  hitDecalLayerMask:
+    serializedVersion: 2
+    m_Bits: 16

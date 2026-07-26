@@ -9,6 +9,8 @@
 [Uu]ser[Ss]ettings/
 [Mm]emoryCaptures/
 [Rr]ecordings/
+.utmp/
+.gradle/
 
 # Asset meta 는 커밋해야 하므로 무시하지 않음 (아래 !*.meta 참고)
 
@@ -19,6 +21,7 @@
 *.csproj
 *.unityproj
 *.sln
+*.slnx
 *.suo
 *.tmp
 *.user
@@ -52,6 +55,14 @@ crashlytics-build.properties
 /[headset-s24|controller-s10e]/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
 /[headset-s24|controller-s10e]/[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[headset-s24|controller-s10e]/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# ---- MINDHEXER: 대형 서드파티 에셋 팩 제외 (재설치 가능, git 오염 방지) ----
+# TallCity 1.4G(130MB psd 포함 → GitHub 100MB 초과 거부), Remesh 619M(이식_환경 §2.4 "버릴 것").
+# 필요 시 에셋스토어에서 재임포트. 우리 프리팹이 쓰는 CCTV·터렛·경비병 팩은 유지.
+/MINDHEXER/Assets/TallCity/
+/MINDHEXER/Assets/TallCity.meta
+/MINDHEXER/Assets/Remesh Games/
+/MINDHEXER/Assets/Remesh Games.meta
 
 # ---- IDE / OS ----
 .vs/

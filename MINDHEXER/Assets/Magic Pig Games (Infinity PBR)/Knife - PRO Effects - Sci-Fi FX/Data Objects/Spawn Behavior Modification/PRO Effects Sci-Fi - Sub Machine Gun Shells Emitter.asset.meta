@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 636558dd40d1a4aeaa9b8feb0abbca74
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 282396
+  packageName: Projectile Factory for PRO Effects Sci-Fi FX by Knife Entertainment
+  packageVersion: 1.2
+  assetPath: Assets/Magic Pig Games (Infinity PBR)/Knife - PRO Effects - Sci-Fi FX/Data
+    Objects/Spawn Behavior Modification/PRO Effects Sci-Fi - Sub Machine Gun Shells
+    Emitter.asset
+  uploadId: 932250

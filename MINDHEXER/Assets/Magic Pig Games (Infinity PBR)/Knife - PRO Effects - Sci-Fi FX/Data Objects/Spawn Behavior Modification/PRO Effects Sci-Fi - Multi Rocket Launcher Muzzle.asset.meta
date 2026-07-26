@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: c1ee100c843e4430699e6dd290b8032a
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 282396
+  packageName: Projectile Factory for PRO Effects Sci-Fi FX by Knife Entertainment
+  packageVersion: 1.2
+  assetPath: Assets/Magic Pig Games (Infinity PBR)/Knife - PRO Effects - Sci-Fi FX/Data
+    Objects/Spawn Behavior Modification/PRO Effects Sci-Fi - Multi Rocket Launcher
+    Muzzle.asset
+  uploadId: 932250

@@ -1,0 +1,52 @@
+﻿{
+    "baseIntensity": 70.0,
+    "windupIntensity": 262.5,
+    "attackIntensity": 393.75,
+    "chargeIntensity": 192.5,
+    "aimIntensity": 140.0,
+    "gloryIntensity": 227.5,
+    "baseColor": [
+        1.0,
+        0.18000000715255738,
+        0.10000000149011612
+    ],
+    "windupColor": [
+        1.0,
+        0.18000000715255738,
+        0.10000000149011612
+    ],
+    "gloryColor": [
+        1.0,
+        0.18000000715255738,
+        0.10000000149011612
+    ],
+    "followSpeed": 18.0,
+    "chargePulseSpeed": 9.0,
+    "stunFlickerSpeed": 14.0,
+    "flashIntensity": 350.0,
+    "flashDecay": 6.0,
+    "colorJitter": 0.10000000149011612,
+    "distanceBoost": 1.2000000476837159,
+    "boostStart": 12.0,
+    "boostRange": 25.0,
+    "grungeScale": 0.65,
+    "rustColor": [
+        0.72,
+        0.55,
+        0.34
+    ],
+    "rustDark": [
+        0.55,
+        0.5,
+        0.45
+    ],
+    "rustBoost": 1.35,
+    "darken": 0.1,
+    "grungeTexScale": 9.0,
+    "streak": 0.6,
+    "cleanSmoothness": 0.85,
+    "rustSmoothness": 0.04,
+    "rustMetallic": 0.05,
+    "redThreshold": 0.25,
+    "redSoftness": 0.15
+}

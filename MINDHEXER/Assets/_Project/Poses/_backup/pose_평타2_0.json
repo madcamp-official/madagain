@@ -1,0 +1,1105 @@
+﻿{
+    "name": "평타2_0",
+    "created": "2026-07-21 17:49:40",
+    "root": "KatanaViewmodel",
+    "bones": [
+        {
+            "path": "Meshy_AI_Hooded_Mech_Character_0720153246_image-to-3d-texture",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips",
+            "euler": [
+                0.000020268826119718142,
+                0.000012097407307010144,
+                -0.0007113183382898569
+            ],
+            "quat": [
+                1.7687821696199536e-7,
+                1.0557089780149909e-7,
+                -0.000006207423211890273,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:LeftUpLeg",
+            "euler": [
+                359.04132080078127,
+                359.7882995605469,
+                180.48269653320313
+            ],
+            "quat": [
+                -0.001812054542824626,
+                0.00837355200201273,
+                0.9999545216560364,
+                -0.004196730442345142
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:LeftUpLeg/mixamorig:LeftLeg",
+            "euler": [
+                354.9638977050781,
+                0.08991685509681702,
+                359.0502014160156
+            ],
+            "quat": [
+                -0.04393913596868515,
+                0.0004197446396574378,
+                -0.00824591051787138,
+                0.999000072479248
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:LeftUpLeg/mixamorig:LeftLeg/mixamorig:LeftFoot",
+            "euler": [
+                48.9799690246582,
+                359.7058410644531,
+                350.1609191894531
+            ],
+            "quat": [
+                0.4132060408592224,
+                0.033221449702978137,
+                -0.07698098570108414,
+                0.9067695736885071
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:LeftUpLeg/mixamorig:LeftLeg/mixamorig:LeftFoot/mixamorig:LeftToeBase",
+            "euler": [
+                43.649044036865237,
+                10.98680591583252,
+                5.899638040318678e-7
+            ],
+            "quat": [
+                0.37005773186683657,
+                0.08886978775262833,
+                -0.03558949753642082,
+                0.9240632653236389
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:LeftUpLeg/mixamorig:LeftLeg/mixamorig:LeftFoot/mixamorig:LeftToeBase/mixamorig:LeftToe_End",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:RightUpLeg",
+            "euler": [
+                359.7413635253906,
+                0.1303325593471527,
+                179.5213623046875
+            ],
+            "quat": [
+                0.0011279260506853462,
+                0.0022616784553974869,
+                0.9999881386756897,
+                0.004174341913312674
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:RightUpLeg/mixamorig:RightLeg",
+            "euler": [
+                355.719970703125,
+                359.92327880859377,
+                0.9395359754562378
+            ],
+            "quat": [
+                -0.0373457707464695,
+                -0.00036286868271417916,
+                0.00816818606108427,
+                0.9992689490318298
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:RightUpLeg/mixamorig:RightLeg/mixamorig:RightFoot",
+            "euler": [
+                48.93240737915039,
+                0.20430830121040345,
+                9.836050033569336
+            ],
+            "quat": [
+                0.41277015209198,
+                -0.03388886898756027,
+                0.07729645073413849,
+                0.9069165587425232
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:RightUpLeg/mixamorig:RightLeg/mixamorig:RightFoot/mixamorig:RightToeBase",
+            "euler": [
+                43.64506530761719,
+                349.0559387207031,
+                -5.899248094465293e-7
+            ],
+            "quat": [
+                0.3700389564037323,
+                -0.08852622658014298,
+                0.0354483537375927,
+                0.924109160900116
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:RightUpLeg/mixamorig:RightLeg/mixamorig:RightFoot/mixamorig:RightToeBase/mixamorig:RightToe_End",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine",
+            "euler": [
+                356.07781982421877,
+                -0.00006086734720156528,
+                0.0007129881414584816
+            ],
+            "quat": [
+                -0.03422081843018532,
+                -3.179349619131244e-7,
+                0.000006200174084369792,
+                0.999414324760437
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1",
+            "euler": [
+                1.385102014454045e-23,
+                -1.0220538824989856e-11,
+                7.764806159160642e-11
+            ],
+            "quat": [
+                6.04364766787525e-26,
+                -8.919102435778203e-14,
+                6.776071674249873e-13,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2",
+            "euler": [
+                0.0,
+                7.231744163140116e-28,
+                1.853134414721265e-27
+            ],
+            "quat": [
+                0.0,
+                6.310887241768095e-30,
+                1.6171648557030742e-29,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder",
+            "euler": [
+                83.39641571044922,
+                89.40208435058594,
+                179.59597778320313
+            ],
+            "quat": [
+                0.5268692374229431,
+                -0.4709658622741699,
+                0.5290620923042297,
+                0.46978017687797549
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm",
+            "euler": [
+                353.39666748046877,
+                359.84783935546877,
+                359.82086181640627
+            ],
+            "quat": [
+                -0.05759076774120331,
+                -0.0014156713150441647,
+                -0.001637061359360814,
+                0.9983379244804382
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm",
+            "euler": [
+                0.000003966355052398285,
+                0.5861096382141113,
+                -0.00002690983092179522
+            ],
+            "quat": [
+                3.34114140798647e-8,
+                0.005114749073982239,
+                -2.3500652446273308e-7,
+                0.9999869465827942
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand",
+            "euler": [
+                2.3908441066741945,
+                355.0260009765625,
+                7.3535943031311039
+            ],
+            "quat": [
+                0.01801789179444313,
+                -0.044630635529756549,
+                0.06495725363492966,
+                0.9967266321182251
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandIndex1",
+            "euler": [
+                82.28744506835938,
+                47.32083511352539,
+                47.33122253417969
+            ],
+            "quat": [
+                0.6732712984085083,
+                0.03490009903907776,
+                0.03502803295850754,
+                0.7377403378486633
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandIndex1/mixamorig:LeftHandIndex2",
+            "euler": [
+                46.66328811645508,
+                0.13089041411876679,
+                0.17954356968402863
+            ],
+            "quat": [
+                0.3960535526275635,
+                0.0004282900190446526,
+                0.0009863057639449835,
+                0.9182268381118774
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandIndex1/mixamorig:LeftHandIndex2/mixamorig:LeftHandIndex3",
+            "euler": [
+                77.60199737548828,
+                179.3387451171875,
+                179.3173065185547
+            ],
+            "quat": [
+                0.7793217897415161,
+                0.0010271089849993587,
+                0.0007638550014235079,
+                0.6266226172447205
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandIndex1/mixamorig:LeftHandIndex2/mixamorig:LeftHandIndex3/mixamorig:LeftHandIndex4",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandMiddle1",
+            "euler": [
+                82.5600357055664,
+                53.4735221862793,
+                53.45603942871094
+            ],
+            "quat": [
+                0.6783052682876587,
+                0.0369698591530323,
+                0.036754559725522998,
+                0.7329286336898804
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandMiddle1/mixamorig:LeftHandMiddle2",
+            "euler": [
+                55.02958297729492,
+                359.8161315917969,
+                359.7802734375
+            ],
+            "quat": [
+                0.46197885274887087,
+                -0.0005371885490603745,
+                -0.0009593067225068808,
+                0.8868902921676636
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandMiddle1/mixamorig:LeftHandMiddle2/mixamorig:LeftHandMiddle3",
+            "euler": [
+                43.408939361572269,
+                359.861083984375,
+                359.7879943847656
+            ],
+            "quat": [
+                0.36982041597366335,
+                -0.0004422397178132087,
+                -0.0012705116532742978,
+                0.9291023015975952
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandMiddle1/mixamorig:LeftHandMiddle2/mixamorig:LeftHandMiddle3/mixamorig:LeftHandMiddle4",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandPinky1",
+            "euler": [
+                54.21955108642578,
+                14.58466911315918,
+                13.79911994934082
+            ],
+            "quat": [
+                0.46231046319007876,
+                0.05786861106753349,
+                0.04864274337887764,
+                0.8834897875785828
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandPinky1/mixamorig:LeftHandPinky2",
+            "euler": [
+                50.23520278930664,
+                -0.000006363780357787618,
+                -0.000002511926595616387
+            ],
+            "quat": [
+                0.42447754740715029,
+                -4.0978193283081057e-8,
+                3.725290076417309e-9,
+                0.9054384827613831
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandPinky1/mixamorig:LeftHandPinky2/mixamorig:LeftHandPinky3",
+            "euler": [
+                80.70317840576172,
+                0.00025216216454282403,
+                0.00027523524477146566
+            ],
+            "quat": [
+                0.6474760174751282,
+                1.2183301123513957e-7,
+                4.0564887626715065e-7,
+                0.7620859146118164
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandPinky1/mixamorig:LeftHandPinky2/mixamorig:LeftHandPinky3/mixamorig:LeftHandPinky4",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandRing1",
+            "euler": [
+                75.97437286376953,
+                26.4189510345459,
+                26.354137420654298
+            ],
+            "quat": [
+                0.6244792938232422,
+                0.03876497596502304,
+                0.03797103464603424,
+                0.7791541814804077
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandRing1/mixamorig:LeftHandRing2",
+            "euler": [
+                51.74867248535156,
+                0.17188841104507447,
+                0.20525062084197999
+            ],
+            "quat": [
+                0.43639999628067019,
+                0.0005679816822521389,
+                0.0009569893591105938,
+                0.899752140045166
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandRing1/mixamorig:LeftHandRing2/mixamorig:LeftHandRing3",
+            "euler": [
+                82.73542022705078,
+                357.88800048828127,
+                357.87066650390627
+            ],
+            "quat": [
+                0.6609196066856384,
+                -0.0015508412616327406,
+                -0.0017645491752773524,
+                0.7504530549049377
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandRing1/mixamorig:LeftHandRing2/mixamorig:LeftHandRing3/mixamorig:LeftHandRing4",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandThumb1",
+            "euler": [
+                45.42403030395508,
+                43.848506927490237,
+                54.7210578918457
+            ],
+            "quat": [
+                0.4764024615287781,
+                0.14128375053405763,
+                0.2652546167373657,
+                0.8262685537338257
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandThumb1/mixamorig:LeftHandThumb2",
+            "euler": [
+                313.8623046875,
+                357.20654296875,
+                3.8674814701080324
+            ],
+            "quat": [
+                -0.3922542929649353,
+                -0.009195147082209587,
+                0.021490508690476419,
+                0.9195597767829895
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandThumb1/mixamorig:LeftHandThumb2/mixamorig:LeftHandThumb3",
+            "euler": [
+                290.5308532714844,
+                3.2774832248687746,
+                344.4737548828125
+            ],
+            "quat": [
+                -0.5674971342086792,
+                -0.05364646390080452,
+                -0.09481675177812576,
+                0.8161365985870361
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:LeftShoulder/mixamorig:LeftArm/mixamorig:LeftForeArm/mixamorig:LeftHand/mixamorig:LeftHandThumb1/mixamorig:LeftHandThumb2/mixamorig:LeftHandThumb3/mixamorig:LeftHandThumb4",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:Neck",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:Neck/mixamorig:Head",
+            "euler": [
+                0.0,
+                0.0,
+                1.2257857644058075e-34
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                1.0696998592482816e-36,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:Neck/mixamorig:Head/mixamorig:HeadTop_End",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder",
+            "euler": [
+                57.21909713745117,
+                244.014892578125,
+                184.56080627441407
+            ],
+            "quat": [
+                -0.7539527416229248,
+                -0.22397588193416596,
+                0.44878965616226199,
+                -0.42423802614212038
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm",
+            "euler": [
+                312.80206298828127,
+                344.44805908203127,
+                0.21564915776252747
+            ],
+            "quat": [
+                -0.39688390493392947,
+                -0.12323834002017975,
+                -0.05245630443096161,
+                0.9080439805984497
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm",
+            "euler": [
+                357.4620666503906,
+                12.419485092163086,
+                358.4001159667969
+            ],
+            "quat": [
+                -0.023523475974798204,
+                0.10782396048307419,
+                -0.011480712331831456,
+                0.993825376033783
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand",
+            "euler": [
+                341.90167236328127,
+                140.8270721435547,
+                278.963134765625
+            ],
+            "quat": [
+                -0.6445627212524414,
+                0.6730399131774902,
+                -0.10243824869394303,
+                0.3479405343532562
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandIndex1",
+            "euler": [
+                82.28744506835938,
+                47.32083511352539,
+                47.33122253417969
+            ],
+            "quat": [
+                0.6732712984085083,
+                0.03490009903907776,
+                0.03502803295850754,
+                0.7377403378486633
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandIndex1/mixamorig:RightHandIndex2",
+            "euler": [
+                46.66328811645508,
+                0.13089041411876679,
+                0.17954356968402863
+            ],
+            "quat": [
+                0.3960535526275635,
+                0.0004282900190446526,
+                0.0009863057639449835,
+                0.9182268381118774
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandIndex1/mixamorig:RightHandIndex2/mixamorig:RightHandIndex3",
+            "euler": [
+                77.60199737548828,
+                179.3387451171875,
+                179.3173065185547
+            ],
+            "quat": [
+                0.7793217897415161,
+                0.0010271089849993587,
+                0.0007638550014235079,
+                0.6266226172447205
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandIndex1/mixamorig:RightHandIndex2/mixamorig:RightHandIndex3/mixamorig:RightHandIndex4",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandMiddle1",
+            "euler": [
+                82.5600357055664,
+                53.4735221862793,
+                53.45603942871094
+            ],
+            "quat": [
+                0.6783052682876587,
+                0.0369698591530323,
+                0.036754559725522998,
+                0.7329286336898804
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandMiddle1/mixamorig:RightHandMiddle2",
+            "euler": [
+                55.02958297729492,
+                359.8161315917969,
+                359.7802734375
+            ],
+            "quat": [
+                0.46197885274887087,
+                -0.0005371885490603745,
+                -0.0009593067225068808,
+                0.8868902921676636
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandMiddle1/mixamorig:RightHandMiddle2/mixamorig:RightHandMiddle3",
+            "euler": [
+                43.408939361572269,
+                359.861083984375,
+                359.7879943847656
+            ],
+            "quat": [
+                0.36982041597366335,
+                -0.0004422397178132087,
+                -0.0012705116532742978,
+                0.9291023015975952
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandMiddle1/mixamorig:RightHandMiddle2/mixamorig:RightHandMiddle3/mixamorig:RightHandMiddle4",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandPinky1",
+            "euler": [
+                54.21955108642578,
+                14.58466911315918,
+                13.79911994934082
+            ],
+            "quat": [
+                0.46231046319007876,
+                0.05786861106753349,
+                0.04864274337887764,
+                0.8834897875785828
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandPinky1/mixamorig:RightHandPinky2",
+            "euler": [
+                50.23520278930664,
+                -0.000006363780357787618,
+                -0.000002511926595616387
+            ],
+            "quat": [
+                0.42447754740715029,
+                -4.0978193283081057e-8,
+                3.725290076417309e-9,
+                0.9054384827613831
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandPinky1/mixamorig:RightHandPinky2/mixamorig:RightHandPinky3",
+            "euler": [
+                80.70317840576172,
+                0.00025216216454282403,
+                0.00027523524477146566
+            ],
+            "quat": [
+                0.6474760174751282,
+                1.2183301123513957e-7,
+                4.0564887626715065e-7,
+                0.7620859146118164
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandPinky1/mixamorig:RightHandPinky2/mixamorig:RightHandPinky3/mixamorig:RightHandPinky4",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandRing1",
+            "euler": [
+                75.97437286376953,
+                26.4189510345459,
+                26.354137420654298
+            ],
+            "quat": [
+                0.6244792938232422,
+                0.03876497596502304,
+                0.03797103464603424,
+                0.7791541814804077
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandRing1/mixamorig:RightHandRing2",
+            "euler": [
+                51.74867248535156,
+                0.17188841104507447,
+                0.20525062084197999
+            ],
+            "quat": [
+                0.43639999628067019,
+                0.0005679816822521389,
+                0.0009569893591105938,
+                0.899752140045166
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandRing1/mixamorig:RightHandRing2/mixamorig:RightHandRing3",
+            "euler": [
+                82.73542022705078,
+                357.88800048828127,
+                357.87066650390627
+            ],
+            "quat": [
+                0.6609196066856384,
+                -0.0015508412616327406,
+                -0.0017645491752773524,
+                0.7504530549049377
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandRing1/mixamorig:RightHandRing2/mixamorig:RightHandRing3/mixamorig:RightHandRing4",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandThumb1",
+            "euler": [
+                45.42403030395508,
+                43.848506927490237,
+                54.7210578918457
+            ],
+            "quat": [
+                0.4764024615287781,
+                0.14128375053405763,
+                0.2652546167373657,
+                0.8262685537338257
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandThumb1/mixamorig:RightHandThumb2",
+            "euler": [
+                313.8623046875,
+                357.20654296875,
+                3.8674814701080324
+            ],
+            "quat": [
+                -0.3922542929649353,
+                -0.009195147082209587,
+                0.021490508690476419,
+                0.9195597767829895
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandThumb1/mixamorig:RightHandThumb2/mixamorig:RightHandThumb3",
+            "euler": [
+                290.5308532714844,
+                3.2774832248687746,
+                344.4737548828125
+            ],
+            "quat": [
+                -0.5674971342086792,
+                -0.05364646390080452,
+                -0.09481675177812576,
+                0.8161365985870361
+            ]
+        },
+        {
+            "path": "mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:RightShoulder/mixamorig:RightArm/mixamorig:RightForeArm/mixamorig:RightHand/mixamorig:RightHandThumb1/mixamorig:RightHandThumb2/mixamorig:RightHandThumb3/mixamorig:RightHandThumb4",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "HandIK_L",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "path": "HandIK_R",
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        }
+    ],
+    "objects": [
+        {
+            "path": "ElbowPole_L",
+            "pos": [
+                -0.005849334876984358,
+                0.010860398411750794,
+                0.003503131680190563
+            ],
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        {
+            "path": "IKTarget_R",
+            "pos": [
+                0.007871966809034348,
+                0.015289385803043843,
+                -0.000386066414648667
+            ],
+            "euler": [
+                86.36465454101563,
+                236.24118041992188,
+                139.97193908691407
+            ],
+            "quat": [
+                -0.4938780665397644,
+                -0.5231653451919556,
+                0.5294909477233887,
+                -0.4494684338569641
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        {
+            "path": "ElbowPole_R",
+            "pos": [
+                0.005229665897786617,
+                0.012708817608654499,
+                0.003300475887954235
+            ],
+            "euler": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "quat": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        {
+            "path": "Katana",
+            "pos": [
+                0.006949999835342169,
+                0.01744999922811985,
+                0.005940000060945749
+            ],
+            "euler": [
+                335.1763610839844,
+                98.32527160644531,
+                164.91925048828126
+            ],
+            "quat": [
+                -0.7140531539916992,
+                -0.23629502952098847,
+                -0.6544473767280579,
+                0.07740408182144165
+            ],
+            "scale": [
+                0.6583644151687622,
+                0.6583645939826965,
+                0.658364474773407
+            ]
+        },
+        {
+            "path": "Katana/Grip_R",
+            "pos": [
+                -0.00687999976798892,
+                0.00009000000136438757,
+                0.000009999999747378752
+            ],
+            "euler": [
+                81.21305084228516,
+                39.10641098022461,
+                230.03079223632813
+            ],
+            "quat": [
+                -0.029097452759742738,
+                -0.6632373332977295,
+                0.7404178380966187,
+                -0.10512435436248779
+            ],
+            "scale": [
+                0.015189150348305703,
+                0.015189150348305703,
+                0.01518915593624115
+            ]
+        },
+        {
+            "path": "Katana/Grip_L",
+            "pos": [
+                -0.007269999943673611,
+                -0.001820000004954636,
+                -0.0003699999942909926
+            ],
+            "euler": [
+                350.6288757324219,
+                117.9625015258789,
+                353.11285400390627
+            ],
+            "quat": [
+                0.09332304447889328,
+                -0.8500640392303467,
+                -0.0390300489962101,
+                -0.5168740153312683
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        }
+    ]
+}

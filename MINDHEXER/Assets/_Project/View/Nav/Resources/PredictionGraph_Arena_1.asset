@@ -1,0 +1,7490 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 965ea1b766f0e9a46a1eb7d1cb995f14, type: 3}
+  m_Name: PredictionGraph_Arena_1
+  m_EditorClassIdentifier: Game.View::Game.View.PredictionGraphAsset
+  sceneName: Arena_1
+  bakedAt: 2026-07-23 02:05:31
+  markerCount: 120
+  nodeCount: 78
+  linkCount: 421
+  nodes:
+  - nodeId: 0
+    position: {x: 3.5, y: 7.8024464, z: 22.666668}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 1
+    position: {x: 7.1414247, y: 7.7843537, z: 2.367094}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 2
+    position: {x: 5.0414243, y: 0.13577843, z: -6.3955984}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 3
+    position: {x: -6.3585753, y: 3.9691124, z: -7.632905}
+    floorId: 3
+    areaFlags: 1
+  - nodeId: 4
+    position: {x: 8.848387, y: 0.13577843, z: 2.7837243}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 5
+    position: {x: -4.1516128, y: 7.8024464, z: -0.21627581}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 6
+    position: {x: -4.151613, y: 7.8024464, z: 10.833334}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 7
+    position: {x: -3.358574, y: 0.13577843, z: 15.163247}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 8
+    position: {x: -3.1516132, y: 7.8024464, z: -22.216276}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 9
+    position: {x: -8.000001, y: 7.8024464, z: 13.666667}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 10
+    position: {x: -10.151613, y: 0.13577843, z: 13.783724}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 11
+    position: {x: -6.3585753, y: 7.8024464, z: 2.3670945}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 12
+    position: {x: 2.8379154, y: 7.8024464, z: 10.9826975}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 13
+    position: {x: 5.848387, y: 7.733005, z: 8.783724}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 14
+    position: {x: -5.9992056, y: 3.9691124, z: -9.999046}
+    floorId: 3
+    areaFlags: 1
+  - nodeId: 15
+    position: {x: -3.1516132, y: 7.8024464, z: 22.666668}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 16
+    position: {x: -8.000001, y: 7.8024464, z: 8.783724}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 17
+    position: {x: -10.151613, y: 0.13577843, z: 8.783724}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 18
+    position: {x: 10.141424, y: 0.13577843, z: 5.163247}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 19
+    position: {x: 10.778732, y: 5.5797257, z: 2.0670938}
+    floorId: 4
+    areaFlags: 1
+  - nodeId: 20
+    position: {x: 8.5, y: 7.7191124, z: 13.783724}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 21
+    position: {x: 10.848387, y: 0.13577843, z: 13.783724}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 22
+    position: {x: -13.047551, y: 3.9691124, z: -1.3054746}
+    floorId: 3
+    areaFlags: 1
+  - nodeId: 23
+    position: {x: -15.151613, y: 0.13577843, z: -1.2162762}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 24
+    position: {x: -3.1516128, y: 7.8024464, z: -3}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 25
+    position: {x: -3.1516132, y: 0.13577843, z: -5.216276}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 26
+    position: {x: 3.5, y: 7.8024464, z: -21.5}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 27
+    position: {x: 6.848387, y: 0.13577843, z: -19.216276}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 28
+    position: {x: -2.7212677, y: 0.13577843, z: 2.0670943}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 29
+    position: {x: 7.541425, y: 0.13577843, z: -10.032906}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 30
+    position: {x: 10.141425, y: 3.766728, z: -4.836752}
+    floorId: 3
+    areaFlags: 1
+  - nodeId: 31
+    position: {x: -12.151613, y: 0.13577843, z: 19.5}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 32
+    position: {x: 7.5414248, y: 7.8024464, z: -0.032905817}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 33
+    position: {x: -2.7212677, y: 0.14798777, z: -7.932905}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 34
+    position: {x: 3.8483868, y: 0.13577843, z: 1.7837238}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 35
+    position: {x: -9.909947, y: 3.9691124, z: -6.9343314}
+    floorId: 3
+    areaFlags: 1
+  - nodeId: 36
+    position: {x: -12.151613, y: 0.13577843, z: -7.216276}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 37
+    position: {x: 3.8483868, y: 0.13577843, z: -19.216276}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 38
+    position: {x: -6.3585753, y: 7.8024464, z: 12.367094}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 39
+    position: {x: -3.1516132, y: 0.13577843, z: 8.783724}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 40
+    position: {x: 4.848387, y: 7.8024464, z: -3}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 41
+    position: {x: 8.5, y: 7.7359014, z: 8.783851}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 42
+    position: {x: 0.84838694, y: 7.8024464, z: -0.21627593}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 43
+    position: {x: -2.1516147, y: 7.8024464, z: 13.666667}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 44
+    position: {x: -4.3652215, y: 3.9691124, z: -8.038265}
+    floorId: 3
+    areaFlags: 1
+  - nodeId: 45
+    position: {x: -14.151615, y: 3.9691124, z: -3.2162771}
+    floorId: 3
+    areaFlags: 1
+  - nodeId: 46
+    position: {x: -14.151613, y: 0.13577843, z: -5.216276}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 47
+    position: {x: 6.848387, y: 0.13577843, z: -4.216276}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 48
+    position: {x: 11.462447, y: 5.093531, z: -0.15021276}
+    floorId: 3
+    areaFlags: 1
+  - nodeId: 49
+    position: {x: 13.899389, y: 0.13577843, z: -0.2672785}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 50
+    position: {x: -0.15161324, y: 7.8024464, z: 21.783724}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 51
+    position: {x: 5.848387, y: 7.7493987, z: 6.783724}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 52
+    position: {x: -0.15161325, y: 7.8024464, z: 10.833334}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 53
+    position: {x: -8.000001, y: 7.8024464, z: 3.7837236}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 54
+    position: {x: -8.000001, y: 7.8024464, z: -1.2162759}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 55
+    position: {x: -10.12542, y: 0.13577843, z: -1.185914}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 56
+    position: {x: -8.195335, y: 3.9691124, z: -4.26853}
+    floorId: 3
+    areaFlags: 1
+  - nodeId: 57
+    position: {x: -6.151613, y: 0.13577843, z: -4.216276}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 58
+    position: {x: -5.9585752, y: 7.8024464, z: 9.967094}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 59
+    position: {x: 10.778732, y: 0.13577843, z: -7.932905}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 60
+    position: {x: 4.848387, y: 0.13577843, z: 19.5}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 61
+    position: {x: -5.151613, y: 0.13577843, z: -19.216276}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 62
+    position: {x: -5.166668, y: 7.8024464, z: 4.783724}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 63
+    position: {x: 5.848387, y: 7.7657924, z: 4.783724}
+    floorId: 5
+    areaFlags: 1
+  - nodeId: 64
+    position: {x: 10.848387, y: 0.13577843, z: 10.783724}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 65
+    position: {x: -3.1516132, y: 0.13577843, z: 18.783724}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 66
+    position: {x: -3.358574, y: 0.13577843, z: 5.163247}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 67
+    position: {x: -2.1516132, y: 0.13577843, z: -19.216276}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 68
+    position: {x: 12.848387, y: 0.13577843, z: -2.2162762}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 69
+    position: {x: 1.8483868, y: 0.20983227, z: 8.783724}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 70
+    position: {x: -14.444446, y: -11.280888, z: -16.88889}
+    floorId: -8
+    areaFlags: 1
+  - nodeId: 71
+    position: {x: 19.333334, y: 0.13577843, z: -19.055557}
+    floorId: 0
+    areaFlags: 1
+  - nodeId: 72
+    position: {x: 10.444445, y: -11.280888, z: -17.277779}
+    floorId: -8
+    areaFlags: 1
+  - nodeId: 73
+    position: {x: 16.88889, y: -11.280888, z: -5.5555553}
+    floorId: -8
+    areaFlags: 1
+  - nodeId: 74
+    position: {x: -17.277779, y: -11.280888, z: 2.4444444}
+    floorId: -8
+    areaFlags: 1
+  - nodeId: 75
+    position: {x: -17.277779, y: -11.280888, z: 14.444446}
+    floorId: -8
+    areaFlags: 1
+  - nodeId: 76
+    position: {x: 16.88889, y: -11.280888, z: 6.4444447}
+    floorId: -8
+    areaFlags: 1
+  - nodeId: 77
+    position: {x: 1.5555557, y: -11.280888, z: 17.277779}
+    floorId: -8
+    areaFlags: 1
+  links:
+  - linkId: 0
+    fromNodeId: 0
+    toNodeId: 50
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.756843
+  - linkId: 1
+    fromNodeId: 50
+    toNodeId: 0
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.756843
+  - linkId: 2
+    fromNodeId: 0
+    toNodeId: 15
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.651613
+  - linkId: 3
+    fromNodeId: 15
+    toNodeId: 0
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.651613
+  - linkId: 4
+    fromNodeId: 1
+    toNodeId: 32
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.4331722
+  - linkId: 5
+    fromNodeId: 32
+    toNodeId: 1
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.4331722
+  - linkId: 6
+    fromNodeId: 1
+    toNodeId: 63
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.740874
+  - linkId: 7
+    fromNodeId: 63
+    toNodeId: 1
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.740874
+  - linkId: 8
+    fromNodeId: 1
+    toNodeId: 51
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.6021504
+  - linkId: 9
+    fromNodeId: 51
+    toNodeId: 1
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.6021504
+  - linkId: 10
+    fromNodeId: 1
+    toNodeId: 40
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.8364415
+  - linkId: 11
+    fromNodeId: 40
+    toNodeId: 1
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.8364415
+  - linkId: 12
+    fromNodeId: 1
+    toNodeId: 13
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.545817
+  - linkId: 13
+    fromNodeId: 13
+    toNodeId: 1
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.545817
+  - linkId: 14
+    fromNodeId: 1
+    toNodeId: 41
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.55918
+  - linkId: 15
+    fromNodeId: 41
+    toNodeId: 1
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.55918
+  - linkId: 16
+    fromNodeId: 2
+    toNodeId: 47
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.8309996
+  - linkId: 17
+    fromNodeId: 47
+    toNodeId: 2
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.8309996
+  - linkId: 18
+    fromNodeId: 2
+    toNodeId: 29
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.413616
+  - linkId: 19
+    fromNodeId: 29
+    toNodeId: 2
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.413616
+  - linkId: 20
+    fromNodeId: 2
+    toNodeId: 33
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.91346
+  - linkId: 21
+    fromNodeId: 33
+    toNodeId: 2
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.91346
+  - linkId: 22
+    fromNodeId: 2
+    toNodeId: 34
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.265873
+  - linkId: 23
+    fromNodeId: 34
+    toNodeId: 2
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.265873
+  - linkId: 24
+    fromNodeId: 2
+    toNodeId: 25
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.277479
+  - linkId: 25
+    fromNodeId: 25
+    toNodeId: 2
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.277479
+  - linkId: 26
+    fromNodeId: 2
+    toNodeId: 40
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.387201
+  - linkId: 27
+    fromNodeId: 40
+    toNodeId: 2
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.387201
+  - linkId: 28
+    fromNodeId: 3
+    toNodeId: 44
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.0341525
+  - linkId: 29
+    fromNodeId: 44
+    toNodeId: 3
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.0341525
+  - linkId: 30
+    fromNodeId: 3
+    toNodeId: 14
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.3932762
+  - linkId: 31
+    fromNodeId: 14
+    toNodeId: 3
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.3932762
+  - linkId: 32
+    fromNodeId: 3
+    toNodeId: 35
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.6194265
+  - linkId: 33
+    fromNodeId: 35
+    toNodeId: 3
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.6194265
+  - linkId: 34
+    fromNodeId: 3
+    toNodeId: 56
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.8331068
+  - linkId: 35
+    fromNodeId: 56
+    toNodeId: 3
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.8331068
+  - linkId: 36
+    fromNodeId: 3
+    toNodeId: 45
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.957571
+  - linkId: 37
+    fromNodeId: 45
+    toNodeId: 3
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.957571
+  - linkId: 38
+    fromNodeId: 3
+    toNodeId: 22
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.207539
+  - linkId: 39
+    fromNodeId: 22
+    toNodeId: 3
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.207539
+  - linkId: 40
+    fromNodeId: 4
+    toNodeId: 19
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.8203397
+  - linkId: 41
+    fromNodeId: 19
+    toNodeId: 4
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.8203397
+  - linkId: 42
+    fromNodeId: 5
+    toNodeId: 24
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.9578912
+  - linkId: 43
+    fromNodeId: 24
+    toNodeId: 5
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.9578912
+  - linkId: 44
+    fromNodeId: 5
+    toNodeId: 54
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.9761906
+  - linkId: 45
+    fromNodeId: 54
+    toNodeId: 5
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.9761906
+  - linkId: 46
+    fromNodeId: 5
+    toNodeId: 42
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.9999995
+  - linkId: 47
+    fromNodeId: 42
+    toNodeId: 5
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.9999995
+  - linkId: 48
+    fromNodeId: 5
+    toNodeId: 40
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.420674
+  - linkId: 49
+    fromNodeId: 40
+    toNodeId: 5
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.420674
+  - linkId: 50
+    fromNodeId: 6
+    toNodeId: 38
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.687583
+  - linkId: 51
+    fromNodeId: 38
+    toNodeId: 6
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.687583
+  - linkId: 52
+    fromNodeId: 6
+    toNodeId: 43
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.4681077
+  - linkId: 53
+    fromNodeId: 43
+    toNodeId: 6
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.4681077
+  - linkId: 54
+    fromNodeId: 6
+    toNodeId: 52
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4
+  - linkId: 55
+    fromNodeId: 52
+    toNodeId: 6
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4
+  - linkId: 56
+    fromNodeId: 6
+    toNodeId: 9
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.778898
+  - linkId: 57
+    fromNodeId: 9
+    toNodeId: 6
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.778898
+  - linkId: 58
+    fromNodeId: 6
+    toNodeId: 12
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.9911246
+  - linkId: 59
+    fromNodeId: 12
+    toNodeId: 6
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.9911246
+  - linkId: 60
+    fromNodeId: 7
+    toNodeId: 65
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.6263874
+  - linkId: 61
+    fromNodeId: 65
+    toNodeId: 7
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.6263874
+  - linkId: 62
+    fromNodeId: 7
+    toNodeId: 39
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.3828793
+  - linkId: 63
+    fromNodeId: 39
+    toNodeId: 7
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.3828793
+  - linkId: 64
+    fromNodeId: 7
+    toNodeId: 10
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.9317
+  - linkId: 65
+    fromNodeId: 10
+    toNodeId: 7
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.9317
+  - linkId: 66
+    fromNodeId: 7
+    toNodeId: 43
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.9040685
+  - linkId: 67
+    fromNodeId: 43
+    toNodeId: 7
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.9040685
+  - linkId: 68
+    fromNodeId: 7
+    toNodeId: 69
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.235062
+  - linkId: 69
+    fromNodeId: 69
+    toNodeId: 7
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.235062
+  - linkId: 70
+    fromNodeId: 7
+    toNodeId: 38
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.694612
+  - linkId: 71
+    fromNodeId: 38
+    toNodeId: 7
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.694612
+  - linkId: 72
+    fromNodeId: 8
+    toNodeId: 26
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.6900682
+  - linkId: 73
+    fromNodeId: 26
+    toNodeId: 8
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.6900682
+  - linkId: 74
+    fromNodeId: 9
+    toNodeId: 38
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.0936017
+  - linkId: 75
+    fromNodeId: 38
+    toNodeId: 9
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.0936017
+  - linkId: 76
+    fromNodeId: 9
+    toNodeId: 58
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.2254295
+  - linkId: 77
+    fromNodeId: 58
+    toNodeId: 9
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.2254295
+  - linkId: 78
+    fromNodeId: 9
+    toNodeId: 16
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.882943
+  - linkId: 79
+    fromNodeId: 16
+    toNodeId: 9
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.882943
+  - linkId: 80
+    fromNodeId: 9
+    toNodeId: 43
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.8483863
+  - linkId: 81
+    fromNodeId: 43
+    toNodeId: 9
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.8483863
+  - linkId: 82
+    fromNodeId: 9
+    toNodeId: 52
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.344157
+  - linkId: 83
+    fromNodeId: 52
+    toNodeId: 9
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.344157
+  - linkId: 84
+    fromNodeId: 10
+    toNodeId: 17
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5
+  - linkId: 85
+    fromNodeId: 17
+    toNodeId: 10
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5
+  - linkId: 86
+    fromNodeId: 10
+    toNodeId: 39
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.602325
+  - linkId: 87
+    fromNodeId: 39
+    toNodeId: 10
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.602325
+  - linkId: 88
+    fromNodeId: 10
+    toNodeId: 38
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.670166
+  - linkId: 89
+    fromNodeId: 38
+    toNodeId: 10
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.670166
+  - linkId: 90
+    fromNodeId: 10
+    toNodeId: 16
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.402512
+  - linkId: 91
+    fromNodeId: 16
+    toNodeId: 10
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.402512
+  - linkId: 92
+    fromNodeId: 11
+    toNodeId: 53
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.1682057
+  - linkId: 93
+    fromNodeId: 53
+    toNodeId: 11
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.1682057
+  - linkId: 94
+    fromNodeId: 11
+    toNodeId: 62
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.694576
+  - linkId: 95
+    fromNodeId: 62
+    toNodeId: 11
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.694576
+  - linkId: 96
+    fromNodeId: 11
+    toNodeId: 54
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.941424
+  - linkId: 97
+    fromNodeId: 54
+    toNodeId: 11
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.941424
+  - linkId: 98
+    fromNodeId: 11
+    toNodeId: 16
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.6232476
+  - linkId: 99
+    fromNodeId: 16
+    toNodeId: 11
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.6232476
+  - linkId: 100
+    fromNodeId: 11
+    toNodeId: 58
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.610519
+  - linkId: 101
+    fromNodeId: 58
+    toNodeId: 11
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.610519
+  - linkId: 102
+    fromNodeId: 12
+    toNodeId: 52
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.9932575
+  - linkId: 103
+    fromNodeId: 52
+    toNodeId: 12
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.9932575
+  - linkId: 104
+    fromNodeId: 12
+    toNodeId: 43
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.665607
+  - linkId: 105
+    fromNodeId: 43
+    toNodeId: 12
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.665607
+  - linkId: 106
+    fromNodeId: 12
+    toNodeId: 20
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.317586
+  - linkId: 107
+    fromNodeId: 20
+    toNodeId: 12
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.317586
+  - linkId: 108
+    fromNodeId: 12
+    toNodeId: 38
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.300107
+  - linkId: 109
+    fromNodeId: 38
+    toNodeId: 12
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.300107
+  - linkId: 110
+    fromNodeId: 13
+    toNodeId: 51
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.0000672
+  - linkId: 111
+    fromNodeId: 51
+    toNodeId: 13
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.0000672
+  - linkId: 112
+    fromNodeId: 13
+    toNodeId: 41
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.651615
+  - linkId: 113
+    fromNodeId: 41
+    toNodeId: 13
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.651615
+  - linkId: 114
+    fromNodeId: 13
+    toNodeId: 63
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.0001345
+  - linkId: 115
+    fromNodeId: 63
+    toNodeId: 13
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.0001345
+  - linkId: 116
+    fromNodeId: 13
+    toNodeId: 20
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.6596155
+  - linkId: 117
+    fromNodeId: 20
+    toNodeId: 13
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.6596155
+  - linkId: 118
+    fromNodeId: 14
+    toNodeId: 44
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.5523648
+  - linkId: 119
+    fromNodeId: 44
+    toNodeId: 14
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.5523648
+  - linkId: 120
+    fromNodeId: 14
+    toNodeId: 56
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.1369214
+  - linkId: 121
+    fromNodeId: 56
+    toNodeId: 14
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.1369214
+  - linkId: 122
+    fromNodeId: 14
+    toNodeId: 45
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 10.605081
+  - linkId: 123
+    fromNodeId: 45
+    toNodeId: 14
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 10.605081
+  - linkId: 124
+    fromNodeId: 14
+    toNodeId: 22
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 11.191844
+  - linkId: 125
+    fromNodeId: 22
+    toNodeId: 14
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 11.191844
+  - linkId: 126
+    fromNodeId: 15
+    toNodeId: 50
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.1272337
+  - linkId: 127
+    fromNodeId: 50
+    toNodeId: 15
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.1272337
+  - linkId: 128
+    fromNodeId: 16
+    toNodeId: 58
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.3596153
+  - linkId: 129
+    fromNodeId: 58
+    toNodeId: 16
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.3596153
+  - linkId: 130
+    fromNodeId: 16
+    toNodeId: 38
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.9414237
+  - linkId: 131
+    fromNodeId: 38
+    toNodeId: 16
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.9414237
+  - linkId: 132
+    fromNodeId: 16
+    toNodeId: 62
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.9018135
+  - linkId: 133
+    fromNodeId: 62
+    toNodeId: 16
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.9018135
+  - linkId: 134
+    fromNodeId: 16
+    toNodeId: 53
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5
+  - linkId: 135
+    fromNodeId: 53
+    toNodeId: 16
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5
+  - linkId: 136
+    fromNodeId: 17
+    toNodeId: 39
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7
+  - linkId: 137
+    fromNodeId: 39
+    toNodeId: 17
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7
+  - linkId: 138
+    fromNodeId: 17
+    toNodeId: 66
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.6976123
+  - linkId: 139
+    fromNodeId: 66
+    toNodeId: 17
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.6976123
+  - linkId: 140
+    fromNodeId: 17
+    toNodeId: 58
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.818148
+  - linkId: 141
+    fromNodeId: 58
+    toNodeId: 17
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.818148
+  - linkId: 142
+    fromNodeId: 17
+    toNodeId: 38
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.273913
+  - linkId: 143
+    fromNodeId: 38
+    toNodeId: 17
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.273913
+  - linkId: 144
+    fromNodeId: 18
+    toNodeId: 64
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.6647644
+  - linkId: 145
+    fromNodeId: 64
+    toNodeId: 18
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.6647644
+  - linkId: 146
+    fromNodeId: 18
+    toNodeId: 41
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.576999
+  - linkId: 147
+    fromNodeId: 41
+    toNodeId: 18
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.576999
+  - linkId: 148
+    fromNodeId: 18
+    toNodeId: 21
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.649417
+  - linkId: 149
+    fromNodeId: 21
+    toNodeId: 18
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.649417
+  - linkId: 150
+    fromNodeId: 18
+    toNodeId: 63
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.763065
+  - linkId: 151
+    fromNodeId: 63
+    toNodeId: 18
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.763065
+  - linkId: 152
+    fromNodeId: 19
+    toNodeId: 30
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.1663246
+  - linkId: 153
+    fromNodeId: 30
+    toNodeId: 19
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.1663246
+  - linkId: 154
+    fromNodeId: 20
+    toNodeId: 41
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.9999013
+  - linkId: 155
+    fromNodeId: 41
+    toNodeId: 20
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.9999013
+  - linkId: 156
+    fromNodeId: 20
+    toNodeId: 51
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.4854507
+  - linkId: 157
+    fromNodeId: 51
+    toNodeId: 20
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.4854507
+  - linkId: 158
+    fromNodeId: 20
+    toNodeId: 52
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.141233
+  - linkId: 159
+    fromNodeId: 52
+    toNodeId: 20
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.141233
+  - linkId: 160
+    fromNodeId: 20
+    toNodeId: 63
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.382603
+  - linkId: 161
+    fromNodeId: 63
+    toNodeId: 20
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.382603
+  - linkId: 162
+    fromNodeId: 21
+    toNodeId: 64
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3
+  - linkId: 163
+    fromNodeId: 64
+    toNodeId: 21
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3
+  - linkId: 164
+    fromNodeId: 21
+    toNodeId: 41
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.395505
+  - linkId: 165
+    fromNodeId: 41
+    toNodeId: 21
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.395505
+  - linkId: 166
+    fromNodeId: 21
+    toNodeId: 69
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 10.295897
+  - linkId: 167
+    fromNodeId: 69
+    toNodeId: 21
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 10.295897
+  - linkId: 168
+    fromNodeId: 22
+    toNodeId: 45
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.2068355
+  - linkId: 169
+    fromNodeId: 45
+    toNodeId: 22
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.2068355
+  - linkId: 170
+    fromNodeId: 22
+    toNodeId: 56
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.685393
+  - linkId: 171
+    fromNodeId: 56
+    toNodeId: 22
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.685393
+  - linkId: 172
+    fromNodeId: 22
+    toNodeId: 35
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.4442677
+  - linkId: 173
+    fromNodeId: 35
+    toNodeId: 22
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.4442677
+  - linkId: 174
+    fromNodeId: 24
+    toNodeId: 42
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.8733068
+  - linkId: 175
+    fromNodeId: 42
+    toNodeId: 24
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.8733068
+  - linkId: 176
+    fromNodeId: 24
+    toNodeId: 54
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.1660953
+  - linkId: 177
+    fromNodeId: 54
+    toNodeId: 24
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.1660953
+  - linkId: 178
+    fromNodeId: 24
+    toNodeId: 40
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.9999995
+  - linkId: 179
+    fromNodeId: 40
+    toNodeId: 24
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.9999995
+  - linkId: 180
+    fromNodeId: 25
+    toNodeId: 33
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.7505307
+  - linkId: 181
+    fromNodeId: 33
+    toNodeId: 25
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.7505307
+  - linkId: 182
+    fromNodeId: 25
+    toNodeId: 57
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.1622777
+  - linkId: 183
+    fromNodeId: 57
+    toNodeId: 25
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.1622777
+  - linkId: 184
+    fromNodeId: 25
+    toNodeId: 28
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.296073
+  - linkId: 185
+    fromNodeId: 28
+    toNodeId: 25
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.296073
+  - linkId: 186
+    fromNodeId: 27
+    toNodeId: 37
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3
+  - linkId: 187
+    fromNodeId: 37
+    toNodeId: 27
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3
+  - linkId: 188
+    fromNodeId: 27
+    toNodeId: 67
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9
+  - linkId: 189
+    fromNodeId: 67
+    toNodeId: 27
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9
+  - linkId: 190
+    fromNodeId: 27
+    toNodeId: 61
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 12
+  - linkId: 191
+    fromNodeId: 61
+    toNodeId: 27
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 12
+  - linkId: 192
+    fromNodeId: 28
+    toNodeId: 66
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.1610632
+  - linkId: 193
+    fromNodeId: 66
+    toNodeId: 28
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.1610632
+  - linkId: 194
+    fromNodeId: 28
+    toNodeId: 34
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.5757627
+  - linkId: 195
+    fromNodeId: 34
+    toNodeId: 28
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.5757627
+  - linkId: 196
+    fromNodeId: 28
+    toNodeId: 39
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.730402
+  - linkId: 197
+    fromNodeId: 39
+    toNodeId: 28
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.730402
+  - linkId: 198
+    fromNodeId: 28
+    toNodeId: 57
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.158772
+  - linkId: 199
+    fromNodeId: 57
+    toNodeId: 28
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.158772
+  - linkId: 200
+    fromNodeId: 28
+    toNodeId: 55
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.087245
+  - linkId: 201
+    fromNodeId: 55
+    toNodeId: 28
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.087245
+  - linkId: 202
+    fromNodeId: 29
+    toNodeId: 33
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 10.475353
+  - linkId: 203
+    fromNodeId: 33
+    toNodeId: 29
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 10.475353
+  - linkId: 204
+    fromNodeId: 29
+    toNodeId: 67
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 13.352501
+  - linkId: 205
+    fromNodeId: 67
+    toNodeId: 29
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 13.352501
+  - linkId: 206
+    fromNodeId: 32
+    toNodeId: 40
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.0070066
+  - linkId: 207
+    fromNodeId: 40
+    toNodeId: 32
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.0070066
+  - linkId: 208
+    fromNodeId: 32
+    toNodeId: 63
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.105648
+  - linkId: 209
+    fromNodeId: 63
+    toNodeId: 32
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.105648
+  - linkId: 210
+    fromNodeId: 32
+    toNodeId: 42
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.695549
+  - linkId: 211
+    fromNodeId: 42
+    toNodeId: 32
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.695549
+  - linkId: 212
+    fromNodeId: 34
+    toNodeId: 47
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.708204
+  - linkId: 213
+    fromNodeId: 47
+    toNodeId: 34
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.708204
+  - linkId: 214
+    fromNodeId: 34
+    toNodeId: 69
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.2804866
+  - linkId: 215
+    fromNodeId: 69
+    toNodeId: 34
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.2804866
+  - linkId: 216
+    fromNodeId: 34
+    toNodeId: 66
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.959991
+  - linkId: 217
+    fromNodeId: 66
+    toNodeId: 34
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 7.959991
+  - linkId: 218
+    fromNodeId: 35
+    toNodeId: 56
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.1696043
+  - linkId: 219
+    fromNodeId: 56
+    toNodeId: 35
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.1696043
+  - linkId: 220
+    fromNodeId: 35
+    toNodeId: 45
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.640538
+  - linkId: 221
+    fromNodeId: 45
+    toNodeId: 35
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.640538
+  - linkId: 222
+    fromNodeId: 35
+    toNodeId: 44
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.6535525
+  - linkId: 223
+    fromNodeId: 44
+    toNodeId: 35
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.6535525
+  - linkId: 224
+    fromNodeId: 36
+    toNodeId: 46
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.828427
+  - linkId: 225
+    fromNodeId: 46
+    toNodeId: 36
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.828427
+  - linkId: 226
+    fromNodeId: 37
+    toNodeId: 67
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6
+  - linkId: 227
+    fromNodeId: 67
+    toNodeId: 37
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6
+  - linkId: 228
+    fromNodeId: 37
+    toNodeId: 61
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9
+  - linkId: 229
+    fromNodeId: 61
+    toNodeId: 37
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9
+  - linkId: 230
+    fromNodeId: 38
+    toNodeId: 58
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.4331048
+  - linkId: 231
+    fromNodeId: 58
+    toNodeId: 38
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.4331048
+  - linkId: 232
+    fromNodeId: 38
+    toNodeId: 43
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.4031134
+  - linkId: 233
+    fromNodeId: 43
+    toNodeId: 38
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.4031134
+  - linkId: 234
+    fromNodeId: 38
+    toNodeId: 52
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.393653
+  - linkId: 235
+    fromNodeId: 52
+    toNodeId: 38
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.393653
+  - linkId: 236
+    fromNodeId: 39
+    toNodeId: 66
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.6263874
+  - linkId: 237
+    fromNodeId: 66
+    toNodeId: 39
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.6263874
+  - linkId: 238
+    fromNodeId: 39
+    toNodeId: 69
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.0005484
+  - linkId: 239
+    fromNodeId: 69
+    toNodeId: 39
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.0005484
+  - linkId: 240
+    fromNodeId: 40
+    toNodeId: 42
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.8733068
+  - linkId: 241
+    fromNodeId: 42
+    toNodeId: 40
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.8733068
+  - linkId: 242
+    fromNodeId: 41
+    toNodeId: 51
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.3214066
+  - linkId: 243
+    fromNodeId: 51
+    toNodeId: 41
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.3214066
+  - linkId: 244
+    fromNodeId: 41
+    toNodeId: 63
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.799267
+  - linkId: 245
+    fromNodeId: 63
+    toNodeId: 41
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.799267
+  - linkId: 246
+    fromNodeId: 43
+    toNodeId: 52
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.4681091
+  - linkId: 247
+    fromNodeId: 52
+    toNodeId: 43
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.4681091
+  - linkId: 248
+    fromNodeId: 43
+    toNodeId: 58
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.3084636
+  - linkId: 249
+    fromNodeId: 58
+    toNodeId: 43
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.3084636
+  - linkId: 250
+    fromNodeId: 44
+    toNodeId: 56
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.3740745
+  - linkId: 251
+    fromNodeId: 56
+    toNodeId: 44
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.3740745
+  - linkId: 252
+    fromNodeId: 45
+    toNodeId: 56
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.0485125
+  - linkId: 253
+    fromNodeId: 56
+    toNodeId: 45
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.0485125
+  - linkId: 254
+    fromNodeId: 49
+    toNodeId: 68
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.2143166
+  - linkId: 255
+    fromNodeId: 68
+    toNodeId: 49
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.2143166
+  - linkId: 256
+    fromNodeId: 51
+    toNodeId: 63
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.0000672
+  - linkId: 257
+    fromNodeId: 63
+    toNodeId: 51
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 2.0000672
+  - linkId: 258
+    fromNodeId: 53
+    toNodeId: 62
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.0046258
+  - linkId: 259
+    fromNodeId: 62
+    toNodeId: 53
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3.0046258
+  - linkId: 260
+    fromNodeId: 53
+    toNodeId: 54
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.9999995
+  - linkId: 261
+    fromNodeId: 54
+    toNodeId: 53
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.9999995
+  - linkId: 262
+    fromNodeId: 53
+    toNodeId: 58
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.511643
+  - linkId: 263
+    fromNodeId: 58
+    toNodeId: 53
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.511643
+  - linkId: 264
+    fromNodeId: 54
+    toNodeId: 62
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.635343
+  - linkId: 265
+    fromNodeId: 62
+    toNodeId: 54
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.635343
+  - linkId: 266
+    fromNodeId: 55
+    toNodeId: 57
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.9974227
+  - linkId: 267
+    fromNodeId: 57
+    toNodeId: 55
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 4.9974227
+  - linkId: 268
+    fromNodeId: 58
+    toNodeId: 62
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.243515
+  - linkId: 269
+    fromNodeId: 62
+    toNodeId: 58
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 5.243515
+  - linkId: 270
+    fromNodeId: 59
+    toNodeId: 68
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.0797462
+  - linkId: 271
+    fromNodeId: 68
+    toNodeId: 59
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.0797462
+  - linkId: 272
+    fromNodeId: 60
+    toNodeId: 65
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.0320015
+  - linkId: 273
+    fromNodeId: 65
+    toNodeId: 60
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 8.0320015
+  - linkId: 274
+    fromNodeId: 61
+    toNodeId: 67
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3
+  - linkId: 275
+    fromNodeId: 67
+    toNodeId: 61
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 3
+  - linkId: 276
+    fromNodeId: 64
+    toNodeId: 69
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.219842
+  - linkId: 277
+    fromNodeId: 69
+    toNodeId: 64
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 9.219842
+  - linkId: 278
+    fromNodeId: 66
+    toNodeId: 69
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.342379
+  - linkId: 279
+    fromNodeId: 69
+    toNodeId: 66
+    traversalType: 0
+    traversalTicks: 0
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: -1
+    landingPosition: {x: 0, y: 0, z: 0}
+    landingSlotCount: 0
+    landingSpread: 0
+    traversalStartPosition: {x: 0, y: 0, z: 0}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 0
+    recoverTicks: 0
+    costDistance: 6.342379
+  - linkId: 280
+    fromNodeId: 20
+    toNodeId: 0
+    traversalType: 7
+    traversalTicks: 98
+    heightDelta: -11.416668
+    dropHeight: 11.416668
+    agentMask: 7
+    landingPosition: {x: 3.5, y: 7.8024464, z: 22.666668}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 12.848387, y: 19.219114, z: 19.5}
+    clearance: 2.6727133
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 15.000001
+  - linkId: 281
+    fromNodeId: 0
+    toNodeId: 20
+    traversalType: 5
+    traversalTicks: 98
+    heightDelta: 11.416668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 12.848387, y: 19.219114, z: 19.5}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 3.5, y: 7.8024464, z: 22.666668}
+    clearance: 2.6727133
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 15.000001
+  - linkId: 282
+    fromNodeId: 32
+    toNodeId: 1
+    traversalType: 7
+    traversalTicks: 60
+    heightDelta: -5.803268
+    dropHeight: 5.803268
+    agentMask: 7
+    landingPosition: {x: 7.1414247, y: 7.7843537, z: 2.367094}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 7.1414247, y: 13.587622, z: -0.032905817}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 7
+    recoverTicks: 10
+    costDistance: 7.7000003
+  - linkId: 283
+    fromNodeId: 32
+    toNodeId: 48
+    traversalType: 7
+    traversalTicks: 78
+    heightDelta: -7.75
+    dropHeight: 7.75
+    agentMask: 7
+    landingPosition: {x: 19.5, y: 19.219114, z: -6.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 17.666668, y: 26.969114, z: -3.2162766}
+    clearance: 1.5280327
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 284
+    fromNodeId: 48
+    toNodeId: 32
+    traversalType: 5
+    traversalTicks: 78
+    heightDelta: 7.75
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 17.666668, y: 26.969114, z: -3.2162766}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 19.5, y: 19.219114, z: -6.216276}
+    clearance: 1.5280327
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 285
+    fromNodeId: 40
+    toNodeId: 2
+    traversalType: 7
+    traversalTicks: 82
+    heightDelta: -13.451843
+    dropHeight: 13.451843
+    agentMask: 7
+    landingPosition: {x: 5.0414243, y: 0.13577843, z: -6.3955984}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 7.1414247, y: 13.587622, z: -10.032906}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 13.400001
+  - linkId: 286
+    fromNodeId: 14
+    toNodeId: 3
+    traversalType: 7
+    traversalTicks: 72
+    heightDelta: -9.618509
+    dropHeight: 9.618509
+    agentMask: 7
+    landingPosition: {x: -6.3585753, y: 3.9691124, z: -7.632905}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -6.3585753, y: 13.587622, z: -10.032906}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 13
+    recoverTicks: 18
+    costDistance: 10.3
+  - linkId: 287
+    fromNodeId: 5
+    toNodeId: 6
+    traversalType: 7
+    traversalTicks: 51
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -4.151613, y: 7.8024464, z: 10.833334}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -4.1516128, y: 7.8024464, z: -0.21627581}
+    clearance: 1.98
+    gravity: 0
+    pauseTicks: 15
+    recoverTicks: 20
+    costDistance: 8.6
+  - linkId: 288
+    fromNodeId: 6
+    toNodeId: 5
+    traversalType: 5
+    traversalTicks: 51
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -4.1516128, y: 7.8024464, z: -0.21627581}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -4.151613, y: 7.8024464, z: 10.833334}
+    clearance: 1.98
+    gravity: 0
+    pauseTicks: 15
+    recoverTicks: 20
+    costDistance: 8.6
+  - linkId: 289
+    fromNodeId: 58
+    toNodeId: 7
+    traversalType: 7
+    traversalTicks: 82
+    heightDelta: -13.451843
+    dropHeight: 13.451843
+    agentMask: 7
+    landingPosition: {x: -3.358574, y: 0.13577843, z: 15.163247}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -6.3585753, y: 13.587622, z: 9.967094}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 13.400001
+  - linkId: 290
+    fromNodeId: 9
+    toNodeId: 10
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: -10.151613, y: 0.13577843, z: 13.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -8.000001, y: 7.8024464, z: 13.666667}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 291
+    fromNodeId: 10
+    toNodeId: 9
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -8.000001, y: 7.8024464, z: 13.666667}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -10.151613, y: 0.13577843, z: 13.783724}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 292
+    fromNodeId: 32
+    toNodeId: 48
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.75
+    dropHeight: 7.75
+    agentMask: 7
+    landingPosition: {x: 19.5, y: 19.219114, z: -4.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 17.666668, y: 26.969114, z: -4.216275}
+    clearance: 1.4294349
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 293
+    fromNodeId: 48
+    toNodeId: 32
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.75
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 17.666668, y: 26.969114, z: -4.216275}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 19.5, y: 19.219114, z: -4.216276}
+    clearance: 1.4294349
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 294
+    fromNodeId: 43
+    toNodeId: 15
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.75
+    dropHeight: 7.75
+    agentMask: 7
+    landingPosition: {x: -4.151613, y: 19.219114, z: 19.5}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -4.151613, y: 26.969114, z: 17.666668}
+    clearance: 1.4294358
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 295
+    fromNodeId: 15
+    toNodeId: 43
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.75
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -4.151613, y: 26.969114, z: 17.666668}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -4.151613, y: 19.219114, z: 19.5}
+    clearance: 1.4294358
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 296
+    fromNodeId: 54
+    toNodeId: 11
+    traversalType: 7
+    traversalTicks: 60
+    heightDelta: -5.7851753
+    dropHeight: 5.7851753
+    agentMask: 7
+    landingPosition: {x: -6.3585753, y: 7.8024464, z: 2.3670945}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -6.3585753, y: 13.587622, z: -0.032905817}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 7
+    recoverTicks: 10
+    costDistance: 7.7000003
+  - linkId: 297
+    fromNodeId: 32
+    toNodeId: 41
+    traversalType: 7
+    traversalTicks: 78
+    heightDelta: -7.75
+    dropHeight: 7.75
+    agentMask: 7
+    landingPosition: {x: 19.5, y: 19.219114, z: 5.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 17.666668, y: 26.969114, z: 2.7837238}
+    clearance: 1.5280327
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 298
+    fromNodeId: 41
+    toNodeId: 32
+    traversalType: 5
+    traversalTicks: 78
+    heightDelta: 7.75
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 17.666668, y: 26.969114, z: 2.7837238}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 19.5, y: 19.219114, z: 5.783724}
+    clearance: 1.5280327
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 299
+    fromNodeId: 12
+    toNodeId: 13
+    traversalType: 7
+    traversalTicks: 30
+    heightDelta: -0.06944132
+    dropHeight: 0.06944132
+    agentMask: 7
+    landingPosition: {x: 5.848387, y: 7.733005, z: 8.783724}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 2.8379154, y: 7.8024464, z: 10.9826975}
+    clearance: 0.6490063
+    gravity: 0
+    pauseTicks: 4
+    recoverTicks: 6
+    costDistance: 4
+  - linkId: 300
+    fromNodeId: 13
+    toNodeId: 12
+    traversalType: 5
+    traversalTicks: 30
+    heightDelta: 0.06944132
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: 2.8379154, y: 7.8024464, z: 10.9826975}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 5.848387, y: 7.733005, z: 8.783724}
+    clearance: 0.6490063
+    gravity: 0
+    pauseTicks: 4
+    recoverTicks: 6
+    costDistance: 4
+  - linkId: 301
+    fromNodeId: 1
+    toNodeId: 4
+    traversalType: 7
+    traversalTicks: 72
+    heightDelta: -7.6380014
+    dropHeight: 7.6380014
+    agentMask: 7
+    landingPosition: {x: 10.703535, y: 0.13577843, z: 3.2250094}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 8.5, y: 7.77378, z: 3.7839432}
+    clearance: 0.9818851
+    gravity: 0
+    pauseTicks: 6
+    recoverTicks: 8
+    costDistance: 8.6
+  - linkId: 302
+    fromNodeId: 4
+    toNodeId: 1
+    traversalType: 5
+    traversalTicks: 72
+    heightDelta: 7.6380014
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: 8.5, y: 7.77378, z: 3.7839432}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 10.703535, y: 0.13577843, z: 3.2250094}
+    clearance: 0.9818851
+    gravity: 0
+    pauseTicks: 6
+    recoverTicks: 8
+    costDistance: 8.6
+  - linkId: 303
+    fromNodeId: 9
+    toNodeId: 16
+    traversalType: 7
+    traversalTicks: 78
+    heightDelta: -7.75
+    dropHeight: 7.75
+    agentMask: 7
+    landingPosition: {x: -15.151613, y: 19.219114, z: 9.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -16.5, y: 26.969114, z: 12.783724}
+    clearance: 1.4958891
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 304
+    fromNodeId: 16
+    toNodeId: 9
+    traversalType: 5
+    traversalTicks: 78
+    heightDelta: 7.75
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -16.5, y: 26.969114, z: 12.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -15.151613, y: 19.219114, z: 9.783724}
+    clearance: 1.4958891
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 305
+    fromNodeId: 58
+    toNodeId: 43
+    traversalType: 7
+    traversalTicks: 60
+    heightDelta: -5.7851753
+    dropHeight: 5.7851753
+    agentMask: 7
+    landingPosition: {x: -2.7212677, y: 7.8024464, z: 12.067095}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -6.3585753, y: 13.587622, z: 9.967094}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 8
+    recoverTicks: 11
+    costDistance: 7.9000006
+  - linkId: 306
+    fromNodeId: 9
+    toNodeId: 16
+    traversalType: 7
+    traversalTicks: 49
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -17.666668, y: 26.969114, z: 6.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -19.151613, y: 26.969114, z: 16.783724}
+    clearance: 1.8089776
+    gravity: 0
+    pauseTicks: 13
+    recoverTicks: 18
+    costDistance: 8
+  - linkId: 307
+    fromNodeId: 16
+    toNodeId: 9
+    traversalType: 5
+    traversalTicks: 49
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -19.151613, y: 26.969114, z: 16.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -17.666668, y: 26.969114, z: 6.783724}
+    clearance: 1.8089776
+    gravity: 0
+    pauseTicks: 13
+    recoverTicks: 18
+    costDistance: 8
+  - linkId: 308
+    fromNodeId: 9
+    toNodeId: 15
+    traversalType: 7
+    traversalTicks: 97
+    heightDelta: -11.416668
+    dropHeight: 11.416668
+    agentMask: 7
+    landingPosition: {x: -3.1516132, y: 7.8024464, z: 22.666668}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -11.151613, y: 19.219114, z: 19.5}
+    clearance: 2.5676053
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 14.900001
+  - linkId: 309
+    fromNodeId: 15
+    toNodeId: 9
+    traversalType: 5
+    traversalTicks: 97
+    heightDelta: 11.416668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -11.151613, y: 19.219114, z: 19.5}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -3.1516132, y: 7.8024464, z: 22.666668}
+    clearance: 2.5676053
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 14.900001
+  - linkId: 310
+    fromNodeId: 8
+    toNodeId: 54
+    traversalType: 7
+    traversalTicks: 51
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -16.5, y: 26.969114, z: -10.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -7.151613, y: 26.969114, z: -16.5}
+    clearance: 1.9469979
+    gravity: 0
+    pauseTicks: 15
+    recoverTicks: 20
+    costDistance: 8.6
+  - linkId: 311
+    fromNodeId: 54
+    toNodeId: 8
+    traversalType: 5
+    traversalTicks: 51
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -7.151613, y: 26.969114, z: -16.5}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -16.5, y: 26.969114, z: -10.216276}
+    clearance: 1.9469979
+    gravity: 0
+    pauseTicks: 15
+    recoverTicks: 20
+    costDistance: 8.6
+  - linkId: 312
+    fromNodeId: 8
+    toNodeId: 54
+    traversalType: 7
+    traversalTicks: 51
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -16.5, y: 26.969114, z: -6.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -12.151613, y: 26.969114, z: -16.5}
+    clearance: 1.9386594
+    gravity: 0
+    pauseTicks: 15
+    recoverTicks: 20
+    costDistance: 8.6
+  - linkId: 313
+    fromNodeId: 54
+    toNodeId: 8
+    traversalType: 5
+    traversalTicks: 51
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -12.151613, y: 26.969114, z: -16.5}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -16.5, y: 26.969114, z: -6.216276}
+    clearance: 1.9386594
+    gravity: 0
+    pauseTicks: 15
+    recoverTicks: 20
+    costDistance: 8.6
+  - linkId: 314
+    fromNodeId: 16
+    toNodeId: 17
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: -10.151613, y: 0.13577843, z: 8.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -8.000001, y: 7.8024464, z: 8.783724}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 315
+    fromNodeId: 17
+    toNodeId: 16
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -8.000001, y: 7.8024464, z: 8.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -10.151613, y: 0.13577843, z: 8.783724}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 316
+    fromNodeId: 32
+    toNodeId: 18
+    traversalType: 7
+    traversalTicks: 82
+    heightDelta: -13.451843
+    dropHeight: 13.451843
+    agentMask: 7
+    landingPosition: {x: 10.141424, y: 0.13577843, z: 5.163247}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 7.1414247, y: 13.587622, z: -0.032905817}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 13.400001
+  - linkId: 317
+    fromNodeId: 32
+    toNodeId: 19
+    traversalType: 7
+    traversalTicks: 68
+    heightDelta: -8.007896
+    dropHeight: 8.007896
+    agentMask: 7
+    landingPosition: {x: 10.778732, y: 5.5797257, z: 2.0670938}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 7.1414247, y: 13.587622, z: -0.032905817}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 11
+    recoverTicks: 15
+    costDistance: 9.400001
+  - linkId: 318
+    fromNodeId: 20
+    toNodeId: 21
+    traversalType: 7
+    traversalTicks: 76
+    heightDelta: -7.583334
+    dropHeight: 7.583334
+    agentMask: 7
+    landingPosition: {x: 10.848387, y: 0.13577843, z: 13.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 8.5, y: 7.7191124, z: 13.783724}
+    clearance: 1.4233538
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.8
+  - linkId: 319
+    fromNodeId: 21
+    toNodeId: 20
+    traversalType: 5
+    traversalTicks: 76
+    heightDelta: 7.583334
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 8.5, y: 7.7191124, z: 13.783724}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 10.848387, y: 0.13577843, z: 13.783724}
+    clearance: 1.4233538
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.8
+  - linkId: 320
+    fromNodeId: 22
+    toNodeId: 23
+    traversalType: 7
+    traversalTicks: 55
+    heightDelta: -3.833334
+    dropHeight: 3.833334
+    agentMask: 7
+    landingPosition: {x: -15.151613, y: 0.13577843, z: -1.2162762}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -13.047551, y: 3.9691124, z: -1.3054746}
+    clearance: 0.78136724
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.7000003
+  - linkId: 321
+    fromNodeId: 23
+    toNodeId: 22
+    traversalType: 5
+    traversalTicks: 55
+    heightDelta: 3.833334
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -13.047551, y: 3.9691124, z: -1.3054746}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -15.151613, y: 0.13577843, z: -1.2162762}
+    clearance: 0.78136724
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.7000003
+  - linkId: 322
+    fromNodeId: 4
+    toNodeId: 18
+    traversalType: 7
+    traversalTicks: 29
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: 9.848387, y: 0.13577843, z: 5.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 9.766517, y: 0.13577843, z: 3.46794}
+    clearance: 0.6
+    gravity: 0
+    pauseTicks: 4
+    recoverTicks: 6
+    costDistance: 3.9
+  - linkId: 323
+    fromNodeId: 18
+    toNodeId: 4
+    traversalType: 5
+    traversalTicks: 29
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: 9.766517, y: 0.13577843, z: 3.46794}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 9.848387, y: 0.13577843, z: 5.783724}
+    clearance: 0.6
+    gravity: 0
+    pauseTicks: 4
+    recoverTicks: 6
+    costDistance: 3.9
+  - linkId: 324
+    fromNodeId: 26
+    toNodeId: 71
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.75
+    dropHeight: 7.75
+    agentMask: 7
+    landingPosition: {x: 18.848387, y: 19.219114, z: -14.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 18.848387, y: 26.969114, z: -16.5}
+    clearance: 1.4294358
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 325
+    fromNodeId: 71
+    toNodeId: 26
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.75
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 18.848387, y: 26.969114, z: -16.5}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 18.848387, y: 19.219114, z: -14.216276}
+    clearance: 1.4294358
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 326
+    fromNodeId: 20
+    toNodeId: 41
+    traversalType: 7
+    traversalTicks: 78
+    heightDelta: -7.75
+    dropHeight: 7.75
+    agentMask: 7
+    landingPosition: {x: 19.5, y: 19.219114, z: 9.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 17.666668, y: 26.969114, z: 12.783723}
+    clearance: 1.5280327
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 327
+    fromNodeId: 41
+    toNodeId: 20
+    traversalType: 5
+    traversalTicks: 78
+    heightDelta: 7.75
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 17.666668, y: 26.969114, z: 12.783723}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 19.5, y: 19.219114, z: 9.783724}
+    clearance: 1.5280327
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 328
+    fromNodeId: 24
+    toNodeId: 25
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: -3.1516132, y: 0.13577843, z: -5.216276}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -3.1516128, y: 7.8024464, z: -3}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 329
+    fromNodeId: 25
+    toNodeId: 24
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -3.1516128, y: 7.8024464, z: -3}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -3.1516132, y: 0.13577843, z: -5.216276}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 330
+    fromNodeId: 8
+    toNodeId: 26
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.75
+    dropHeight: 7.75
+    agentMask: 7
+    landingPosition: {x: 0.84838676, y: 19.219114, z: -19.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -1.1516132, y: 26.969114, z: -17.666668}
+    clearance: 1.4407245
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 13
+    costDistance: 10.000001
+  - linkId: 331
+    fromNodeId: 26
+    toNodeId: 8
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.75
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -1.1516132, y: 26.969114, z: -17.666668}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 0.84838676, y: 19.219114, z: -19.216276}
+    clearance: 1.4407245
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 13
+    costDistance: 10.000001
+  - linkId: 332
+    fromNodeId: 26
+    toNodeId: 27
+    traversalType: 7
+    traversalTicks: 78
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: 6.848387, y: 0.13577843, z: -19.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 3.5, y: 7.8024464, z: -21.5}
+    clearance: 1.5345027
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 333
+    fromNodeId: 27
+    toNodeId: 26
+    traversalType: 5
+    traversalTicks: 78
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 3.5, y: 7.8024464, z: -21.5}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 6.848387, y: 0.13577843, z: -19.216276}
+    clearance: 1.5345027
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 334
+    fromNodeId: 54
+    toNodeId: 28
+    traversalType: 7
+    traversalTicks: 82
+    heightDelta: -13.451843
+    dropHeight: 13.451843
+    agentMask: 7
+    landingPosition: {x: -2.7212677, y: 0.13577843, z: 2.0670943}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -6.3585753, y: 13.587622, z: -0.032905817}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 13.400001
+  - linkId: 335
+    fromNodeId: 8
+    toNodeId: 54
+    traversalType: 7
+    traversalTicks: 49
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -17.666668, y: 26.969114, z: -6.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -19.151613, y: 26.969114, z: -16.5}
+    clearance: 1.8089776
+    gravity: 0
+    pauseTicks: 13
+    recoverTicks: 18
+    costDistance: 8
+  - linkId: 336
+    fromNodeId: 54
+    toNodeId: 8
+    traversalType: 5
+    traversalTicks: 49
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -19.151613, y: 26.969114, z: -16.5}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -17.666668, y: 26.969114, z: -6.216276}
+    clearance: 1.8089776
+    gravity: 0
+    pauseTicks: 13
+    recoverTicks: 18
+    costDistance: 8
+  - linkId: 337
+    fromNodeId: 40
+    toNodeId: 29
+    traversalType: 7
+    traversalTicks: 82
+    heightDelta: -13.451843
+    dropHeight: 13.451843
+    agentMask: 7
+    landingPosition: {x: 7.541425, y: 0.13577843, z: -10.032906}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 7.1414247, y: 13.587622, z: -10.032906}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 21
+    recoverTicks: 28
+    costDistance: 13.1
+  - linkId: 338
+    fromNodeId: 40
+    toNodeId: 30
+    traversalType: 7
+    traversalTicks: 73
+    heightDelta: -9.820894
+    dropHeight: 9.820894
+    agentMask: 7
+    landingPosition: {x: 10.141425, y: 3.766728, z: -4.836752}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 7.1414247, y: 13.587622, z: -10.032906}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 16
+    recoverTicks: 22
+    costDistance: 11.1
+  - linkId: 339
+    fromNodeId: 15
+    toNodeId: 31
+    traversalType: 7
+    traversalTicks: 84
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: -12.151613, y: 0.13577843, z: 19.5}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -3.1516132, y: 7.8024464, z: 21.783724}
+    clearance: 2.1650631
+    gravity: 0
+    pauseTicks: 17
+    recoverTicks: 23
+    costDistance: 12.400001
+  - linkId: 340
+    fromNodeId: 31
+    toNodeId: 15
+    traversalType: 5
+    traversalTicks: 84
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -3.1516132, y: 7.8024464, z: 21.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -12.151613, y: 0.13577843, z: 19.5}
+    clearance: 2.1650631
+    gravity: 0
+    pauseTicks: 17
+    recoverTicks: 23
+    costDistance: 12.400001
+  - linkId: 341
+    fromNodeId: 14
+    toNodeId: 33
+    traversalType: 7
+    traversalTicks: 82
+    heightDelta: -13.439634
+    dropHeight: 13.439634
+    agentMask: 7
+    landingPosition: {x: -2.7212677, y: 0.14798777, z: -7.932905}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -6.3585753, y: 13.587622, z: -10.032906}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 13.400001
+  - linkId: 342
+    fromNodeId: 1
+    toNodeId: 34
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.654604
+    dropHeight: 7.654604
+    agentMask: 7
+    landingPosition: {x: 3.8483868, y: 0.13577843, z: 1.7837238}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 5.848387, y: 7.7903824, z: 1.783724}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 343
+    fromNodeId: 34
+    toNodeId: 1
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.654604
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 5.848387, y: 7.7903824, z: 1.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 3.8483868, y: 0.13577843, z: 1.7837238}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 344
+    fromNodeId: 32
+    toNodeId: 19
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.75
+    dropHeight: 7.75
+    agentMask: 7
+    landingPosition: {x: 19.5, y: 19.219114, z: 1.7837238}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 17.666668, y: 26.969114, z: 1.7837238}
+    clearance: 1.4294349
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 345
+    fromNodeId: 19
+    toNodeId: 32
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.75
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 17.666668, y: 26.969114, z: 1.7837238}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 19.5, y: 19.219114, z: 1.7837238}
+    clearance: 1.4294349
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 346
+    fromNodeId: 35
+    toNodeId: 36
+    traversalType: 7
+    traversalTicks: 55
+    heightDelta: -3.833334
+    dropHeight: 3.833334
+    agentMask: 7
+    landingPosition: {x: -12.151613, y: 0.13577843, z: -7.216276}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -9.909947, y: 3.9691124, z: -6.9343314}
+    clearance: 0.78136724
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.7000003
+  - linkId: 347
+    fromNodeId: 36
+    toNodeId: 35
+    traversalType: 5
+    traversalTicks: 55
+    heightDelta: 3.833334
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -9.909947, y: 3.9691124, z: -6.9343314}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -12.151613, y: 0.13577843, z: -7.216276}
+    clearance: 0.78136724
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.7000003
+  - linkId: 348
+    fromNodeId: 26
+    toNodeId: 37
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: 3.8483868, y: 0.13577843, z: -19.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 3.5, y: 7.8024464, z: -21.5}
+    clearance: 1.436349
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 13
+    costDistance: 10.000001
+  - linkId: 349
+    fromNodeId: 37
+    toNodeId: 26
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 3.5, y: 7.8024464, z: -21.5}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 3.8483868, y: 0.13577843, z: -19.216276}
+    clearance: 1.436349
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 13
+    costDistance: 10.000001
+  - linkId: 350
+    fromNodeId: 58
+    toNodeId: 38
+    traversalType: 7
+    traversalTicks: 60
+    heightDelta: -5.7851753
+    dropHeight: 5.7851753
+    agentMask: 7
+    landingPosition: {x: -6.3585753, y: 7.8024464, z: 12.367094}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -6.3585753, y: 13.587622, z: 9.967094}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 7
+    recoverTicks: 10
+    costDistance: 7.7000003
+  - linkId: 351
+    fromNodeId: 6
+    toNodeId: 39
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: -3.1516132, y: 0.13577843, z: 8.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -3.1516135, y: 7.8024464, z: 10.833334}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 352
+    fromNodeId: 39
+    toNodeId: 6
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -3.1516135, y: 7.8024464, z: 10.833334}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -3.1516132, y: 0.13577843, z: 8.783724}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 353
+    fromNodeId: 40
+    toNodeId: 2
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: 4.848387, y: 0.13577843, z: -5.216276}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 4.848387, y: 7.8024464, z: -3}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 354
+    fromNodeId: 2
+    toNodeId: 40
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 4.848387, y: 7.8024464, z: -3}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 4.848387, y: 0.13577843, z: -5.216276}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 355
+    fromNodeId: 9
+    toNodeId: 16
+    traversalType: 7
+    traversalTicks: 50
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -16.5, y: 26.969114, z: 6.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -13.151613, y: 26.969114, z: 16.783724}
+    clearance: 1.8792553
+    gravity: 0
+    pauseTicks: 14
+    recoverTicks: 19
+    costDistance: 8.3
+  - linkId: 356
+    fromNodeId: 16
+    toNodeId: 9
+    traversalType: 5
+    traversalTicks: 50
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -13.151613, y: 26.969114, z: 16.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -16.5, y: 26.969114, z: 6.783724}
+    clearance: 1.8792553
+    gravity: 0
+    pauseTicks: 14
+    recoverTicks: 19
+    costDistance: 8.3
+  - linkId: 357
+    fromNodeId: 41
+    toNodeId: 4
+    traversalType: 7
+    traversalTicks: 75
+    heightDelta: -7.600123
+    dropHeight: 7.600123
+    agentMask: 7
+    landingPosition: {x: 10.703535, y: 0.13577843, z: 3.2250094}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 8.5, y: 7.7359014, z: 8.783851}
+    clearance: 1.3287747
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 12
+    costDistance: 9.6
+  - linkId: 358
+    fromNodeId: 4
+    toNodeId: 41
+    traversalType: 5
+    traversalTicks: 75
+    heightDelta: 7.600123
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: 8.5, y: 7.7359014, z: 8.783851}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 10.703535, y: 0.13577843, z: 3.2250094}
+    clearance: 1.3287747
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 12
+    costDistance: 9.6
+  - linkId: 359
+    fromNodeId: 40
+    toNodeId: 30
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.75
+    dropHeight: 7.75
+    agentMask: 7
+    landingPosition: {x: 19.5, y: 19.219114, z: -13.216275}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 17.666668, y: 26.969114, z: -13.216276}
+    clearance: 1.4294349
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 360
+    fromNodeId: 30
+    toNodeId: 40
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.75
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 17.666668, y: 26.969114, z: -13.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 19.5, y: 19.219114, z: -13.216275}
+    clearance: 1.4294349
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 361
+    fromNodeId: 42
+    toNodeId: 52
+    traversalType: 7
+    traversalTicks: 51
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: 0.84343934, y: 7.8024464, z: 10.877726}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 0.84838694, y: 7.8024464, z: -0.21627593}
+    clearance: 1.98
+    gravity: 0
+    pauseTicks: 15
+    recoverTicks: 20
+    costDistance: 8.6
+  - linkId: 362
+    fromNodeId: 52
+    toNodeId: 42
+    traversalType: 5
+    traversalTicks: 51
+    heightDelta: 0
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: 0.84838694, y: 7.8024464, z: -0.21627593}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 0.84343934, y: 7.8024464, z: 10.877726}
+    clearance: 1.98
+    gravity: 0
+    pauseTicks: 15
+    recoverTicks: 20
+    costDistance: 8.6
+  - linkId: 363
+    fromNodeId: 43
+    toNodeId: 7
+    traversalType: 7
+    traversalTicks: 76
+    heightDelta: -7.6100335
+    dropHeight: 7.6100335
+    agentMask: 7
+    landingPosition: {x: -2.1516132, y: 0.19241281, z: 15.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -2.1516147, y: 7.8024464, z: 13.666667}
+    clearance: 1.426316
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.8
+  - linkId: 364
+    fromNodeId: 7
+    toNodeId: 43
+    traversalType: 5
+    traversalTicks: 76
+    heightDelta: 7.6100335
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -2.1516147, y: 7.8024464, z: 13.666667}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -2.1516132, y: 0.19241281, z: 15.783724}
+    clearance: 1.426316
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.8
+  - linkId: 365
+    fromNodeId: 44
+    toNodeId: 33
+    traversalType: 7
+    traversalTicks: 55
+    heightDelta: -3.8049095
+    dropHeight: 3.8049095
+    agentMask: 7
+    landingPosition: {x: -2.1516132, y: 0.16420303, z: -8.216276}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -4.3652215, y: 3.9691124, z: -8.038265}
+    clearance: 0.7813669
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.7000003
+  - linkId: 366
+    fromNodeId: 33
+    toNodeId: 44
+    traversalType: 5
+    traversalTicks: 55
+    heightDelta: 3.8049095
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -4.3652215, y: 3.9691124, z: -8.038265}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -2.1516132, y: 0.16420303, z: -8.216276}
+    clearance: 0.7813669
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.7000003
+  - linkId: 367
+    fromNodeId: 54
+    toNodeId: 45
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.75
+    dropHeight: 7.75
+    agentMask: 7
+    landingPosition: {x: -20.151613, y: 19.219114, z: -4.216276}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -17.666668, y: 26.969114, z: -4.216276}
+    clearance: 1.4294349
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 368
+    fromNodeId: 45
+    toNodeId: 54
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.75
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -17.666668, y: 26.969114, z: -4.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -20.151613, y: 19.219114, z: -4.216276}
+    clearance: 1.4294349
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 369
+    fromNodeId: 13
+    toNodeId: 64
+    traversalType: 7
+    traversalTicks: 82
+    heightDelta: -13.451843
+    dropHeight: 13.451843
+    agentMask: 7
+    landingPosition: {x: 10.778732, y: 0.13577843, z: 12.067095}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 7.1414247, y: 13.587622, z: 9.967094}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 13.400001
+  - linkId: 370
+    fromNodeId: 44
+    toNodeId: 25
+    traversalType: 7
+    traversalTicks: 55
+    heightDelta: -3.833334
+    dropHeight: 3.833334
+    agentMask: 7
+    landingPosition: {x: -4.151613, y: 0.13577843, z: -5.216276}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -4.366084, y: 3.9691124, z: -7.472597}
+    clearance: 0.781367
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.7000003
+  - linkId: 371
+    fromNodeId: 25
+    toNodeId: 44
+    traversalType: 5
+    traversalTicks: 55
+    heightDelta: 3.833334
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -4.366084, y: 3.9691124, z: -7.472597}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -4.151613, y: 0.13577843, z: -5.216276}
+    clearance: 0.781367
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.7000003
+  - linkId: 372
+    fromNodeId: 45
+    toNodeId: 46
+    traversalType: 7
+    traversalTicks: 55
+    heightDelta: -3.833334
+    dropHeight: 3.833334
+    agentMask: 7
+    landingPosition: {x: -14.151613, y: 0.13577843, z: -5.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -14.151615, y: 3.9691124, z: -3.2162771}
+    clearance: 0.78136736
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.7000003
+  - linkId: 373
+    fromNodeId: 46
+    toNodeId: 45
+    traversalType: 5
+    traversalTicks: 55
+    heightDelta: 3.833334
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -14.151615, y: 3.9691124, z: -3.2162771}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -14.151613, y: 0.13577843, z: -5.216276}
+    clearance: 0.78136736
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.7000003
+  - linkId: 374
+    fromNodeId: 30
+    toNodeId: 47
+    traversalType: 7
+    traversalTicks: 54
+    heightDelta: -3.708504
+    dropHeight: 3.708504
+    agentMask: 7
+    landingPosition: {x: 6.848387, y: 0.13577843, z: -4.216276}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 8.848387, y: 3.8442824, z: -4.2162757}
+    clearance: 0.7528539
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.6000004
+  - linkId: 375
+    fromNodeId: 47
+    toNodeId: 30
+    traversalType: 5
+    traversalTicks: 54
+    heightDelta: 3.708504
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: 8.848387, y: 3.8442824, z: -4.2162757}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 6.848387, y: 0.13577843, z: -4.216276}
+    clearance: 0.7528539
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.6000004
+  - linkId: 376
+    fromNodeId: 48
+    toNodeId: 49
+    traversalType: 7
+    traversalTicks: 62
+    heightDelta: -4.9577527
+    dropHeight: 4.9577527
+    agentMask: 7
+    landingPosition: {x: 13.899389, y: 0.13577843, z: -0.2672785}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 11.462447, y: 5.093531, z: -0.15021276}
+    clearance: 0.9554203
+    gravity: 0
+    pauseTicks: 6
+    recoverTicks: 8
+    costDistance: 7.6000004
+  - linkId: 377
+    fromNodeId: 49
+    toNodeId: 48
+    traversalType: 5
+    traversalTicks: 62
+    heightDelta: 4.9577527
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: 11.462447, y: 5.093531, z: -0.15021276}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 13.899389, y: 0.13577843, z: -0.2672785}
+    clearance: 0.9554203
+    gravity: 0
+    pauseTicks: 6
+    recoverTicks: 8
+    costDistance: 7.6000004
+  - linkId: 378
+    fromNodeId: 0
+    toNodeId: 50
+    traversalType: 7
+    traversalTicks: 94
+    heightDelta: -11.416668
+    dropHeight: 11.416668
+    agentMask: 7
+    landingPosition: {x: -0.15161324, y: 7.8024464, z: 21.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 2.848387, y: 19.219114, z: 19.5}
+    clearance: 2.1560602
+    gravity: 0
+    pauseTicks: 17
+    recoverTicks: 23
+    costDistance: 13.400001
+  - linkId: 379
+    fromNodeId: 50
+    toNodeId: 0
+    traversalType: 5
+    traversalTicks: 94
+    heightDelta: 11.416668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 2.848387, y: 19.219114, z: 19.5}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -0.15161324, y: 7.8024464, z: 21.783724}
+    clearance: 2.1560602
+    gravity: 0
+    pauseTicks: 17
+    recoverTicks: 23
+    costDistance: 13.400001
+  - linkId: 380
+    fromNodeId: 51
+    toNodeId: 52
+    traversalType: 7
+    traversalTicks: 42
+    heightDelta: 0.053047657
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -0.15161325, y: 7.8024464, z: 10.833334}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 5.848387, y: 7.7493987, z: 6.783724}
+    clearance: 1.2979995
+    gravity: 0
+    pauseTicks: 8
+    recoverTicks: 11
+    costDistance: 6.1000004
+  - linkId: 381
+    fromNodeId: 52
+    toNodeId: 51
+    traversalType: 5
+    traversalTicks: 42
+    heightDelta: -0.053047657
+    dropHeight: 0.053047657
+    agentMask: 7
+    landingPosition: {x: 5.848387, y: 7.7493987, z: 6.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -0.15161325, y: 7.8024464, z: 10.833334}
+    clearance: 1.2979995
+    gravity: 0
+    pauseTicks: 8
+    recoverTicks: 11
+    costDistance: 6.1000004
+  - linkId: 382
+    fromNodeId: 54
+    toNodeId: 35
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.75
+    dropHeight: 7.75
+    agentMask: 7
+    landingPosition: {x: -14.151613, y: 19.219114, z: -13.216276}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -16.5, y: 26.969114, z: -13.216276}
+    clearance: 1.4294349
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 383
+    fromNodeId: 35
+    toNodeId: 54
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.75
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -16.5, y: 26.969114, z: -13.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -14.151613, y: 19.219114, z: -13.216276}
+    clearance: 1.4294349
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 384
+    fromNodeId: 13
+    toNodeId: 21
+    traversalType: 7
+    traversalTicks: 82
+    heightDelta: -13.451843
+    dropHeight: 13.451843
+    agentMask: 7
+    landingPosition: {x: 10.141424, y: 0.13577843, z: 15.163247}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 7.1414247, y: 13.587622, z: 9.967094}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 13.400001
+  - linkId: 385
+    fromNodeId: 13
+    toNodeId: 20
+    traversalType: 7
+    traversalTicks: 61
+    heightDelta: -5.8685093
+    dropHeight: 5.8685093
+    agentMask: 7
+    landingPosition: {x: 7.141425, y: 7.7191124, z: 12.367094}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 7.1414247, y: 13.587622, z: 9.967094}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 7
+    recoverTicks: 10
+    costDistance: 7.8
+  - linkId: 386
+    fromNodeId: 13
+    toNodeId: 41
+    traversalType: 7
+    traversalTicks: 61
+    heightDelta: -5.8619657
+    dropHeight: 5.8619657
+    agentMask: 7
+    landingPosition: {x: 7.5414248, y: 7.725656, z: 9.967094}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 7.1414247, y: 13.587622, z: 9.967094}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 7
+    recoverTicks: 9
+    costDistance: 7.7000003
+  - linkId: 387
+    fromNodeId: 53
+    toNodeId: 22
+    traversalType: 7
+    traversalTicks: 63
+    heightDelta: -3.833334
+    dropHeight: 3.833334
+    agentMask: 7
+    landingPosition: {x: -12.151613, y: 3.9691124, z: -1.2162762}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -8.000001, y: 7.8024464, z: 3.7837236}
+    clearance: 1.3424037
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 12
+    costDistance: 8.400001
+  - linkId: 388
+    fromNodeId: 22
+    toNodeId: 53
+    traversalType: 5
+    traversalTicks: 63
+    heightDelta: 3.833334
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -8.000001, y: 7.8024464, z: 3.7837236}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -12.151613, y: 3.9691124, z: -1.2162762}
+    clearance: 1.3424037
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 12
+    costDistance: 8.400001
+  - linkId: 389
+    fromNodeId: 54
+    toNodeId: 55
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: -10.12542, y: 0.13577843, z: -1.185914}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -8.000001, y: 7.8024464, z: -1.2162759}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 390
+    fromNodeId: 55
+    toNodeId: 54
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -8.000001, y: 7.8024464, z: -1.2162759}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -10.12542, y: 0.13577843, z: -1.185914}
+    clearance: 1.4303209
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.900001
+  - linkId: 391
+    fromNodeId: 56
+    toNodeId: 57
+    traversalType: 7
+    traversalTicks: 55
+    heightDelta: -3.833334
+    dropHeight: 3.833334
+    agentMask: 7
+    landingPosition: {x: -6.151613, y: 0.13577843, z: -4.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -8.195335, y: 3.9691124, z: -4.26853}
+    clearance: 0.7813672
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.7000003
+  - linkId: 392
+    fromNodeId: 57
+    toNodeId: 56
+    traversalType: 5
+    traversalTicks: 55
+    heightDelta: 3.833334
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -8.195335, y: 3.9691124, z: -4.26853}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -6.151613, y: 0.13577843, z: -4.216276}
+    clearance: 0.7813672
+    gravity: 0
+    pauseTicks: 5
+    recoverTicks: 7
+    costDistance: 6.7000003
+  - linkId: 393
+    fromNodeId: 40
+    toNodeId: 59
+    traversalType: 7
+    traversalTicks: 82
+    heightDelta: -13.451843
+    dropHeight: 13.451843
+    agentMask: 7
+    landingPosition: {x: 10.778732, y: 0.13577843, z: -7.932905}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 7.1414247, y: 13.587622, z: -10.032906}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 13.400001
+  - linkId: 394
+    fromNodeId: 0
+    toNodeId: 60
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: 4.848387, y: 0.13577843, z: 19.5}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 3.5, y: 7.8024464, z: 21.783724}
+    clearance: 1.4475837
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 13
+    costDistance: 10.000001
+  - linkId: 395
+    fromNodeId: 60
+    toNodeId: 0
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 3.5, y: 7.8024464, z: 21.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 4.848387, y: 0.13577843, z: 19.5}
+    clearance: 1.4475837
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 13
+    costDistance: 10.000001
+  - linkId: 396
+    fromNodeId: 32
+    toNodeId: 48
+    traversalType: 7
+    traversalTicks: 78
+    heightDelta: -7.75
+    dropHeight: 7.75
+    agentMask: 7
+    landingPosition: {x: 19.5, y: 19.219114, z: -5.2162766}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 17.666668, y: 26.969114, z: -8.216275}
+    clearance: 1.5280327
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 397
+    fromNodeId: 48
+    toNodeId: 32
+    traversalType: 5
+    traversalTicks: 78
+    heightDelta: 7.75
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 17.666668, y: 26.969114, z: -8.216275}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 19.5, y: 19.219114, z: -5.2162766}
+    clearance: 1.5280327
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 398
+    fromNodeId: 8
+    toNodeId: 61
+    traversalType: 7
+    traversalTicks: 78
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: -5.151613, y: 0.13577843, z: -19.216276}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -2.1516132, y: 7.8024464, z: -21.5}
+    clearance: 1.5345027
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 399
+    fromNodeId: 61
+    toNodeId: 8
+    traversalType: 5
+    traversalTicks: 78
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -2.1516132, y: 7.8024464, z: -21.5}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -5.151613, y: 0.13577843, z: -19.216276}
+    clearance: 1.5345027
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 400
+    fromNodeId: 62
+    toNodeId: 63
+    traversalType: 7
+    traversalTicks: 52
+    heightDelta: -0.036653996
+    dropHeight: 0.036653996
+    agentMask: 7
+    landingPosition: {x: 5.848387, y: 7.7657924, z: 4.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -5.166668, y: 7.8024464, z: 4.783724}
+    clearance: 1.98
+    gravity: 0
+    pauseTicks: 15
+    recoverTicks: 20
+    costDistance: 8.700001
+  - linkId: 401
+    fromNodeId: 63
+    toNodeId: 62
+    traversalType: 5
+    traversalTicks: 52
+    heightDelta: 0.036653996
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -5.166668, y: 7.8024464, z: 4.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 5.848387, y: 7.7657924, z: 4.783724}
+    clearance: 1.98
+    gravity: 0
+    pauseTicks: 15
+    recoverTicks: 20
+    costDistance: 8.700001
+  - linkId: 402
+    fromNodeId: 20
+    toNodeId: 64
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.583334
+    dropHeight: 7.583334
+    agentMask: 7
+    landingPosition: {x: 10.848387, y: 0.13577843, z: 10.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 8.5, y: 7.7191124, z: 13.783724}
+    clearance: 1.5223455
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.1
+  - linkId: 403
+    fromNodeId: 64
+    toNodeId: 20
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.583334
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 8.5, y: 7.7191124, z: 13.783724}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 10.848387, y: 0.13577843, z: 10.783724}
+    clearance: 1.5223455
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.1
+  - linkId: 404
+    fromNodeId: 15
+    toNodeId: 65
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: -3.1516132, y: 0.13577843, z: 18.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -3.1516132, y: 7.8024464, z: 21.783724}
+    clearance: 1.4916764
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.1
+  - linkId: 405
+    fromNodeId: 65
+    toNodeId: 15
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -3.1516132, y: 7.8024464, z: 21.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -3.1516132, y: 0.13577843, z: 18.783724}
+    clearance: 1.4916764
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.1
+  - linkId: 406
+    fromNodeId: 54
+    toNodeId: 66
+    traversalType: 7
+    traversalTicks: 82
+    heightDelta: -13.451843
+    dropHeight: 13.451843
+    agentMask: 7
+    landingPosition: {x: -3.358574, y: 0.13577843, z: 5.163247}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -6.3585753, y: 13.587622, z: -0.032905817}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 13.400001
+  - linkId: 407
+    fromNodeId: 8
+    toNodeId: 67
+    traversalType: 7
+    traversalTicks: 77
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: -2.1516132, y: 0.13577843, z: -19.216276}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -2.1516132, y: 7.8024464, z: -21.5}
+    clearance: 1.436349
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 13
+    costDistance: 10.000001
+  - linkId: 408
+    fromNodeId: 67
+    toNodeId: 8
+    traversalType: 5
+    traversalTicks: 77
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -2.1516132, y: 7.8024464, z: -21.5}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -2.1516132, y: 0.13577843, z: -19.216276}
+    clearance: 1.436349
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 13
+    costDistance: 10.000001
+  - linkId: 409
+    fromNodeId: 48
+    toNodeId: 68
+    traversalType: 7
+    traversalTicks: 62
+    heightDelta: -4.9577527
+    dropHeight: 4.9577527
+    agentMask: 7
+    landingPosition: {x: 12.848387, y: 0.13577843, z: -2.2162762}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 11.462447, y: 5.093531, z: -0.15021276}
+    clearance: 0.97222847
+    gravity: 0
+    pauseTicks: 6
+    recoverTicks: 8
+    costDistance: 7.6000004
+  - linkId: 410
+    fromNodeId: 68
+    toNodeId: 48
+    traversalType: 5
+    traversalTicks: 62
+    heightDelta: 4.9577527
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: 11.462447, y: 5.093531, z: -0.15021276}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 12.848387, y: 0.13577843, z: -2.2162762}
+    clearance: 0.97222847
+    gravity: 0
+    pauseTicks: 6
+    recoverTicks: 8
+    costDistance: 7.6000004
+  - linkId: 411
+    fromNodeId: 14
+    toNodeId: 25
+    traversalType: 7
+    traversalTicks: 82
+    heightDelta: -13.451843
+    dropHeight: 13.451843
+    agentMask: 7
+    landingPosition: {x: -3.358574, y: 0.13577843, z: -4.836753}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -6.3585753, y: 13.587622, z: -10.032906}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 22
+    recoverTicks: 30
+    costDistance: 13.400001
+  - linkId: 412
+    fromNodeId: 9
+    toNodeId: 17
+    traversalType: 7
+    traversalTicks: 78
+    heightDelta: -7.666668
+    dropHeight: 7.666668
+    agentMask: 7
+    landingPosition: {x: -10.151613, y: 0.13577843, z: 10.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -8.000001, y: 7.8024464, z: 13.666667}
+    clearance: 1.5288616
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 413
+    fromNodeId: 17
+    toNodeId: 9
+    traversalType: 5
+    traversalTicks: 78
+    heightDelta: 7.666668
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: -8.000001, y: 7.8024464, z: 13.666667}
+    landingSlotCount: 1
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -10.151613, y: 0.13577843, z: 10.783724}
+    clearance: 1.5288616
+    gravity: 0
+    pauseTicks: 10
+    recoverTicks: 14
+    costDistance: 10.200001
+  - linkId: 414
+    fromNodeId: 58
+    toNodeId: 13
+    traversalType: 7
+    traversalTicks: 52
+    heightDelta: -0.07763815
+    dropHeight: 0.07763815
+    agentMask: 7
+    landingPosition: {x: 5.848387, y: 7.724808, z: 9.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -5.166668, y: 7.8024464, z: 9.783724}
+    clearance: 1.9800131
+    gravity: 0
+    pauseTicks: 15
+    recoverTicks: 20
+    costDistance: 8.700001
+  - linkId: 415
+    fromNodeId: 13
+    toNodeId: 58
+    traversalType: 5
+    traversalTicks: 52
+    heightDelta: 0.07763815
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: -5.166668, y: 7.8024464, z: 9.783724}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 5.848387, y: 7.724808, z: 9.783724}
+    clearance: 1.9800131
+    gravity: 0
+    pauseTicks: 15
+    recoverTicks: 20
+    costDistance: 8.700001
+  - linkId: 416
+    fromNodeId: 40
+    toNodeId: 30
+    traversalType: 7
+    traversalTicks: 60
+    heightDelta: -4.194596
+    dropHeight: 4.194596
+    agentMask: 7
+    landingPosition: {x: 8.848387, y: 3.6078506, z: -5.2162757}
+    landingSlotCount: 2
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 5.848387, y: 7.8024464, z: -3}
+    clearance: 1.0067654
+    gravity: 0
+    pauseTicks: 6
+    recoverTicks: 9
+    costDistance: 7.5000005
+  - linkId: 417
+    fromNodeId: 30
+    toNodeId: 40
+    traversalType: 5
+    traversalTicks: 60
+    heightDelta: 4.194596
+    dropHeight: 0
+    agentMask: 7
+    landingPosition: {x: 5.848387, y: 7.8024464, z: -3}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 8.848387, y: 3.6078506, z: -5.2162757}
+    clearance: 1.0067654
+    gravity: 0
+    pauseTicks: 6
+    recoverTicks: 9
+    costDistance: 7.5000005
+  - linkId: 418
+    fromNodeId: 54
+    toNodeId: 5
+    traversalType: 7
+    traversalTicks: 60
+    heightDelta: -5.7851753
+    dropHeight: 5.7851753
+    agentMask: 7
+    landingPosition: {x: -5.9585752, y: 7.8024464, z: -0.03290534}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: -6.3585753, y: 13.587622, z: -0.032905817}
+    clearance: 0
+    gravity: 0
+    pauseTicks: 7
+    recoverTicks: 9
+    costDistance: 7.6000004
+  - linkId: 419
+    fromNodeId: 12
+    toNodeId: 69
+    traversalType: 7
+    traversalTicks: 76
+    heightDelta: -7.592614
+    dropHeight: 7.592614
+    agentMask: 7
+    landingPosition: {x: 1.8483868, y: 0.20983227, z: 8.783724}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 1.8406771, y: 7.8024464, z: 10.930211}
+    clearance: 1.4263158
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.8
+  - linkId: 420
+    fromNodeId: 69
+    toNodeId: 12
+    traversalType: 5
+    traversalTicks: 76
+    heightDelta: 7.592614
+    dropHeight: 0
+    agentMask: 4
+    landingPosition: {x: 1.8406771, y: 7.8024464, z: 10.930211}
+    landingSlotCount: 3
+    landingSpread: 0.84480006
+    traversalStartPosition: {x: 1.8483868, y: 0.20983227, z: 8.783724}
+    clearance: 1.4263158
+    gravity: 0
+    pauseTicks: 9
+    recoverTicks: 13
+    costDistance: 9.8

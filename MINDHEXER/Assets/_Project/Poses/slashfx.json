@@ -1,0 +1,247 @@
+﻿{
+    "slots": [
+        {
+            "name": "평타1",
+            "which": "1",
+            "offset": {
+                "x": 0.0,
+                "y": 0.17677822709083558,
+                "z": 3.4401674270629885
+            },
+            "roll": 19.937236785888673,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "scale": 1.0,
+            "delay": 0.05999999865889549,
+            "enabled": true,
+            "posePrefix": "slash1_",
+            "burst": false,
+            "burstCount": 7,
+            "burstSpread": 360.0,
+            "burstJitter": 12.0,
+            "burstLengthVary": 0.3499999940395355,
+            "burstScaleVary": 0.25,
+            "burstStagger": 0.012000000104308129,
+            "follow": 0,
+            "followSpeed": 8.0,
+            "followRotation": false,
+            "attachTime": 0.09000000357627869,
+            "onViewmodelLayer": true,
+            "length": 11.013792991638184,
+            "radiusWide": 0.12034483253955841,
+            "radiusThick": 0.03999999910593033,
+            "taperPower": 0.30000001192092898,
+            "layerCount": 4,
+            "innerShellScale": 0.2800000011920929,
+            "layerFalloff": 0.550000011920929,
+            "revealTime": 0.05000000074505806,
+            "holdTime": 0.03999999910593033,
+            "fadeTime": 0.20000000298023225,
+            "revealSoft": 0.11999999731779099,
+            "tailFade": 0.44999998807907107,
+            "colorLow": {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+            },
+            "colorMid": {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+            },
+            "colorHigh": {
+                "r": 4.0,
+                "g": 4.0,
+                "b": 4.0,
+                "a": 1.0
+            },
+            "ramp1": 0.18000000715255738,
+            "ramp2": 0.550000011920929,
+            "ramp3": 0.8500000238418579,
+            "intensity": 0.800000011920929,
+            "contrast": 1.350000023841858,
+            "blendMode": 1,
+            "noiseAmount": 0.5,
+            "noiseTile1": {
+                "x": 3.0,
+                "y": 0.3499999940395355
+            },
+            "noiseScroll1": {
+                "x": -0.800000011920929,
+                "y": 0.05000000074505806
+            },
+            "noiseTile2": {
+                "x": 7.0,
+                "y": 0.5
+            },
+            "noiseScroll2": {
+                "x": -1.5,
+                "y": -0.03999999910593033
+            }
+        },
+        {
+            "name": "평타2",
+            "which": "2",
+            "offset": {
+                "x": 0.0,
+                "y": -0.05000000074505806,
+                "z": 3.4401674270629885
+            },
+            "roll": -160.0209197998047,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "scale": 0.9999999403953552,
+            "delay": 0.05999999865889549,
+            "enabled": true,
+            "posePrefix": "slash2_",
+            "burst": false,
+            "burstCount": 7,
+            "burstSpread": 360.0,
+            "burstJitter": 12.0,
+            "burstLengthVary": 0.3499999940395355,
+            "burstScaleVary": 0.25,
+            "burstStagger": 0.012000000104308129,
+            "follow": 0,
+            "followSpeed": 8.0,
+            "followRotation": false,
+            "attachTime": 0.09000000357627869,
+            "onViewmodelLayer": true,
+            "length": 10.996551513671875,
+            "radiusWide": 0.12689657509326936,
+            "radiusThick": 0.03999999910593033,
+            "taperPower": 5.0,
+            "layerCount": 4,
+            "innerShellScale": 0.2800000011920929,
+            "layerFalloff": 0.550000011920929,
+            "revealTime": 0.05000000074505806,
+            "holdTime": 0.03999999910593033,
+            "fadeTime": 0.20000000298023225,
+            "revealSoft": 0.11999999731779099,
+            "tailFade": 0.44999998807907107,
+            "colorLow": {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+            },
+            "colorMid": {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+            },
+            "colorHigh": {
+                "r": 4.0,
+                "g": 4.0,
+                "b": 4.0,
+                "a": 1.0
+            },
+            "ramp1": 0.18000000715255738,
+            "ramp2": 0.550000011920929,
+            "ramp3": 0.8500000238418579,
+            "intensity": 0.800000011920929,
+            "contrast": 1.350000023841858,
+            "blendMode": 1,
+            "noiseAmount": 0.5,
+            "noiseTile1": {
+                "x": 3.0,
+                "y": 0.3499999940395355
+            },
+            "noiseScroll1": {
+                "x": -0.800000011920929,
+                "y": 0.05000000074505806
+            },
+            "noiseTile2": {
+                "x": 7.0,
+                "y": 0.5
+            },
+            "noiseScroll2": {
+                "x": -1.5,
+                "y": -0.03999999910593033
+            }
+        },
+        {
+            "name": "찌르기",
+            "which": "t",
+            "offset": {
+                "x": 0.0,
+                "y": -0.019999999552965165,
+                "z": 2.5999999046325685
+            },
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "scale": 0.8999999761581421,
+            "delay": 0.03999999910593033,
+            "enabled": true,
+            "posePrefix": "thrust1_",
+            "burst": true,
+            "burstCount": 7,
+            "burstSpread": 360.0,
+            "burstJitter": 14.275862693786621,
+            "burstLengthVary": 0.3499999940395355,
+            "burstScaleVary": 0.25,
+            "burstStagger": 0.006482758559286594,
+            "follow": 2,
+            "followSpeed": 8.0,
+            "followRotation": false,
+            "attachTime": 0.09000000357627869,
+            "onViewmodelLayer": true,
+            "length": 1.4965516328811646,
+            "radiusWide": 0.05000000074505806,
+            "radiusThick": 0.019999999552965165,
+            "taperPower": 5.0,
+            "layerCount": 4,
+            "innerShellScale": 0.2800000011920929,
+            "layerFalloff": 0.550000011920929,
+            "revealTime": 0.05000000074505806,
+            "holdTime": 0.03999999910593033,
+            "fadeTime": 0.20000000298023225,
+            "revealSoft": 0.11999999731779099,
+            "tailFade": 0.44999998807907107,
+            "colorLow": {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+            },
+            "colorMid": {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+            },
+            "colorHigh": {
+                "r": 4.0,
+                "g": 4.0,
+                "b": 4.0,
+                "a": 1.0
+            },
+            "ramp1": 0.0,
+            "ramp2": 0.0,
+            "ramp3": 0.8500000238418579,
+            "intensity": 0.800000011920929,
+            "contrast": 1.350000023841858,
+            "blendMode": 1,
+            "noiseAmount": 0.5,
+            "noiseTile1": {
+                "x": 3.0,
+                "y": 0.3499999940395355
+            },
+            "noiseScroll1": {
+                "x": -0.800000011920929,
+                "y": 0.05000000074505806
+            },
+            "noiseTile2": {
+                "x": 7.0,
+                "y": 0.5
+            },
+            "noiseScroll2": {
+                "x": -1.5,
+                "y": -0.03999999910593033
+            }
+        }
+    ]
+}
