@@ -80,7 +80,9 @@ namespace Game.View
             mover.lookEnabled = false;
 
             // 해킹 시선 = 카메라(머리) 정면 → HackDriver는 카메라에.
-            if (_cam.GetComponent<HackDriver>() == null) _cam.gameObject.AddComponent<HackDriver>();
+            var hd = _cam.GetComponent<HackDriver>() ?? _cam.gameObject.AddComponent<HackDriver>();
+            // VR 입력 = 네트워크(S10e) 소스, 지연 가리기 층 경유. SYB 네트워크가 NetworkHexInputSource.Active로 Push.
+            hd.Source = new NetworkHexInputSource();
 
             // ScreenSpace HUD → 머리 앞 World-Space 패널(양안 렌더). (사용자 C 작업 이식)
             var hud = new GameObject("[VrHudSpace]").AddComponent<VrHudSpace>();

@@ -20,7 +20,8 @@ namespace Game.View
         static readonly Color ViewEntryColor = new Color(0f, 0.8f, 0.85f);  // 청록 (시점 진입)
         static readonly Color StunColor      = new Color(1f, 0.85f, 0.1f);  // 노랑 (보스 스턴)
 
-        readonly HexInputReader _reader = new HexInputReader();
+        /// <summary>입력 출처. 기본 PC(키보드/마우스). VR에선 GameBoot이 네트워크 소스로 교체.</summary>
+        public IHexInputSource Source = new PcHexInputSource();
         HackContext _ctx;
         Hackable _highlighted;
         MaterialPropertyBlock _mpb;
@@ -37,8 +38,7 @@ namespace Game.View
 
         void Update()
         {
-            _reader.Context = _ctx.Current;
-            HexInput input = _reader.Poll();
+            HexInput input = Source.Poll(_ctx.Current);
 
             bool canAim = _ctx.Current == ControlContext.Player || _ctx.Current == ControlContext.ViewEntry;
             Hackable aimed = canAim ? Raycast() : null;
