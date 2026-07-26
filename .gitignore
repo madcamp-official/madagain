@@ -64,6 +64,11 @@ crashlytics-build.properties
 /MINDHEXER/Assets/Remesh Games/
 /MINDHEXER/Assets/Remesh Games.meta
 
+# ---- MINDHEXER-forDev: 작업 미러(추적 안 함) ----
+# MINDHEXER의 병렬 작업 사본. git 정본은 MINDHEXER/ 하나 → forDev는 스크립트로 동기화하는 미러라
+# 추적하면 모든 파일이 2배로 저장됨. (docs/KJH/decisions/0003-two-copy-mcp-workflow.md)
+/MINDHEXER-forDev/
+
 # ---- IDE / OS ----
 .vs/
 .vscode/
