@@ -12,11 +12,14 @@ namespace Game.View
         public float moveSpeed = 6f;
         public float lookSens = 0.1f;
 
+        [Tooltip("마우스 시점 회전 사용 여부. VR에선 머리 트래킹(Cardboard)이 회전을 소유하므로 false(이동만).")]
+        public bool lookEnabled = true;
+
         float _yaw, _pitch;
 
         void Start()
         {
-            Cursor.lockState = CursorLockMode.Locked;
+            if (lookEnabled) Cursor.lockState = CursorLockMode.Locked;
             Vector3 e = transform.eulerAngles;
             _yaw = e.y;
             _pitch = e.x;
@@ -28,7 +31,7 @@ namespace Game.View
             var mouse = Mouse.current;
             if (kb == null) return;
 
-            if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
+            if (lookEnabled && mouse != null && Cursor.lockState == CursorLockMode.Locked)
             {
                 Vector2 d = mouse.delta.ReadValue();
                 _yaw += d.x * lookSens;
@@ -43,7 +46,7 @@ namespace Game.View
             if (kb.dKey.isPressed) m.x += 1f;
             transform.position += transform.TransformDirection(m.normalized) * moveSpeed * Time.deltaTime;
 
-            if (kb.escapeKey.wasPressedThisFrame)
+            if (lookEnabled && kb.escapeKey.wasPressedThisFrame)
                 Cursor.lockState = Cursor.lockState == CursorLockMode.Locked
                     ? CursorLockMode.None : CursorLockMode.Locked;
         }
