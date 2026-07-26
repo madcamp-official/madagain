@@ -328,7 +328,10 @@ namespace Game.View
             Target = new RenderTexture(RtW, RtH, 24, RenderTextureFormat.ARGB32)
             {
                 name = "TitleActorRT",
-                antiAliasing = 4,
+                // MSAA RenderTexture는 URP Render Graph(Unity 6)에서 resolve 실패로
+                // "Missing resolve surface / bindMS rendertarget" 에러를 매 프레임 유발한다.
+                // 이 액터는 모든 씬에 자동부팅되므로 게임플레이 씬까지 에러가 번진다 → MSAA 끔.
+                antiAliasing = 1,
             };
             var camGo = new GameObject("Cam");
             camGo.transform.SetParent(transform, false);
