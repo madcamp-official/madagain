@@ -3,6 +3,8 @@ using UnityEngine;
 using MindHexer.Shared.Protocol;
 using MindHexer.Shared.Events;
 using MindHexer.Shared.Net;
+// UnityEngine.EventType(IMGUI)와의 모호성 제거: 이벤트 종류는 항상 shared의 것.
+using EventType = MindHexer.Shared.Events.EventType;
 
 namespace MindHexer.Headset.Net
 {
