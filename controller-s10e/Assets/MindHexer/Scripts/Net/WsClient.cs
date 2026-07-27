@@ -5,6 +5,8 @@ using NativeWebSocket;
 using MindHexer.Shared.Protocol;
 using MindHexer.Shared.Events;
 using MindHexer.Shared.Net;
+// UnityEngine.EventType(IMGUI)와의 모호성 제거.
+using EventType = MindHexer.Shared.Events.EventType;
 
 namespace MindHexer.Controller.Net
 {
@@ -39,8 +41,14 @@ namespace MindHexer.Controller.Net
 
         public PairingState State => _pairing?.State ?? PairingState.Idle;
 
-        /// <summary>마지막 WS 에러 메시지(HUD 진단용). 연결 실패 원인(거부/타임아웃 등) 확인.</summary>
+        /// <summary>마지막 WS 에러 메시지(HUD 진단용). 연결 성공(OnOpen) 시 자동으로 지워진다.</summary>
         public string LastError { get; private set; } = "";
+
+        /// <summary>지금까지 서버로 보낸 패턴 수(HUD 확인용).</summary>
+        public int PatternSentCount { get; private set; }
+
+        /// <summary>서버에서 온 마지막 패턴 판정 결과(성공/실패/미수신).</summary>
+        public string LastPatternResult { get; private set; } = "-";
 
         void IEventChannel.Send(string json)
         {
@@ -62,10 +70,11 @@ namespace MindHexer.Controller.Net
             _pairing = new PairingClient(this, NetworkConstants.ProtocolVersion, _deviceName);
             _pairing.Paired += () => Paired?.Invoke();
             _pairing.Rejected += r => Rejected?.Invoke(r);
-            _pairing.EventReceived += m => ServerEventReceived?.Invoke(m);
+            _pairing.EventReceived += OnServerEvent;
 
             _ws.OnOpen += () =>
             {
+                LastError = ""; // 연결 성공 → 이전 시도의 에러 문구 클리어
                 Debug.Log($"[WS] connected → {url}");
                 _pairing.BeginPairing(); // PairRequest 송신
             };
@@ -91,7 +100,19 @@ namespace MindHexer.Controller.Net
         public void SendEvent(EventMessage message) => _pairing?.SendEvent(message);
 
         /// <summary>완성된 스와이프 패턴(노드 시퀀스)을 서버로 송신.</summary>
-        public void SendPattern(int[] nodes) => SendEvent(EventMessage.PatternSubmit(nodes));
+        public void SendPattern(int[] nodes)
+        {
+            SendEvent(EventMessage.PatternSubmit(nodes));
+            PatternSentCount++;
+        }
+
+        // 서버 이벤트 수신(메인 스레드, NativeWebSocket DispatchMessageQueue 경유).
+        private void OnServerEvent(EventMessage m)
+        {
+            if (m.Type == EventType.PatternResult)
+                LastPatternResult = m.GetBool(EventMessage.KeySuccess) ? "성공" : "실패";
+            ServerEventReceived?.Invoke(m);
+        }
 
         private void Update()
         {

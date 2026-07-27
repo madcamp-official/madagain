@@ -20,6 +20,10 @@ namespace MindHexer.Headset.Gameplay
         /// <summary>목표 패턴 (2x2 노드 인덱스 0..3 시퀀스). 예: 0→1→3→2 (ㄷ자).</summary>
         public List<int> TargetPattern = new List<int> { 0, 1, 3, 2 };
 
+        /// <summary>마지막으로 수신한 패턴/판정(HUD 표시용).</summary>
+        public string LastPattern { get; private set; } = "-";
+        public string LastResult { get; private set; } = "-";
+
         private void Awake()
         {
             if (_wsServer == null) _wsServer = GetComponent<WebSocketServerHost>();
@@ -41,6 +45,9 @@ namespace MindHexer.Headset.Gameplay
             if (success)
                 for (int i = 0; i < TargetPattern.Count; i++)
                     if (nodes[i] != TargetPattern[i]) { success = false; break; }
+
+            LastPattern = nodes != null ? string.Join(",", nodes) : "-";
+            LastResult = success ? "성공" : "실패";
 
             _wsServer?.Broadcast(EventMessage.PatternResult(success, patternId: 0));
             return success;

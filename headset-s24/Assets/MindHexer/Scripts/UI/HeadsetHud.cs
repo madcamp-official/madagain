@@ -4,6 +4,7 @@ using MindHexer.Shared.Net;
 using MindHexer.Shared.Protocol;
 using MindHexer.Headset.Net;
 using MindHexer.Headset.Input;
+using MindHexer.Headset.Gameplay;
 
 namespace MindHexer.Headset.UI
 {
@@ -17,6 +18,7 @@ namespace MindHexer.Headset.UI
         [SerializeField] private WebSocketServerHost _ws;
         [SerializeField] private UdpReceiver _rx;
         [SerializeField] private InputBridge _bridge;
+        [SerializeField] private HackGrid _hack;
 
         public float UiScale = 2.0f;
 
@@ -34,6 +36,7 @@ namespace MindHexer.Headset.UI
             if (_ws == null) _ws = GetComponent<WebSocketServerHost>();
             if (_rx == null) _rx = GetComponent<UdpReceiver>();
             if (_bridge == null) _bridge = GetComponent<InputBridge>();
+            if (_hack == null) _hack = GetComponent<HackGrid>();
 
             _white = new Texture2D(1, 1);
             _white.SetPixel(0, 0, Color.white);
@@ -117,6 +120,9 @@ namespace MindHexer.Headset.UI
                 GUILayout.Label($"move = ({m.x:0.00}, {m.y:0.00})", _label);
                 GUILayout.Label($"지터버퍼: 지연 {_bridge.BufferDelayMs:0} ms, 지터 {_bridge.JitterMs:0.0} ms, 간격 {_bridge.IntervalMs:0.0} ms, 샘플 {_bridge.BufferedSamples}", _label);
             }
+
+            if (_hack != null)
+                GUILayout.Label($"패턴 수신: [{_hack.LastPattern}] → {_hack.LastResult}", _label);
 
             GUILayout.EndArea();
         }

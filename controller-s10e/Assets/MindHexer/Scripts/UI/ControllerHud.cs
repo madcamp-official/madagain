@@ -94,6 +94,9 @@ namespace MindHexer.Controller.UI
                 GUILayout.Label($"RTT: {_rtt.AverageRttMs:0.0} ms ({ok})", _label);
             }
 
+            if (_ws != null)
+                GUILayout.Label($"패턴: 보냄 {_ws.PatternSentCount} / 결과 {_ws.LastPatternResult}", _label);
+
             if (_ws != null && !string.IsNullOrEmpty(_ws.LastError))
                 GUILayout.Label($"WS 오류: {_ws.LastError}", _label);
 
