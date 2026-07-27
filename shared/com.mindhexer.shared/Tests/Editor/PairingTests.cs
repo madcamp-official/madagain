@@ -19,12 +19,29 @@ namespace MindHexer.Shared.Tests
             public event Action<string> Received;
             public event Action Closed;
             public void Send(string json) => _peer?.Received?.Invoke(json);
-            public void Close() => Closed?.Invoke();
+            // 실제 소켓처럼 양쪽 모두 닫힘 통지.
+            public void Close() { Closed?.Invoke(); _peer?.Closed?.Invoke(); }
             public static (FakeChannel a, FakeChannel b) Pair()
             {
                 var a = new FakeChannel(); var b = new FakeChannel();
                 a._peer = b; b._peer = a; return (a, b);
             }
+        }
+
+        [Test]
+        public void DropAll_ClosesSessionsAndUnpairs()
+        {
+            var (clientCh, serverCh) = FakeChannel.Pair();
+            var server = new PairingServer(NetworkConstants.ProtocolVersion);
+            server.Register("c1", serverCh);
+            var client = new PairingClient(clientCh, NetworkConstants.ProtocolVersion, "S10e");
+            client.BeginPairing();
+            Assert.AreEqual(1, server.PairedCount);
+
+            server.DropAll(); // UDP 끊김 감지 시 서버가 호출 → 세션 종료
+
+            Assert.AreEqual(0, server.PairedCount, "페어링 해제");
+            Assert.AreEqual(PairingState.Closed, client.State, "클라이언트도 닫힘 감지(→ 재연결 트리거)");
         }
 
         [Test]

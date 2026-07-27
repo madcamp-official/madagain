@@ -45,6 +45,9 @@ namespace MindHexer.Controller.Net
                 _ws.SendText(json);
         }
 
+        // 인터페이스 요구. 클라이언트 측은 자체 소켓을 닫는다(보통 서버가 끊으면 OnClose로 감지).
+        void IEventChannel.Close() { _ = CloseIfOpen(); }
+
         /// <summary>S24+ WebSocket 서버에 접속. 발견된 서버 IP/포트로 호출.</summary>
         public async void Connect(string serverIp, int wsPort)
         {

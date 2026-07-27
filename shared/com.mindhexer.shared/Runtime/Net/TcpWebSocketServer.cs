@@ -155,6 +155,14 @@ namespace MindHexer.Shared.Net
                 _stream = stream;
             }
 
+            public void Close()
+            {
+                if (_closed) return;
+                try { SendControl(0x8, Array.Empty<byte>()); } catch { }
+                MarkClosed();
+                try { _client.Close(); } catch { }
+            }
+
             public void Send(string json)
             {
                 if (_closed) return;

@@ -18,10 +18,16 @@ namespace MindHexer.Headset.Net
     /// </summary>
     public sealed class WebSocketServerHost : MonoBehaviour
     {
+        [SerializeField] private UdpReceiver _rx; // UDP 끊김 감지용(워치독)
+
         private TcpWebSocketServer _server;
         private PairingServer _pairing;
+        private bool _droppedForTimeout;
 
         public int PairedCount => _pairing?.PairedCount ?? 0;
+
+        /// <summary>UDP 스트림 끊김 경고(HUD 표시용). 한 번이라도 받은 뒤 1초+ 미수신이면 true.</summary>
+        public bool LinkWarning { get; private set; }
 
         /// <summary>클라이언트 페어링 성공(메인 스레드).</summary>
         public event Action<string> ClientPaired;
@@ -31,6 +37,27 @@ namespace MindHexer.Headset.Net
 
         /// <summary>완성된 스와이프 패턴 수신(메인 스레드). 인자는 노드 시퀀스(0..3).</summary>
         public event Action<int[]> PatternSubmitted;
+
+        private void Awake()
+        {
+            if (_rx == null) _rx = GetComponent<UdpReceiver>();
+        }
+
+        // 워치독: UDP 스트림이 끊기면(1초+ 미수신) 경고를 세우고, 페어링된 스테일 세션을 끊어
+        // 컨트롤러의 WebSocket 재연결(재페어링)을 유도한다. (SPEC 5.1)
+        private void Update()
+        {
+            bool timedOut = _rx != null && _rx.AcceptedCount > 0 && _rx.IsTimedOut;
+            LinkWarning = timedOut;
+
+            if (timedOut && PairedCount > 0 && !_droppedForTimeout)
+            {
+                Debug.LogWarning("[WS] UDP 스트림 1초+ 미수신 → 스테일 세션 드롭(컨트롤러 재연결 유도).");
+                _pairing?.DropAll();
+                _droppedForTimeout = true;
+            }
+            if (!timedOut) _droppedForTimeout = false;
+        }
 
         private void OnEnable()
         {

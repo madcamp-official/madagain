@@ -74,6 +74,19 @@ namespace MindHexer.Headset.UI
         private void OnGUI()
         {
             EnsureStyles();
+
+            // 연결 끊김 경고(SPEC 5.1): UDP 1초+ 미수신 시 상단에 빨간 배너.
+            bool warn = _ws != null ? _ws.LinkWarning : (_rx != null && _rx.AcceptedCount > 0 && _rx.IsTimedOut);
+            if (warn)
+            {
+                float bh = 44 * UiScale;
+                var bar = new Rect(0, 0, Screen.width, bh);
+                var pc = GUI.color; GUI.color = new Color(0.75f, 0.05f, 0.05f, 0.92f);
+                GUI.DrawTexture(bar, _white); GUI.color = pc;
+                var ws = new GUIStyle(_title) { alignment = TextAnchor.MiddleCenter, normal = { textColor = Color.white } };
+                GUI.Label(bar, "⚠ UDP 스트림 끊김 — 컨트롤러 재연결 대기 중", ws);
+            }
+
             float pad = 14 * UiScale;
             var area = new Rect(pad, pad, Mathf.Min(Screen.width - pad * 2, 720 * UiScale), 300 * UiScale);
             var prev = GUI.color; GUI.color = new Color(0f, 0f, 0f, 0.6f);

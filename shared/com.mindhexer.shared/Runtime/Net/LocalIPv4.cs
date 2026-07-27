@@ -76,21 +76,46 @@ namespace MindHexer.Shared.Net
         }
 
         /// <summary>
-        /// 핫스팟 호스트(=대개 서버) IP를 추정한다. 우선순위: 실제 게이트웨이 → 로컬 IP의 서브넷 .1 → fallback.
+        /// 핫스팟 호스트(=대개 서버) IP를 추정한다. 우선순위: 실제 게이트웨이 → 사설 LAN IP의 서브넷 .1 → fallback.
         /// 헤드셋이 핫스팟을 열고 컨트롤러가 붙은 구성에서, 컨트롤러가 헤드셋 IP를 자동 취득하는 데 쓴다.
+        /// 인터넷 없는 핫스팟에서도 동작하도록 인터페이스 IP 열거를 우선 사용(Socket.Connect 트릭 비의존).
         /// </summary>
         public static string GuessServerHost(string fallback = "127.0.0.1")
         {
+            // 1) 실제 게이트웨이(가능하면 가장 정확).
             string gw = GetGatewayIPv4();
-            if (!string.IsNullOrEmpty(gw)) return gw;
+            if (IsRoutable(gw)) return gw;
 
-            string local = Resolve(null);
-            if (!string.IsNullOrEmpty(local))
+            // 2) 사설 LAN IPv4의 서브넷 .1 (핫스팟 호스트 관례). 인터넷 불필요 → 인터페이스에서 직접.
+            string local = PickPrivateIPv4();
+            if (string.IsNullOrEmpty(local)) local = Resolve(null); // 최후 폴백
+            if (IsRoutable(local))
             {
                 int dot = local.LastIndexOf('.');
-                if (dot > 0) return local.Substring(0, dot) + ".1"; // 서브넷 호스트 관례(.1)
+                if (dot > 0) return local.Substring(0, dot) + ".1";
             }
             return fallback;
+        }
+
+        // 활성 인터페이스에서 사설 IPv4를 하나 고른다(핫스팟 서브넷 우선). APIPA(169.254.)/루프백 제외.
+        private static string PickPrivateIPv4()
+        {
+            string fallback = null;
+            foreach (var (_, ip) in AllIPv4())
+            {
+                if (string.IsNullOrEmpty(ip) || ip.StartsWith("169.254.")) continue; // 링크로컬 제외
+                if (ip.StartsWith("192.168.")) return ip;                              // 핫스팟/가정용 최우선
+                if (fallback == null && (ip.StartsWith("10.") || ip.StartsWith("172."))) fallback = ip;
+                if (fallback == null) fallback = ip;
+            }
+            return fallback;
+        }
+
+        private static bool IsRoutable(string ip)
+        {
+            if (string.IsNullOrEmpty(ip) || ip == "0.0.0.0" || ip == "127.0.0.1") return false;
+            if (ip.StartsWith("169.254.")) return false;
+            return true;
         }
     }
 }

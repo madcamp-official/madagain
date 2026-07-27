@@ -95,5 +95,18 @@ namespace MindHexer.Shared.Net
             string json = message.Encode();
             foreach (var ch in targets) ch.Send(json);
         }
+
+        /// <summary>모든 클라이언트 세션을 닫고 상태를 비운다. (UDP 스트림 끊김 감지 시 서버가 호출 → 컨트롤러 재페어링 유도)</summary>
+        public void DropAll()
+        {
+            List<IEventChannel> chans;
+            lock (_lock)
+            {
+                chans = new List<IEventChannel>(_channels.Values);
+                _paired.Clear();
+                _channels.Clear();
+            }
+            foreach (var ch in chans) { try { ch.Close(); } catch { } }
+        }
     }
 }

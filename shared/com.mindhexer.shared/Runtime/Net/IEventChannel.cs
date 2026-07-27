@@ -15,6 +15,9 @@ namespace MindHexer.Shared.Net
         /// <summary>이 채널로 텍스트(플랫 JSON) 한 건 송신.</summary>
         void Send(string json);
 
+        /// <summary>이 채널(연결)을 닫는다. 서버가 스테일 세션을 끊어 재페어링을 유도할 때 사용.</summary>
+        void Close();
+
         /// <summary>텍스트 수신 시 발생. 인자는 원본 문자열.</summary>
         event Action<string> Received;
 
