@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -52,13 +53,36 @@ namespace MindHexer.Shared.Net
             _udp.EnableBroadcast = true;
         }
 
-        /// <summary>비콘 1회 송신.</summary>
+        /// <summary>
+        /// 비콘 1회 송신. 제한 브로드캐스트(255.255.255.255)뿐 아니라 **각 인터페이스의 서브넷 지향
+        /// 브로드캐스트(x.x.x.255)** 로도 보낸다 → 핫스팟에서 255.255.255.255가 드롭돼도 도달률↑.
+        /// </summary>
         public void BroadcastOnce()
         {
             EnsureSocket();
             byte[] payload = DiscoveryBeacon.Build(_serverIp, _wsPort);
-            _udp.Send(payload, payload.Length, new IPEndPoint(_target, _discoveryPort));
+            foreach (var ep in BuildTargets())
+            {
+                try { _udp.Send(payload, payload.Length, ep); } catch { /* 개별 대상 실패 무시 */ }
+            }
             Interlocked.Increment(ref _sentCount);
+        }
+
+        // 송신 대상 목록: 설정된 target + (제한 브로드캐스트일 때) 활성 인터페이스의 지향 브로드캐스트.
+        private List<IPEndPoint> BuildTargets()
+        {
+            var list = new List<IPEndPoint> { new IPEndPoint(_target, _discoveryPort) };
+            if (_target.Equals(IPAddress.Broadcast))
+            {
+                foreach (var (_, ip) in LocalIPv4.AllIPv4())
+                {
+                    int dot = ip.LastIndexOf('.');
+                    if (dot <= 0) continue;
+                    if (IPAddress.TryParse(ip.Substring(0, dot) + ".255", out var dir))
+                        list.Add(new IPEndPoint(dir, _discoveryPort));
+                }
+            }
+            return list;
         }
 
         /// <summary>주기 브로드캐스트 시작.</summary>

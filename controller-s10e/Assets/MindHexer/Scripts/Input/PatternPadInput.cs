@@ -26,7 +26,7 @@ namespace MindHexer.Controller.Input
         [Tooltip("최대 노드 간격 = 화면 짧은 변 × 이 비율(2x2 박스 한 변). **가장 커질 수 있는 크기의 상한**으로, " +
                  "안드로이드 3x3 패턴보다 조금 작은 정도. 대부분의 시작 위치에선 아래/오른쪽 프레임까지 남은 공간에 " +
                  "맞춰 이보다 작아지므로 **터치 위치에 따라 크기가 가변**한다(여유가 아주 많은 곳에서만 이 상한에 걸림).")]
-        [Range(0.15f, 0.7f)] public float MaxSpacingFraction = 0.5f;
+        [Range(0.15f, 0.7f)] public float MaxSpacingFraction = 0.375f;
 
         [Tooltip("프레임에서 남길 여백 = 화면 높이 × 이 비율(패턴이 화면 밖으로 넘어가지 않게).")]
         [Range(0f, 0.1f)] public float EdgeMarginFraction = 0.02f;

@@ -39,6 +39,9 @@ namespace MindHexer.Controller.Net
 
         public PairingState State => _pairing?.State ?? PairingState.Idle;
 
+        /// <summary>마지막 WS 에러 메시지(HUD 진단용). 연결 실패 원인(거부/타임아웃 등) 확인.</summary>
+        public string LastError { get; private set; } = "";
+
         void IEventChannel.Send(string json)
         {
             if (_ws != null && _ws.State == WebSocketState.Open)
@@ -71,7 +74,7 @@ namespace MindHexer.Controller.Net
                 string json = Encoding.UTF8.GetString(bytes);
                 Received?.Invoke(json); // PairingClient가 구독 중
             };
-            _ws.OnError += err => Debug.LogWarning($"[WS] error: {err}");
+            _ws.OnError += err => { LastError = err; Debug.LogWarning($"[WS] error: {err}"); };
             _ws.OnClose += _ =>
             {
                 Closed?.Invoke();      // PairingClient 내부용
