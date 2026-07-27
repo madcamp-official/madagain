@@ -1,5 +1,6 @@
 using UnityEngine;
 using MindHexer.Shared.Protocol;
+using MindHexer.Shared.Input;
 using MindHexer.Controller.Net;
 
 namespace MindHexer.Controller.Input
@@ -22,13 +23,24 @@ namespace MindHexer.Controller.Input
         [SerializeField] private UdpSender _sender;
         [SerializeField] private FloatingJoystickInput _joystick;
 
-        [Tooltip("6DoF 트래커(ARCore 등)가 갱신하는 디바이스 포즈. 미할당 시 자이로 회전만 사용(3DoF 폴백).")]
+        [Tooltip("6DoF 트래커(ARCore 등)가 갱신하는 디바이스 포즈. 할당되면 정확한 위치/회전을 그대로 사용.")]
         [SerializeField] private Transform poseSource;
+
+        [Header("IMU 위치 폴백 (poseSource 미할당 시)")]
+        [Tooltip("ARCore 없이 IMU 선형가속도 적분으로 위치를 추정(드리프트 있음, 브링업용). 끄면 위치 0.")]
+        [SerializeField] private bool useImuPositionFallback = true;
+        [SerializeField] private float imuVelocityDamping = 3.0f;
+        [SerializeField] private float imuAccelDeadZone = 0.30f;
+
+        private const float G = 9.81f;
+        private readonly ImuPositionEstimator _imu = new ImuPositionEstimator();
 
         private void Awake()
         {
             if (_sender == null) _sender = GetComponent<UdpSender>();
             if (_joystick == null) _joystick = GetComponent<FloatingJoystickInput>();
+            _imu.VelocityDamping = imuVelocityDamping;
+            _imu.AccelDeadZone = imuAccelDeadZone;
         }
 
         private void Start()
@@ -45,7 +57,7 @@ namespace MindHexer.Controller.Input
             Vector3 accel = UnityEngine.Input.acceleration;
             Vector2 move = _joystick != null ? _joystick.MoveAxis : Vector2.zero; // 조이스틱 이동축
 
-            // 6DoF 포즈: 트래커가 있으면 위치+회전을, 없으면 자이로 회전 + 0 위치(3DoF 폴백).
+            // 6DoF 포즈: 트래커(poseSource)가 있으면 그대로. 없으면 자이로 회전 + IMU 적분 위치(폴백).
             Vector3 position;
             Quaternion rotation;
             if (poseSource != null)
@@ -55,10 +67,21 @@ namespace MindHexer.Controller.Input
             }
             else
             {
-                position = Vector3.zero;
                 rotation = SystemInfo.supportsGyroscope
                     ? UnityEngine.Input.gyro.attitude
                     : Quaternion.identity;
+
+                if (useImuPositionFallback && SystemInfo.supportsGyroscope)
+                {
+                    // userAcceleration: 중력 제거된 선형가속도(단위 g) → m/s²로 변환 후 이중 적분.
+                    Vector3 ua = UnityEngine.Input.gyro.userAcceleration;
+                    _imu.Integrate(new Vector3(ua.x * G, ua.y * G, ua.z * G), Time.deltaTime);
+                    position = _imu.Position;
+                }
+                else
+                {
+                    position = Vector3.zero;
+                }
             }
 
             int touchCount = UnityEngine.Input.touchCount;
