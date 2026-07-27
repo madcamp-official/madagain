@@ -2,6 +2,7 @@ using UnityEngine;
 using MindHexer.Headset.Net;
 using MindHexer.Headset.Input;
 using MindHexer.Headset.Gameplay;
+using MindHexer.Headset.UI;
 
 namespace MindHexer.Headset
 {
@@ -29,8 +30,9 @@ namespace MindHexer.Headset
             go.AddComponent<WebSocketServerHost>();          // 내장 WebSocket 서버(페어링/이벤트)
             go.AddComponent<DiscoveryBroadcasterBehaviour>();// 자신의 IP 브로드캐스트
             go.AddComponent<RttResponderBehaviour>();        // RTT Ping 에코
-            go.AddComponent<InputBridge>();                  // 수신 패킷 → 보간된 게임 입력
+            go.AddComponent<InputBridge>();                  // 수신 패킷 → 지터 버퍼 → 보간된 게임 입력
             go.AddComponent<HackGrid>();                     // 패턴 수신/판정(WS PatternSubmit)
+            go.AddComponent<HeadsetHud>();                   // 화면 상태 표시(서버/수신/6DoF)
 
             Object.DontDestroyOnLoad(go);
             go.SetActive(true);

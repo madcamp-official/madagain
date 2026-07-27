@@ -22,9 +22,14 @@ namespace MindHexer.Controller.Net
         [SerializeField] private TouchGyroCapture _capture;
         [SerializeField] private PatternPadInput _pattern;
 
-        [Tooltip("부팅 시 자동 접속할 기본 서버 IP. Windows PC 모바일 핫스팟 호스트는 항상 192.168.137.1. " +
-                 "비우면 디스커버리/수동입력만 사용. 디스커버리·수동입력이 오면 그 값으로 덮어씀.")]
-        public string DefaultServerIp = "192.168.137.1";
+        [Tooltip("서버 IP 자동 취득: 디스커버리 비콘 우선, 없으면 게이트웨이(핫스팟 호스트=헤드셋) 자동 추정.")]
+        public bool AutoAcquireServerIp = true;
+
+        [Tooltip("디스커버리를 이만큼(초) 기다린 뒤에도 못 찾으면 게이트웨이 IP로 자동 접속.")]
+        [Range(0f, 10f)] public float DiscoveryGraceSeconds = 3f;
+
+        [Tooltip("수동 서버 IP(선택). 비우면 자동 취득. 값이 있으면 부팅 즉시 이 IP로.")]
+        public string ManualServerIp = "";
 
         private enum FlowState { NoTarget, Connecting, Paired, Rejected }
         private FlowState _state = FlowState.NoTarget;
@@ -34,15 +39,18 @@ namespace MindHexer.Controller.Net
         private int _targetWsPort;
         private bool _hasTarget;
         private float _nextAttemptTime;
+        private float _enableTime;
 
         public bool IsPaired => _state == FlowState.Paired;
+        /// <summary>현재 접속 대상 IP(HUD 표시용). 없으면 빈 문자열.</summary>
+        public string TargetIp => _targetIp ?? "";
 
         /// <summary>사람이 읽는 현재 상태(HUD 표시용).</summary>
         public string StatusText => _state switch
         {
-            FlowState.NoTarget => _discovery != null && _discovery.HasServer ? "서버 발견됨" : "서버 검색 중…",
-            FlowState.Connecting => $"연결 중… (시도 {_reconnect.Attempt})",
-            FlowState.Paired => "페어링됨",
+            FlowState.NoTarget => _discovery != null && _discovery.HasServer ? "서버 발견됨" : "서버 자동 탐색 중…",
+            FlowState.Connecting => $"연결 중… {_targetIp} (시도 {_reconnect.Attempt})",
+            FlowState.Paired => $"페어링됨 ({_targetIp})",
             FlowState.Rejected => "거부됨(버전 불일치)",
             _ => "-"
         };
@@ -70,11 +78,11 @@ namespace MindHexer.Controller.Net
             }
             if (_pattern != null) _pattern.PatternCompleted += OnPatternCompleted;
 
-            // 기본 서버 IP가 설정돼 있으면 부팅 즉시 자동 접속 시도.
-            // (자동 디스커버리가 안 되는 PC-핫스팟 구성에서 폰 조작 없이 붙게 함.
-            //  디스커버리/수동입력이 오면 SetTarget이 대상을 덮어씀.)
-            if (!string.IsNullOrWhiteSpace(DefaultServerIp))
-                SetTarget(DefaultServerIp.Trim(), NetworkConstants.WebSocketPort);
+            _enableTime = Time.time;
+
+            // 수동 IP가 지정돼 있으면 그 값으로 즉시. 아니면 디스커버리(비콘) → 게이트웨이 순으로 자동 취득.
+            if (!string.IsNullOrWhiteSpace(ManualServerIp))
+                SetTarget(ManualServerIp.Trim(), NetworkConstants.WebSocketPort);
         }
 
         private void OnDisable()
@@ -98,6 +106,21 @@ namespace MindHexer.Controller.Net
 
         private void Update()
         {
+            // 대상이 아직 없고, 디스커버리도 유예시간 내 못 찾았으면 → 게이트웨이(핫스팟 호스트=헤드셋)로 자동 접속.
+            if (!_hasTarget && AutoAcquireServerIp && (Time.time - _enableTime) >= DiscoveryGraceSeconds)
+            {
+                string host = LocalIPv4.GuessServerHost(null);
+                if (!string.IsNullOrEmpty(host))
+                {
+                    Debug.Log($"[Flow] 디스커버리 미발견 → 게이트웨이 자동 접속: {host}");
+                    SetTarget(host, NetworkConstants.WebSocketPort);
+                }
+                else
+                {
+                    _enableTime = Time.time; // 재추정을 위해 유예 리셋
+                }
+            }
+
             // 재연결 스케줄러: 대상이 있고 아직 페어링/거부 상태가 아니면 백오프에 맞춰 재시도.
             if (!_hasTarget || _state == FlowState.Paired || _state == FlowState.Rejected) return;
             if (Time.time < _nextAttemptTime) return;

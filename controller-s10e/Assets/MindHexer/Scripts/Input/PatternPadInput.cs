@@ -23,8 +23,13 @@ namespace MindHexer.Controller.Input
         [Tooltip("패턴 인식 영역(정규화 0..1). 기본: 화면 오른쪽 절반.")]
         public Rect ActiveRegion = new Rect(0.5f, 0f, 0.5f, 1f);
 
-        [Tooltip("노드 간격 = 화면 높이 × 이 비율.")]
-        [Range(0.08f, 0.35f)] public float NodeSpacingFraction = 0.20f;
+        [Tooltip("최대 노드 간격 = 화면 짧은 변 × 이 비율(2x2 박스 한 변). 여백이 충분해도 이 값을 넘지 않아 " +
+                 "프레임에 닿지 않는다. 일반적인 안드로이드 3x3 패드 전체보다 조금 작은 컴팩트 크기. " +
+                 "시작 위치가 아래/오른쪽 프레임에 가까우면 이보다 더 줄어든다.")]
+        [Range(0.08f, 0.35f)] public float MaxSpacingFraction = 0.22f;
+
+        [Tooltip("프레임에서 남길 여백 = 화면 높이 × 이 비율(패턴이 화면 밖으로 넘어가지 않게).")]
+        [Range(0f, 0.1f)] public float EdgeMarginFraction = 0.02f;
 
         [Tooltip("노드 히트 반경 = 간격 × 이 비율.")]
         [Range(0.2f, 0.5f)] public float HitRadiusFraction = 0.42f;
@@ -64,8 +69,8 @@ namespace MindHexer.Controller.Input
             if (_circle != null) Destroy(_circle);
         }
 
-        private float Spacing => NodeSpacingFraction * Screen.height;
-        private float HitRadius => Spacing * HitRadiusFraction;
+        private float _spacing;                        // 시작 시 화면에 맞춰 계산된 노드 간격(px)
+        private float HitRadius => _spacing * HitRadiusFraction;
 
         private void Update()
         {
@@ -104,7 +109,14 @@ namespace MindHexer.Controller.Input
 
         private void StartPattern(Vector2 press)
         {
-            float s = Spacing;
+            // 시작점에서 아래(-y)·오른쪽(+x)로 펼쳐지므로, 프레임까지 남은 공간에 맞춰 간격을 정한다
+            // (아래/오른쪽 프레임에 가까울수록 작게 → 화면 밖으로 안 나감). 상단·가로중앙 시작 시 최대.
+            // 최대치도 화면 짧은 변 × MaxSpacingFraction으로 제한 → 여백이 충분해도 프레임에 닿지 않는다.
+            float shorter = Mathf.Min(Screen.width, Screen.height);
+            float maxSpacing = MaxSpacingFraction * shorter;
+            float edgeMargin = EdgeMarginFraction * shorter;
+            _spacing = PatternPadLayout.FitSpacing(press.x, press.y, Screen.width, maxSpacing, edgeMargin);
+            float s = _spacing;
             // 첫 터치 = 좌상단 노드(0). 오른쪽(+x)/아래(-y, 화면 y-up)로 2x2 전개.
             _nodeScreen[0] = new Vector2(press.x, press.y);         // TL
             _nodeScreen[1] = new Vector2(press.x + s, press.y);     // TR
@@ -167,7 +179,7 @@ namespace MindHexer.Controller.Input
                 DrawLine(ToGui(_nodeScreen[path[path.Count - 1]]), ToGui(_liveScreen), lineW, PathLine);
 
             // 노드 점
-            float dot = Spacing * 0.28f;
+            float dot = _spacing * 0.28f;
             for (int k = 0; k < Nodes; k++)
                 DrawDisc(ToGui(_nodeScreen[k]), dot, _pattern.Contains(k) ? NodeOn : NodeIdle);
         }

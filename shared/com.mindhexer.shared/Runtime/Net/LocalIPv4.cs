@@ -49,5 +49,48 @@ namespace MindHexer.Shared.Net
             catch { /* 권한/플랫폼 이슈 → 빈 목록 */ }
             return result;
         }
+
+        /// <summary>
+        /// 기본 게이트웨이 IPv4를 반환(없으면 null). 핫스팟에서는 보통 **호스트(=서버)** 가 게이트웨이다.
+        /// (Android/Mono는 GatewayAddresses가 비어 있을 수 있음 → 그때는 null.)
+        /// </summary>
+        public static string GetGatewayIPv4()
+        {
+            try
+            {
+                foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+                {
+                    if (ni.OperationalStatus != OperationalStatus.Up) continue;
+                    if (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback) continue;
+                    foreach (var ga in ni.GetIPProperties().GatewayAddresses)
+                    {
+                        if (ga?.Address == null) continue;
+                        if (ga.Address.AddressFamily != AddressFamily.InterNetwork) continue;
+                        string s = ga.Address.ToString();
+                        if (!string.IsNullOrEmpty(s) && s != "0.0.0.0") return s;
+                    }
+                }
+            }
+            catch { /* 무시 */ }
+            return null;
+        }
+
+        /// <summary>
+        /// 핫스팟 호스트(=대개 서버) IP를 추정한다. 우선순위: 실제 게이트웨이 → 로컬 IP의 서브넷 .1 → fallback.
+        /// 헤드셋이 핫스팟을 열고 컨트롤러가 붙은 구성에서, 컨트롤러가 헤드셋 IP를 자동 취득하는 데 쓴다.
+        /// </summary>
+        public static string GuessServerHost(string fallback = "127.0.0.1")
+        {
+            string gw = GetGatewayIPv4();
+            if (!string.IsNullOrEmpty(gw)) return gw;
+
+            string local = Resolve(null);
+            if (!string.IsNullOrEmpty(local))
+            {
+                int dot = local.LastIndexOf('.');
+                if (dot > 0) return local.Substring(0, dot) + ".1"; // 서브넷 호스트 관례(.1)
+            }
+            return fallback;
+        }
     }
 }

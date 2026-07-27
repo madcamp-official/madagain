@@ -1,48 +1,55 @@
 using UnityEngine;
 using MindHexer.Shared.Protocol;
+using MindHexer.Shared.Net;
 using MindHexer.Headset.Net;
 
 namespace MindHexer.Headset.Input
 {
     /// <summary>
-    /// 수신된 6DoF <see cref="InputPacket"/>을 게임 입력으로 변환한다. (SPEC 3.3)
-    ///  - 터치 정규화 좌표: Lerp 보간 → 3x3 해킹 그리드 좌표계 매핑
-    ///  - 6DoF 위치: Lerp 보간 (Vector3)
-    ///  - 6DoF 회전: Slerp 보간 (Quaternion) → 조준/동적 해킹 조작
-    /// 위치·회전 함께 보간해 패킷 유실 시에도 부드러운 6DoF 포즈를 유지한다.
-    /// 헤드트래킹(시점)은 S24+ 자체 센서 전담이며, 이 포즈는 컨트롤러 입력용(SPEC 5.5).
+    /// 수신된 6DoF <see cref="InputPacket"/> 스트림을 **지터 버퍼**(<see cref="JitterBuffer"/>)로 흘려
+    /// 재생 지연만큼 뒤처진 시점에서 시간 보간(위치 Lerp / 회전 Slerp)한 부드러운 포즈를 게임 입력으로 낸다. (SPEC 2.1/5)
     ///
-    /// TODO(담당자 A, 4일차): 그리드 매핑/조준 레이 연결, 지터 버퍼 튜닝.
+    /// 이전엔 매 프레임 최신값을 고정계수로 Lerp만 했으나, 그건 지터/유실에 취약했다. 이제:
+    ///  - <see cref="UdpReceiver.Drain"/>로 프레임 사이 도착한 **모든** 패킷을 버퍼에 넣고
+    ///  - 버퍼가 (newest - 적응지연) 시점에서 두 샘플을 시간 보간한다.
+    /// 헤드트래킹(시점)은 S24+ 자체 센서 전담이며, 이 포즈는 컨트롤러 입력용(SPEC 5.5).
     /// </summary>
     public sealed class InputBridge : MonoBehaviour
     {
         [SerializeField] private UdpReceiver _receiver;
 
-        [Tooltip("좌표/위치 Lerp 보간 계수(프레임당). 값이 클수록 반응 빠르고 끊김 큼.")]
-        [Range(0.01f, 1f)] public float PositionLerp = 0.35f;
+        [Header("지터 버퍼 튜닝")]
+        [Tooltip("기본 재생 지연(ms). 클수록 부드럽지만 지연↑. 적응 시 하한으로 작동.")]
+        [Range(0f, 250f)] public float TargetDelayMs = 60f;
+        [Tooltip("관측 간격·지터에 맞춰 지연 자동 조정.")]
+        public bool Adaptive = true;
+        [Tooltip("재생 커서가 목표로 수렴하는 속도(1/초).")]
+        [Range(1f, 20f)] public float CatchupRate = 8f;
+        [Range(0f, 200f)] public float MinDelayMs = 30f;
+        [Range(50f, 500f)] public float MaxDelayMs = 250f;
 
-        [Tooltip("회전 Slerp 보간 계수(프레임당).")]
-        [Range(0.01f, 1f)] public float RotationSlerp = 0.35f;
-
-        [Tooltip("이동축(조이스틱) Lerp 보간 계수(프레임당).")]
-        [Range(0.05f, 1f)] public float MoveLerp = 0.5f;
+        private readonly JitterBuffer _buffer = new JitterBuffer();
+        private bool _wasTimedOut;
 
         private Vector2 _smoothedUv;
         private Vector3 _smoothedPos;
         private Quaternion _smoothedRot = Quaternion.identity;
         private Vector2 _smoothedMove;
 
-        /// <summary>보간된 정규화 좌표(0..1). 그리드 매핑 입력.</summary>
+        /// <summary>보간된 정규화 좌표(0..1).</summary>
         public Vector2 SmoothedNormalizedPos => _smoothedUv;
-
         /// <summary>보간된 6DoF 위치.</summary>
         public Vector3 SmoothedPosition => _smoothedPos;
-
         /// <summary>보간된 6DoF 회전.</summary>
         public Quaternion SmoothedRotation => _smoothedRot;
-
-        /// <summary>보간된 조이스틱 이동축(-1..1 디스크). 캐릭터 이동 입력.</summary>
+        /// <summary>보간된 조이스틱 이동축(-1..1).</summary>
         public Vector2 MoveAxis => _smoothedMove;
+
+        // 디버그/HUD용
+        public float BufferDelayMs => _buffer.CurrentDelayMs;
+        public double JitterMs => _buffer.JitterMs;
+        public double IntervalMs => _buffer.IntervalMs;
+        public int BufferedSamples => _buffer.Count;
 
         private void Awake()
         {
@@ -53,20 +60,34 @@ namespace MindHexer.Headset.Input
         {
             if (_receiver == null) return;
 
+            // 인스펙터 튜닝을 버퍼에 반영.
+            _buffer.TargetDelayMs = TargetDelayMs;
+            _buffer.Adaptive = Adaptive;
+            _buffer.CatchupRate = CatchupRate;
+            _buffer.MinDelayMs = MinDelayMs;
+            _buffer.MaxDelayMs = MaxDelayMs;
+
             if (_receiver.IsTimedOut)
             {
-                // TODO(SPEC 5.1): UI 경고 표시 + WebSocket 재연결 시도 트리거.
+                // 연결 끊김: 큰 시간 간극을 넘어 보간하지 않도록 1회 리셋하고 마지막 포즈 유지.
+                if (!_wasTimedOut) { _buffer.Reset(); _wasTimedOut = true; }
                 return;
             }
+            _wasTimedOut = false;
 
-            if (!_receiver.TryGetLatest(out var p)) return;
+            long nowMs = (long)(Time.realtimeSinceStartupAsDouble * 1000.0);
+            _receiver.Drain(p => _buffer.Push(p, nowMs)); // 프레임 사이 도착분 전부 적재
 
-            _smoothedUv = Vector2.Lerp(_smoothedUv, p.NormalizedPos, PositionLerp);
-            _smoothedPos = Vector3.Lerp(_smoothedPos, p.Position, PositionLerp);
-            _smoothedRot = Quaternion.Slerp(_smoothedRot, p.Rotation, RotationSlerp);
-            _smoothedMove = Vector2.Lerp(_smoothedMove, p.MoveAxis, MoveLerp);
+            _buffer.Advance(Time.deltaTime * 1000.0);
 
-            // TODO: _smoothedMove → 캐릭터 이동, _smoothedPos/_smoothedRot → 조준 레이 발행.
+            if (_buffer.TrySample(out var s))
+            {
+                _smoothedUv = s.NormalizedPos;
+                _smoothedPos = s.Position;
+                _smoothedRot = s.Rotation;
+                _smoothedMove = s.MoveAxis;
+                // TODO: _smoothedMove → 캐릭터 이동, _smoothedPos/_smoothedRot → 조준 레이.
+            }
         }
     }
 }
