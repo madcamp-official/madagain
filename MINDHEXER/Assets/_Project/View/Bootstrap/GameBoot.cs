@@ -55,7 +55,10 @@ namespace Game.View
             _cam.transform.position = startPosition + Vector3.up * eyeHeight;
 
             var go = _cam.gameObject;
-            if (go.GetComponent<FreeLookController>() == null) go.AddComponent<FreeLookController>();
+            // 간이 1인칭 본체(CharacterController+WASD+가속+중력). FreeLook(나는 테스트 카메라) 대체.
+            if (go.GetComponent<FirstPersonPlayer>() == null) go.AddComponent<FirstPersonPlayer>();
+            // 자동 난간 오르기 + 틈 건너뛰기(버튼 없음 — 앞으로 걸어가면 처리).
+            if (go.GetComponent<AutoTraversal>() == null) go.AddComponent<AutoTraversal>();
             // HackDriver는 [RequireComponent(HackContext)]라 HackContext도 함께 붙는다.
             if (go.GetComponent<HackDriver>() == null) go.AddComponent<HackDriver>();
 
@@ -87,6 +90,11 @@ namespace Game.View
             // ScreenSpace HUD → 머리 앞 World-Space 패널(양안 렌더). (사용자 C 작업 이식)
             var hud = new GameObject("[VrHudSpace]").AddComponent<VrHudSpace>();
             hud.head = _cam.transform;
+
+            // VR 튜닝 툴 — 눈높이·HUD·렌더스케일을 JSON 저장/로드·적용(기기 오면 값만 조정).
+            var tuning = gameObject.AddComponent<VrTuning>();
+            tuning.head = _cam.transform;
+            tuning.hud = hud;
         }
     }
 }

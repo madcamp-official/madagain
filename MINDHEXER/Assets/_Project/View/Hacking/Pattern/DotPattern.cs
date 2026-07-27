@@ -12,8 +12,5 @@ namespace Game.View
 
         /// <summary>획(선) 개수 = 점 수 - 1.</summary>
         public int LineCount => dots.Length - 1;
-
-        /// <summary>strokeIndex번째 획(0-based)이 도달해야 할 정답 점.</summary>
-        public int TargetAfter(int strokeIndex) => dots[strokeIndex + 1];
     }
 }

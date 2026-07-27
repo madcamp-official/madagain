@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 1990176339174957780}
   - component: {fileID: 6221068635690536649}
   - component: {fileID: 5075280925165707399}
+  - component: {fileID: 3303072807830158830}
+  - component: {fileID: 8356106383448926289}
   m_Layer: 8
   m_Name: RailCarrier
   m_TagString: Untagged
@@ -131,3 +133,44 @@ MonoBehaviour:
   hackRange: 15
   gazeCollider: {fileID: 0}
   glowRenderers: []
+--- !u!114 &3303072807830158830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8815757013316145372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec9931c795ae0d645b09e0c0ea261eb7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ControlAxisGizmo
+  slot0Color: {r: 0.4, g: 1, b: 0.3, a: 1}
+  slot1Color: {r: 1, g: 0.6, b: 0.2, a: 1}
+  barLength: 3
+  barThickness: 0.08
+--- !u!114 &8356106383448926289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8815757013316145372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 131f921db28223a40a6933810e7699bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.RailCarrier
+  axes:
+  - world: {x: 1, y: 0, z: 0}
+    travelMin: -6
+    travelMax: 6
+    moveSpeed: 3
+    flickDistance: 50
+    flickSpeed: 300
+  - world: {x: 0, y: 0, z: 1}
+    travelMin: -6
+    travelMax: 6
+    moveSpeed: 3
+    flickDistance: 50
+    flickSpeed: 300

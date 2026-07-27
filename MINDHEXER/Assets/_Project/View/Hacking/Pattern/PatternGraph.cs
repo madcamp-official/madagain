@@ -4,7 +4,7 @@ namespace Game.View
 {
     /// <summary>
     /// 점 패턴의 K4 그래프 (2×2 점 4개, 6변, 대각 포함). 시작점 = 좌상단(0) 고정. (기초_설계안 §2.4)
-    /// 점 인덱스: 0=TL, 1=TR, 2=BL, 3=BR.
+    /// 점 인덱스: 0=TL, 1=TR, 2=BL, 3=BR. 좌표는 정규화(0~1, y↑) — 히트 판정·UI가 공유한다.
     /// </summary>
     public static class PatternGraph
     {
@@ -41,25 +41,6 @@ namespace Game.View
                 if ((ed.x == a && ed.y == b) || (ed.x == b && ed.y == a)) return e;
             }
             return -1;
-        }
-
-        /// <summary>
-        /// 현재 점에서 입력 방향(dir)에 가장 잘 맞는 이웃 점. dir이 너무 작거나 정렬이 약하면 -1.
-        /// </summary>
-        public static int DirectionToNeighbor(int dot, Vector2 dir, float minMag = 0.01f, float minAlign = 0.3f)
-        {
-            if (dir.sqrMagnitude < minMag * minMag) return -1;
-            Vector2 d = dir.normalized;
-            int best = -1;
-            float bestDot = -2f;
-            for (int nb = 0; nb < DotCount; nb++)
-            {
-                if (nb == dot) continue;
-                Vector2 toNb = (Pos[nb] - Pos[dot]).normalized;
-                float dp = Vector2.Dot(d, toNb);
-                if (dp > bestDot) { bestDot = dp; best = nb; }
-            }
-            return bestDot >= minAlign ? best : -1;
         }
     }
 }

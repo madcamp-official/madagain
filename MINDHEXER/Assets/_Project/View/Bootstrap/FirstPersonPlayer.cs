@@ -38,6 +38,30 @@ namespace Game.View
         /// </summary>
         public float InputAge;
 
+        /// <summary>
+        /// true면 이동·중력을 이 스크립트가 처리하지 않는다 — <see cref="AutoTraversal"/>(자동 등반)이
+        /// 위치를 직접 몰 때 켜진다. <b>시점은 계속 동작한다</b>(VR에선 머리를 막을 수 없고, 막아서도 안 된다).
+        /// </summary>
+        public bool ExternalMotion;
+
+        /// <summary>지금 향하고 있는 수평 방향(피치 제외). 자동 등반의 전방 탐지 기준.</summary>
+        public Vector3 FlatForward
+        {
+            get { float r = _yaw * Mathf.Deg2Rad; return new Vector3(Mathf.Sin(r), 0f, Mathf.Cos(r)); }
+        }
+
+        public CharacterController Controller => _cc;
+
+        /// <summary>수직 속도(m/s). 자동 도약이 읽고 쓴다.</summary>
+        public float VerticalVelocity { get => _vy; set => _vy = value; }
+
+        /// <summary>도약 — 수평 속도와 수직 속도를 한 번에 지정(틈 건너뛰기).</summary>
+        public void Launch(Vector2 horizontal, float vertical)
+        {
+            move.SetVelocity(horizontal);
+            _vy = vertical;
+        }
+
         CharacterController _cc;
         float _yaw, _pitch, _vy;
 
@@ -75,6 +99,13 @@ namespace Game.View
                 transform.localRotation = Quaternion.Euler(_pitch, _yaw, 0f);
             }
 
+            if (kb.escapeKey.wasPressedThisFrame)
+                Cursor.lockState = Cursor.lockState == CursorLockMode.Locked
+                    ? CursorLockMode.None : CursorLockMode.Locked;
+
+            // 자동 등반이 위치를 몰고 있으면 이동·중력은 넘긴다(시점은 위에서 이미 처리됨).
+            if (ExternalMotion) return;
+
             // 이동 입력(yaw 기준 수평) → 가속 적분기
             float x = (kb.dKey.isPressed ? 1f : 0f) - (kb.aKey.isPressed ? 1f : 0f);
             float z = (kb.wKey.isPressed ? 1f : 0f) - (kb.sKey.isPressed ? 1f : 0f);
@@ -88,10 +119,6 @@ namespace Game.View
 
             move.Step(wish, dt, _cc.isGrounded, InputAge);
             ApplyMove(dt);
-
-            if (kb.escapeKey.wasPressedThisFrame)
-                Cursor.lockState = Cursor.lockState == CursorLockMode.Locked
-                    ? CursorLockMode.None : CursorLockMode.Locked;
         }
 
         void ApplyMove(float dt)

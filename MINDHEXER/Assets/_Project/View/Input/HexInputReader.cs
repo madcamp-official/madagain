@@ -8,7 +8,10 @@ namespace Game.View
     /// 기존 InputReader(이동/시점)와 병행 — 이 리더는 해킹/조종/빙의 채널만 담당한다.
     /// VR 이식 시 이 클래스만 UDP 수신기로 교체하면 된다. (기초_설계안 §2.5)
     ///
-    /// 주의(임시방편): Space 탭/홀드, 더블클릭 플릭을 여기서 손코딩으로 판정한다.
+    /// 해킹 키 = <b>Space</b>. 홀드=해킹 / 단발 탭=조종 해제. 점프는 자동이라 Space와 안 겹친다.
+    /// 탭/홀드 판정과 조준 연속성은 HackDriver가 소유한다 — 여기선 raw 상태·엣지만 낸다.
+    ///
+    /// 주의(임시방편): 더블클릭 플릭을 여기서 손코딩으로 판정한다.
     /// 추후 HexControls.inputactions(Tap/Hold/MultiTap interaction)로 대체하면 더 견고하다.
     /// </summary>
     public class HexInputReader
@@ -16,11 +19,8 @@ namespace Game.View
         public ControlContext Context = ControlContext.Player;
 
         // 튜닝값 (§2.5 실측 대상)
-        public float HoldThreshold     = 0.15f;   // Space 홀드 = 해킹 판정 임계
         public float DoubleClickWindow = 0.25f;   // 더블클릭 = 플릭 판정 창
-        public float ScrollFlickSpeed  = 120f;    // 빠른 스크롤 = 깊이 플릭 임계
 
-        float spaceDownTime = -1f;
         float lastLeftClick = -1f, lastRightClick = -1f;
 
         /// <summary>이번 프레임 HexInput을 만든다.</summary>
@@ -35,13 +35,12 @@ namespace Game.View
 
             bool shift = kb.leftShiftKey.isPressed || kb.rightShiftKey.isPressed;
 
-            // Space: 탭=점프 / 홀드=해킹 (탭 판정은 ConsumeJumpTap 참조)
-            if (kb.spaceKey.wasPressedThisFrame) spaceDownTime = Time.unscaledTime;
-            bool spaceHeldLongEnough = kb.spaceKey.isPressed && spaceDownTime >= 0f
-                && Time.unscaledTime - spaceDownTime >= HoldThreshold;
-            cmd.hackHeld = spaceHeldLongEnough;
+            // 해킹 = Space. 홀드/탭 구분은 HackDriver가 한다.
+            cmd.hackHeld = kb.spaceKey.isPressed;
+            cmd.hackPressed = kb.spaceKey.wasPressedThisFrame;
+            cmd.hackReleased = kb.spaceKey.wasReleasedThisFrame;
 
-            // Q 복귀
+            // Q 복귀(빙의)
             cmd.returnToBody = kb.qKey.wasPressedThisFrame;
 
             if (mouse == null) return cmd;
@@ -52,12 +51,12 @@ namespace Game.View
                     cmd.strokeDir = mouse.delta.ReadValue();
                     break;
 
-                case ControlContext.ExternalControl:
+                case ControlContext.Player:
                 {
+                    // 외부 조종(§6.5 1회 장악) — 장악한 대상을 바라보는 동안 HackDriver가 이 값을 쓴다.
                     bool l = mouse.leftButton.isPressed, r = mouse.rightButton.isPressed;
                     if (shift) { if (l) cmd.axisV += 1f; if (r) cmd.axisV -= 1f; }
                     else       { if (l) cmd.axisH -= 1f; if (r) cmd.axisH += 1f; }
-                    cmd.axisDepth = mouse.scroll.ReadValue().y;
                     cmd.flick = DetectFlick(mouse, shift);
                     break;
                 }
@@ -87,21 +86,7 @@ namespace Game.View
                 if (dbl) return shift ? FlickDir.Down : FlickDir.Right;
             }
 
-            float sy = mouse.scroll.ReadValue().y;
-            if (Mathf.Abs(sy) > ScrollFlickSpeed) return sy > 0f ? FlickDir.DepthFar : FlickDir.DepthNear;
-
             return FlickDir.None;
-        }
-
-        /// <summary>Space를 홀드 임계보다 짧게 눌렀다 뗐으면 점프(탭)로 소비. 이동 커맨드에 반영할 때 호출.</summary>
-        public bool ConsumeJumpTap()
-        {
-            var kb = Keyboard.current;
-            if (kb == null || !kb.spaceKey.wasReleasedThisFrame) return false;
-
-            bool wasTap = spaceDownTime >= 0f && Time.unscaledTime - spaceDownTime < HoldThreshold;
-            spaceDownTime = -1f;
-            return wasTap;
         }
     }
 }

@@ -3,11 +3,14 @@ using UnityEngine;
 namespace Game.View
 {
     /// <summary>입력 컨텍스트. 같은 물리 입력이 상황마다 뜻이 다르므로 항상 하나만 활성. (기초_설계안 §2.5)</summary>
+    /// <remarks>
+    /// 외부 조종 전용 컨텍스트는 없다 — §6.5 "1회 장악": 패턴 성공 후 대상은 파랑으로 남고
+    /// 플레이어는 Player 컨텍스트 그대로 그 대상을 바라보며 조종한다("조종 종료" 개념 최소화).
+    /// </remarks>
     public enum ControlContext
     {
-        Player,          // 본체 평상시
+        Player,          // 본체 평상시 (장악한 대상을 바라보면 그 대상 조종도 여기서)
         Hacking,         // 점 패턴 그리는 중 (시점 고정)
-        ExternalControl, // 외부 조종 (버튼+스크롤 3축, 마우스=시점 자유)
         ViewEntry,       // 시점 진입(빙의)
     }
 
@@ -23,15 +26,16 @@ namespace Game.View
     {
         public ControlContext context;
 
-        // 해킹 (Player/ViewEntry 공통)
-        public bool    hackHeld;     // Space 홀드 — 해킹 시도·유지 / 릴레이
+        // 해킹 (Player/ViewEntry 공통) — Space. 홀드=해킹 / 단발 탭=조종 해제. 판단은 HackDriver가 함.
+        public bool    hackHeld;     // Space 눌림 상태(raw)
+        public bool    hackPressed;  // Space 눌린 프레임(엣지)
+        public bool    hackReleased; // Space 뗀 프레임(엣지)
         public Vector2 strokeDir;    // 해킹 중 마우스 방향 (K4 워크 입력, §2.4)
 
-        // 외부 조종 3축 (§2.5)
-        public float    axisH;       // 좌클릭(-) / 우클릭(+)
-        public float    axisV;       // Shift+좌클릭(+) / Shift+우클릭(-)
-        public float    axisDepth;   // 스크롤 위(+앞) / 아래(-뒤)
-        public FlickDir flick;       // 더블클릭 · 빠른 스크롤
+        // 외부 조종 2축 (§2.5) — 장악(파랑)한 대상을 바라보는 동안 유효
+        public float    axisH;       // 1순위 축: 좌클릭(-) / 우클릭(+)
+        public float    axisV;       // 2순위 축: Shift+좌클릭(+) / Shift+우클릭(-)
+        public FlickDir flick;       // 더블클릭 = 플릭
 
         // 시점 진입
         public bool primary;         // LMB 눌림(엣지) — 발사/쥐기

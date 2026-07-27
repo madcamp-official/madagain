@@ -55,6 +55,9 @@ namespace Game.View
             _lastWish = Vector2.zero;
         }
 
+        /// <summary>속도를 강제로 지정(자동 등반 종료·도약 등 외부 동작이 제어권을 넘길 때).</summary>
+        public void SetVelocity(Vector2 v) => Velocity = v;
+
         /// <summary>
         /// 한 프레임 전진. <paramref name="wish"/>=원하는 이동 방향(월드 XZ, 크기 0~1),
         /// <paramref name="age"/>=이 입력이 몇 초 묵었는지(PC는 0), <paramref name="grounded"/>=접지 여부.

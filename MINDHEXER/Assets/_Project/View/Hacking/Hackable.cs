@@ -39,6 +39,9 @@ namespace Game.View
         [System.NonSerialized] public bool  IsGazed;                                 // 중앙 레티클 조준 = 격화
         [System.NonSerialized] public CaptureState captureState = CaptureState.None; // 초록→파랑(장악) 전환
 
+        // 이 인스턴스의 고정 점 패턴 — 처음 해킹 시 1회 생성해 캐시. 재해킹해도 같은 패턴. (§2.4)
+        [System.NonSerialized] public DotPattern pattern;
+
         /// <summary>실제 사용할 선 개수. patternLineCount 미지정(0 이하) 시 kind 기본값.</summary>
         public int PatternLineCount
         {

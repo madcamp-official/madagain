@@ -5,7 +5,8 @@ using UnityEngine.UI;
 namespace Game.View
 {
     /// <summary>
-    /// 점 패턴 화면 왼쪽 UI (기능형: 점·선). 4겹 — ① 타겟 유령선 ② 라이브 트레이스 ③ 현재 헤드 ④ 방향 러버밴드.
+    /// 점 패턴 화면 왼쪽 UI (기능형: 점·선). 휴대폰 패턴 락과 동일하게 커서(손가락) 위치가
+    /// 항상 화면에 있고, 마지막 확정 점부터 커서까지 선이 끊기지 않고 이어진다.
     /// 겹친 변은 부채꼴 오프셋. 기어·실 스티치·글리치 폴리시는 나중/fork(§7·§2.4). ScreenSpaceOverlay = PC 전용.
     /// </summary>
     public class PatternUI : MonoBehaviour
@@ -19,18 +20,25 @@ namespace Game.View
         public float dotRadius = 15f;
         public float fanSpacing = 10f;   // 겹친 변 부채꼴 간격
 
+        [Tooltip("다음 목표 점 강조 표시 크기 배율(점 반지름 기준).")]
+        public float nextHintScale = 2.4f;
+
+        [Tooltip("타겟 전체 경로를 유령선으로 깔지. 순서는 '다음 목표 점' 강조가 전달하므로 꺼도 플레이 가능.")]
+        public bool showGhostPath = true;
+
         [Header("색")]
-        public Color ghostColor  = new Color(1f, 1f, 1f, 0.16f);
-        public Color traceColor  = new Color(0.35f, 1f, 0.45f, 0.95f);
-        public Color rubberColor = new Color(1f, 1f, 1f, 0.45f);
-        public Color dotColor    = new Color(1f, 1f, 1f, 0.55f);
-        public Color headColor   = new Color(1f, 0.95f, 0.5f, 1f);
+        public Color ghostColor    = new Color(1f, 1f, 1f, 0.16f);
+        public Color traceColor    = new Color(0.35f, 1f, 0.45f, 0.95f);
+        public Color dotColor      = new Color(1f, 1f, 1f, 0.55f);
+        public Color headColor     = new Color(1f, 0.95f, 0.5f, 1f);
+        public Color nextHintColor = new Color(0.3f, 0.9f, 1f, 0.5f);   // 다음 목표 점 후광
 
         Canvas _canvas;
         RectTransform _panel;
         readonly Image[] _dots = new Image[PatternGraph.DotCount];
         readonly List<Image> _linePool = new List<Image>();
         Image _head;
+        Image _nextHint;
         int _lineUsed;
         DotPattern _target;
 
@@ -53,6 +61,8 @@ namespace Game.View
             _panel.anchoredPosition = leftMargin;
             _panel.sizeDelta = new Vector2(panelSize, panelSize);
 
+            // 다음 목표 후광은 점보다 먼저 만들어 뒤에 깔리게 한다.
+            _nextHint = MakeImage("NextHint", dotRadius * nextHintScale, new Vector2(0.5f, 0.5f));
             for (int i = 0; i < PatternGraph.DotCount; i++) _dots[i] = MakeImage("Dot", dotRadius * 2f, new Vector2(0.5f, 0.5f));
             _head = MakeImage("Head", dotRadius * 2.2f, new Vector2(0.5f, 0.5f));
         }
@@ -69,10 +79,13 @@ namespace Game.View
             return img;
         }
 
-        Vector2 DotPos(int dot)
+        /// <summary>정규화 좌표(0~1, PatternGraph.Pos 공간) → 패널 중앙 기준 픽셀 좌표.</summary>
+        Vector2 ToPanel(Vector2 normalized)
         {
-            return (PatternGraph.Pos[dot] - new Vector2(0.5f, 0.5f)) * panelSize;  // 패널 중앙 기준 좌표
+            return (normalized - new Vector2(0.5f, 0.5f)) * panelSize;
         }
+
+        Vector2 DotPos(int dot) => ToPanel(PatternGraph.Pos[dot]);
 
         Image GetLine()
         {
@@ -100,12 +113,12 @@ namespace Game.View
             rt.localEulerAngles = new Vector3(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg);
         }
 
-        public void Show(DotPattern target, PatternInput input)
+        public void Show(DotPattern target, PatternInput input, int nextDot)
         {
             EnsureCanvas();
             _canvas.gameObject.SetActive(true);
             _target = target;
-            Refresh(input);
+            Refresh(input, nextDot);
         }
 
         public void Hide()
@@ -113,8 +126,8 @@ namespace Game.View
             if (_canvas != null) _canvas.gameObject.SetActive(false);
         }
 
-        /// <summary>매 틱 다시 그린다. 라인은 풀 재사용.</summary>
-        public void Refresh(PatternInput input)
+        /// <summary>매 틱 다시 그린다. 라인은 풀 재사용. nextDot=다음 목표 점(-1이면 없음).</summary>
+        public void Refresh(PatternInput input, int nextDot)
         {
             if (_canvas == null || _target == null) return;
 
@@ -123,18 +136,25 @@ namespace Game.View
 
             var use = new Dictionary<int, int>();  // 변별 그린 횟수 → 부채꼴 오프셋
 
-            // ① 타겟 유령선
-            DrawSequence(_target.dots, _target.LineCount, ghostColor, use);
+            // ① 타겟 유령선(선택) — 순서 정보는 ⑤ 다음 목표 강조가 담당한다.
+            if (showGhostPath) DrawSequence(_target.dots, _target.LineCount, ghostColor, use);
 
-            // ② 라이브 트레이스 (플레이어가 실제 그은 것) — 진하게
+            // ② 라이브 트레이스(확정된 점들) + 마지막 확정 점 → 커서(진행 중인 획, 끊김 없음)
             var use2 = new Dictionary<int, int>();
             DrawSequence(input.PlayerDots.ToArray(), input.PlayerDots.Count - 1, traceColor, use2);
+            DrawLine(DotPos(input.CurrentDot), ToPanel(input.CursorPos), traceColor, 0f);
 
-            // ④ 러버밴드 (현재 → pending)
-            if (input.PendingNeighbor >= 0)
-                DrawLine(DotPos(input.CurrentDot), DotPos(input.PendingNeighbor), rubberColor, 0f);
+            // ⑤ 다음 목표 점 강조 — 획 순서를 전달하는 유일한 신호
+            if (nextDot >= 0)
+            {
+                _nextHint.enabled = true;
+                _nextHint.color = nextHintColor;
+                _nextHint.rectTransform.sizeDelta = Vector2.one * (dotRadius * nextHintScale);
+                _nextHint.rectTransform.anchoredPosition = DotPos(nextDot);
+            }
+            else _nextHint.enabled = false;
 
-            // 점 + ③ 헤드
+            // 점 + ③ 헤드(항상 실제 커서 위치에 — 휴대폰 패턴처럼)
             for (int i = 0; i < PatternGraph.DotCount; i++)
             {
                 _dots[i].enabled = true;
@@ -143,7 +163,7 @@ namespace Game.View
             }
             _head.enabled = true;
             _head.color = headColor;
-            _head.rectTransform.anchoredPosition = DotPos(input.CurrentDot);
+            _head.rectTransform.anchoredPosition = ToPanel(input.CursorPos);
         }
 
         void DrawSequence(int[] dots, int lineCount, Color col, Dictionary<int, int> use)

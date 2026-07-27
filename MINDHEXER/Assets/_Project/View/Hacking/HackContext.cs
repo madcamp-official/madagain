@@ -30,7 +30,9 @@ namespace Game.View
 
             switch (ActiveTarget.controlType)
             {
-                case ControlType.ExternalControl: Set(ControlContext.ExternalControl); break;
+                // 외부 조종은 컨텍스트 전환이 없다 — §6.5 "1회 장악": 대상이 파랑으로 남고
+                // 플레이어는 본체 그대로 그 대상을 바라보며 조종한다.
+                case ControlType.ExternalControl: Set(ControlContext.Player); break;
                 case ControlType.ViewEntry:       Set(ControlContext.ViewEntry); break;
                 case ControlType.Stun:            Set(ControlContext.Player); break; // 스턴은 컨텍스트 전환 없음
             }
