@@ -38,8 +38,21 @@ namespace MindHexer.Shared.Tests
             const int n = 50;
             for (int i = 0; i < n; i++)
             {
-                tx.Send(TouchPhaseCode.Move, 0, new Vector2(i / 50f, 0.5f),
-                        new Vector3(i * 0.01f, 0f, 1f), Quaternion.identity, Vector3.zero, i);
+                var p = new InputPacket
+                {
+                    TimestampMs = i,
+                    Tracking = TrackingStateCode.Tracking6Dof,
+                    Position = new Vector3(i * 0.01f, 0f, 1f),
+                    Rotation = Quaternion.identity,
+                    TouchCount = 1,
+                };
+                p.SetTouch(0, new TouchSample
+                {
+                    Id = 0,
+                    Phase = TouchPhaseCode.Move,
+                    Normalized = new Vector2(i / 50f, 0.5f)
+                });
+                tx.Send(p);
                 yield return null;
             }
 
@@ -60,12 +73,19 @@ namespace MindHexer.Shared.Tests
             using var tx = new InputStreamSender();
             tx.Connect("127.0.0.1", port);
 
-            InputPacket Mk(uint seq) => new InputPacket
+            InputPacket Mk(uint seq)
             {
-                Sequence = seq, TimestampMs = seq, TouchId = 0, Phase = TouchPhaseCode.Move,
-                NormalizedPos = Vector2.zero, Position = Vector3.zero,
-                Rotation = Quaternion.identity, Acceleration = Vector3.zero
-            };
+                var p = new InputPacket
+                {
+                    Sequence = seq,
+                    TimestampMs = seq,
+                    Tracking = TrackingStateCode.Tracking6Dof,
+                    Rotation = Quaternion.identity,
+                    TouchCount = 1,
+                };
+                p.SetTouch(0, new TouchSample { Id = 0, Phase = TouchPhaseCode.Move });
+                return p;
+            }
 
             tx.SendRaw(Mk(200)); yield return new WaitForSeconds(0.02f); // 수용
             tx.SendRaw(Mk(150)); yield return new WaitForSeconds(0.02f); // 폐기(과거)

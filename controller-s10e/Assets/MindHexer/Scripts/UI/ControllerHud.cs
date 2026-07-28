@@ -22,7 +22,12 @@ namespace MindHexer.Controller.UI
         [Tooltip("고DPI 폰에서 UI가 너무 작지 않도록 하는 스케일.")]
         public float UiScale = 2.0f;
 
+        [Tooltip("6DoF 추적이 이 시간(초) 이상 안정되면 패널을 숨긴다. 추적이 깨지면 다시 뜬다.")]
+        public float HideAfterStableSeconds = 3f;
+
         private string _ipInput = "192.168.";
+        private bool _ipEditOpen;
+        private float _stableSince = -1f;
         private Texture2D _white;
         private GUIStyle _label, _button, _field, _title;
         private bool _stylesReady;
@@ -59,7 +64,45 @@ namespace MindHexer.Controller.UI
         private void OnGUI()
         {
             EnsureStyles();
-            DrawStatusPanel();
+            if (PanelVisible) DrawStatusPanel();
+            else DrawMinimalStrip();
+        }
+
+        /// <summary>
+        /// 패널을 띄울지. 6DoF 추적이 <see cref="HideAfterStableSeconds"/> 이상 안정되면 접고,
+        /// 추적이 깨지면 다시 편다.
+        ///
+        /// <para>직결 UDP는 단방향이라 "상대가 받았다"는 신호가 없다. 그래서 연결 성공 대신
+        /// <b>추적 안정</b>을 기준으로 삼는다 — 실제로 실패하는 지점이 거기고, 헤드셋을 쓴 뒤에는
+        /// 어차피 이 화면을 볼 수 없으므로 자동으로 접히는 게 맞다.</para>
+        ///
+        /// <para>IP를 편집 중이면 접지 않는다(입력하다 사라지면 곤란하다).</para>
+        /// </summary>
+        private bool PanelVisible
+        {
+            get
+            {
+                if (_ipEditOpen) return true;
+                if (_arcore == null) return true;
+
+                bool stable = _arcore.State == MindHexer.Controller.Input.ArcorePoseSource.PoseState.Tracking;
+                if (!stable) { _stableSince = -1f; return true; }
+
+                if (_stableSince < 0f) _stableSince = Time.unscaledTime;
+                return Time.unscaledTime - _stableSince < HideAfterStableSeconds;
+            }
+        }
+
+        /// <summary>패널을 접었을 때 남기는 한 줄. 헤드셋을 벗고 상태만 훑을 때 쓴다.</summary>
+        private void DrawMinimalStrip()
+        {
+            uint sent = _sender != null ? _sender.SentCount : 0;
+            string s = $"6DoF OK · {sent} pkt";
+            var size = _label.CalcSize(new GUIContent(s));
+            float pad = 8 * UiScale;
+            var r = new Rect(pad, pad, size.x + pad * 2, size.y + pad);
+            DrawRect(r, new Color(0f, 0f, 0f, 0.35f));
+            GUI.Label(new Rect(r.x + pad, r.y + pad * 0.5f, size.x, size.y), s, _label);
         }
 
         // 상단 중앙 패널 — 좌(조이스틱)/우(패턴) 엄지 영역과 겹치지 않게.
@@ -110,16 +153,36 @@ namespace MindHexer.Controller.UI
                 GUILayout.Label($"pos: ({p.x:0.00}, {p.y:0.00}, {p.z:0.00})", _label);
             }
 
+            // IP 입력창은 <b>버튼을 눌러야</b> 열린다. 항상 그려두면 조작 중 잘못 스치기만 해도
+            // 소프트 키보드가 뜨는데, 헤드셋을 쓴 상태에선 그게 떴는지도 모른 채 조작이 죽는다.
             GUILayout.Space(6 * UiScale);
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("서버 IP:", _label, GUILayout.Width(70 * UiScale));
-            _ipInput = GUILayout.TextField(_ipInput, _field, GUILayout.MinWidth(180 * UiScale));
-            if (GUILayout.Button("연결", _button, GUILayout.Width(90 * UiScale)))
+            if (!_ipEditOpen)
             {
-                if (_flow != null && !string.IsNullOrWhiteSpace(_ipInput))
-                    _flow.ConnectManually(_ipInput.Trim());
+                if (GUILayout.Button("IP 변경", _button, GUILayout.Width(140 * UiScale)))
+                {
+                    _ipInput = _sender != null ? _sender.TargetIp : _ipInput;
+                    _ipEditOpen = true;
+                }
             }
-            GUILayout.EndHorizontal();
+            else
+            {
+                GUILayout.BeginHorizontal();
+                _ipInput = GUILayout.TextField(_ipInput, _field, GUILayout.MinWidth(180 * UiScale));
+                if (GUILayout.Button("적용", _button, GUILayout.Width(80 * UiScale)))
+                {
+                    string ip = (_ipInput ?? string.Empty).Trim();
+                    if (ip.Length > 0)
+                    {
+                        // 직결 모드엔 PairingFlow가 없으므로 송신기에 직접 꽂는다.
+                        if (_flow != null) _flow.ConnectManually(ip);
+                        else if (_sender != null) _sender.SetTarget(ip);
+                    }
+                    _ipEditOpen = false;
+                }
+                if (GUILayout.Button("취소", _button, GUILayout.Width(80 * UiScale)))
+                    _ipEditOpen = false;
+                GUILayout.EndHorizontal();
+            }
             GUILayout.EndArea();
         }
 

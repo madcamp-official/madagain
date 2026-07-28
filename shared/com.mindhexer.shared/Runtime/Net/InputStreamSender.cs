@@ -18,7 +18,14 @@ namespace MindHexer.Shared.Net
         private readonly byte[] _buffer = new byte[NetworkConstants.InputPacketSize];
         private uint _sequence;
 
-        /// <summary>지금까지 송신한 패킷 수(= 다음 시퀀스 값).</summary>
+        /// <summary>
+        /// 이 실행(프로세스)의 식별자. 앱을 재시작하면 타임스탬프가 0으로 돌아가는데,
+        /// 수신 측은 이 값이 바뀌는 것으로 그 사실을 알고 지연 추정을 리셋한다.
+        /// </summary>
+        public uint SessionId { get; } =
+            unchecked((uint)System.Guid.NewGuid().GetHashCode());
+
+        /// <summary>지금까지 송신한 패킷 수(= 다음 시퀀스 값). v3부터 <b>프레임당 1</b>.</summary>
         public uint SentCount => _sequence;
 
         /// <summary>대상 IP/포트로 연결. 재호출 시 대상 변경.</summary>
@@ -35,25 +42,20 @@ namespace MindHexer.Shared.Net
         public void SetTarget(string targetIp) => Connect(targetIp, NetworkConstants.UdpInputPort);
 
         /// <summary>
-        /// 한 프레임의 6DoF 입력 상태를 전송. 시퀀스는 자동 부여(단조 증가), 나머지는 인자로 받는다.
+        /// 한 <b>프레임</b>의 입력 상태를 전송. 호출자는 포즈·터치·화면 기하를 채우고,
+        /// <see cref="InputPacket.SessionId"/>·<see cref="InputPacket.Sequence"/>는 여기서 채운다.
         /// Connect 전에 호출하면 false.
+        ///
+        /// <para>⚠️ <b>프레임당 한 번만</b> 부를 것. v2는 터치 하나당 한 번씩 불렀는데, 그러면
+        /// 시퀀스가 터치 수만큼 올라가고 수신 측이 최고 시퀀스만 수용하므로 같은 프레임의 다른
+        /// 손가락이 조용히 버려졌다. 터치는 <see cref="InputPacket.SetTouch"/>로 배열에 담는다.</para>
         /// </summary>
-        public bool Send(TouchPhaseCode phase, int touchId, Vector2 normalized,
-                         Vector3 position, Quaternion rotation, Vector3 accel, long timestampMs)
+        public bool Send(InputPacket packet)
         {
             if (_udp == null) return false;
 
-            var packet = new InputPacket
-            {
-                Sequence = _sequence,
-                TimestampMs = timestampMs,
-                TouchId = touchId,
-                Phase = phase,
-                NormalizedPos = normalized,
-                Position = position,
-                Rotation = rotation,
-                Acceleration = accel
-            };
+            packet.SessionId = SessionId;
+            packet.Sequence = _sequence;
 
             PacketSerializer.Serialize(in packet, _buffer);
             _udp.Send(_buffer, _buffer.Length);

@@ -5,17 +5,19 @@ using MindHexer.Controller.Net;
 namespace MindHexer.Controller.Input
 {
     /// <summary>
-    /// 멀티터치 + 6DoF 포즈(위치+회전) + 가속도를 캡처해 매 프레임 <see cref="UdpSender"/>로 스트리밍한다. (SPEC 4)
-    /// 화면 좌표는 0..1로 정규화(해상도 독립).
+    /// 멀티터치 + 6DoF 포즈 + 가속도 + 화면 기하를 캡처해 <b>매 프레임 패킷 하나</b>로 보낸다. (SPEC 4)
     ///
-    /// 6DoF 위치는 IMU 단독으로는 드리프트가 커서 얻을 수 없으므로 외부 트래커(ARCore VIO 등)가
-    /// 갱신하는 <see cref="poseSource"/> Transform에서 읽는다. 미할당 시 회전만 자이로로 채우고
-    /// 위치는 0(=3DoF 폴백)으로 보낸다.
+    /// <para><b>프레임당 1패킷인 이유</b> — v2는 터치 하나당 패킷 하나를 보냈다. 그런데 송신 측이
+    /// 매 Send마다 시퀀스를 올리고 수신 측은 최고 시퀀스만 수용하므로, 한 프레임에 손가락이 둘이면
+    /// 먼저 처리된 쪽이 매 프레임 조용히 버려졌다. 이제 터치를 배열에 담아 한 번에 보낸다.</para>
     ///
-    /// TODO(담당자 B):
-    ///  - ARCore(AR Foundation) 세션을 붙여 poseSource를 카메라/디바이스 포즈로 구동.
-    ///  - Input System EnhancedTouch로 멀티터치/스와이프 궤적 정밀 캡처, Down/Move/Up 분류.
-    ///  - 타임스탬프 기준(단조 시계) 확정. 여기서는 Time.realtimeSinceStartupAsDouble 사용.
+    /// <para><b>여기서 해석하지 않는다.</b> 조이스틱·패턴·플릭 판정은 전부 수신 측(MINDHEXER) 몫이다.
+    /// 플레이 중엔 헤드셋을 쓰고 있어 컨트롤러 화면이 보이지 않으므로, 이 기기의 시각 피드백은
+    /// 원리적으로 무의미하고 조작 표시는 VR 화면에 있어야 한다. 컨트롤러는 눈먼 터치패드다.</para>
+    ///
+    /// <para><b>화면 기하를 함께 싣는 이유</b> — 정규화 좌표만으로는 수신 측이 물리 거리(엄지 도달
+    /// 범위는 mm 단위다)와 시스템이 가로채는 영역을 알 수 없어, 조작 반경을 물리적으로 맞추거나
+    /// 가장자리에서 시작한 드래그에 공간이 모자란지 판단할 수 없다.</para>
     /// </summary>
     public sealed class TouchGyroCapture : MonoBehaviour
     {
@@ -53,57 +55,92 @@ namespace MindHexer.Controller.Input
         {
             if (_sender == null) return;
 
-            long ts = (long)(Time.realtimeSinceStartupAsDouble * 1000.0);
-            Vector3 accel = UnityEngine.Input.acceleration;
-
-            // 6DoF 포즈: 트래커가 <b>실제로 추적 중일 때만</b> 쓰고, 아니면 자이로 회전 + 0 위치(3DoF 폴백).
-            // ARCore가 아직 기동 중이거나 추적을 잃은 상태에서 poseSource를 그대로 읽으면 회전이
-            // identity로 굳어 자이로보다 못한 값이 나간다 — 그래서 살아 있는지를 먼저 본다.
             ResolvePoseSource();
 
-            Vector3 position;
-            Quaternion rotation;
+            var p = new InputPacket
+            {
+                TimestampMs = (long)(Time.realtimeSinceStartupAsDouble * 1000.0),
+                Acceleration = UnityEngine.Input.acceleration,
+                ScreenWidth = Screen.width,
+                ScreenHeight = Screen.height,
+                Dpi = Screen.dpi,
+                SafeArea = Screen.safeArea,
+                Touch0 = TouchSample.Empty,
+                Touch1 = TouchSample.Empty,
+            };
+
+            FillPose(ref p);
+            FillTouches(ref p);
+
+            _sender.Send(p);
+        }
+
+        /// <summary>
+        /// 트래커가 <b>실제로 추적 중일 때만</b> 그 포즈를 쓰고, 아니면 자이로 회전 + 0 위치로 떨어진다.
+        /// 기동 중이거나 추적을 잃은 상태에서 poseSource를 그대로 읽으면 회전이 identity로 굳어
+        /// 자이로보다 못한 값이 나가기 때문이다. 어느 쪽인지는 <see cref="InputPacket.Tracking"/>으로
+        /// 알려, 수신 측이 위치 0을 "진짜 원점"으로 오해하지 않게 한다.
+        /// </summary>
+        private void FillPose(ref InputPacket p)
+        {
             bool poseLive = poseSource != null && (_arcore == null || _arcore.HasPosition);
             if (poseLive)
             {
-                position = poseSource.localPosition;
-                rotation = poseSource.localRotation;
-            }
-            else
-            {
-                position = Vector3.zero;
-                rotation = SystemInfo.supportsGyroscope
-                    ? UnityEngine.Input.gyro.attitude
-                    : Quaternion.identity;
-            }
-
-            int touchCount = UnityEngine.Input.touchCount;
-            if (touchCount == 0)
-            {
-                // 터치가 없어도 6DoF 포즈는 계속 흘려보낸다(동적 인식 유지).
-                _sender.Send(TouchPhaseCode.None, -1, Vector2.zero, position, rotation, accel, ts);
+                p.Position = poseSource.localPosition;
+                p.Rotation = poseSource.localRotation;
+                p.Tracking = TrackingStateCode.Tracking6Dof;
                 return;
             }
 
-            for (int i = 0; i < touchCount; i++)
+            p.Position = Vector3.zero;
+            if (SystemInfo.supportsGyroscope)
+            {
+                p.Rotation = UnityEngine.Input.gyro.attitude;
+                p.Tracking = TrackingStateCode.GyroOnly;
+            }
+            else
+            {
+                p.Rotation = Quaternion.identity;
+                p.Tracking = TrackingStateCode.None;
+            }
+        }
+
+        /// <summary>
+        /// 활성 터치를 슬롯에 담는다. 손가락이 <see cref="NetworkConstants.MaxTouches"/>보다 많으면
+        /// 앞의 것부터 채우고 나머지는 버린다(양손 엄지가 전제라 실사용에서 넘칠 일이 없다).
+        /// </summary>
+        private void FillTouches(ref InputPacket p)
+        {
+            int touchCount = UnityEngine.Input.touchCount;
+            int slot = 0;
+
+            for (int i = 0; i < touchCount && slot < NetworkConstants.MaxTouches; i++)
             {
                 Touch t = UnityEngine.Input.GetTouch(i);
-                Vector2 norm = new Vector2(
-                    t.position.x / Screen.width,
-                    t.position.y / Screen.height);
 
-                var phase = t.phase switch
+                TouchPhaseCode phase;
+                switch (t.phase)
                 {
-                    TouchPhase.Began => TouchPhaseCode.Down,
-                    TouchPhase.Moved => TouchPhaseCode.Move,
-                    TouchPhase.Stationary => TouchPhaseCode.Move,
-                    TouchPhase.Ended => TouchPhaseCode.Up,
-                    TouchPhase.Canceled => TouchPhaseCode.Up,
-                    _ => TouchPhaseCode.None
-                };
+                    case TouchPhase.Began: phase = TouchPhaseCode.Down; break;
+                    case TouchPhase.Moved:
+                    case TouchPhase.Stationary: phase = TouchPhaseCode.Move; break;
+                    case TouchPhase.Ended:
+                    case TouchPhase.Canceled: phase = TouchPhaseCode.Up; break;
+                    default: phase = TouchPhaseCode.None; break;
+                }
+                if (phase == TouchPhaseCode.None) continue;
 
-                _sender.Send(phase, t.fingerId, norm, position, rotation, accel, ts);
+                p.SetTouch(slot, new TouchSample
+                {
+                    Id = t.fingerId,
+                    Phase = phase,
+                    // 정규화(0..1). 원점 좌하단 — Unity 터치 좌표계 그대로.
+                    Normalized = new Vector2(t.position.x / Screen.width, t.position.y / Screen.height),
+                });
+                slot++;
             }
+
+            p.TouchCount = slot;
         }
     }
 }

@@ -39,12 +39,22 @@ namespace MindHexer.Controller
         {
             if (GameObject.Find(RootName) != null) return; // 중복 방지
 
-            // 컨트롤러는 가로(landscape) 고정: 왼쪽 조이스틱 + 오른쪽 패턴 스와이프 패드 레이아웃 기준.
+            // 컨트롤러는 가로(landscape) 고정: 왼손 이동 / 오른손 패턴이라는 그립이 기준이다.
+            // (UI를 걷어내도 쥐는 방식은 그대로이므로 가로 유지.)
             Screen.orientation = ScreenOrientation.LandscapeLeft;
             Screen.autorotateToLandscapeLeft = true;
             Screen.autorotateToLandscapeRight = true;
             Screen.autorotateToPortrait = false;
             Screen.autorotateToPortraitUpsideDown = false;
+
+            // 화면이 꺼지면 앱이 멈춰 스트리밍이 끊긴다. 컨트롤러는 계속 깨어 있어야 한다.
+            Screen.sleepTimeout = SleepTimeout.NeverSleep;
+
+            // 송신 레이트 = 프레임레이트. Android 기본 품질 레벨은 vSync가 켜져 있어 이 값이
+            // 무시되지만, vSync를 끄는 구성으로 바뀌어도 레이트가 흔들리지 않게 명시해 둔다.
+            // 화면 주사율(S10e 60Hz) 이상으로 올려도 ARCore 포즈·Input.touch가 프레임 단위라
+            // 같은 값이 중복될 뿐이다.
+            Application.targetFrameRate = 60;
 
             // 비활성 상태로 생성 → 모든 컴포넌트 추가 후 활성화 →
             // Awake가 전부 갖춰진 뒤 실행되어 GetComponent 자동 연결이 안전하다.
@@ -72,8 +82,12 @@ namespace MindHexer.Controller
 
             // 직결 모드에선 PairingFlow가 없으므로 스트리밍을 끄는 주체도 없다 → 켜진 채로 시작한다.
             go.AddComponent<TouchGyroCapture>();
-            go.AddComponent<FloatingJoystickInput>();
-            go.AddComponent<PatternPadInput>();
+
+            // FloatingJoystickInput·PatternPadInput은 붙이지 않는다.
+            // 플레이 중엔 헤드셋을 쓰고 있어 이 화면이 보이지 않으므로, 컨트롤러의 시각 피드백은
+            // 원리적으로 무의미하다. 조이스틱·패턴·플릭 판정은 원시 터치를 받아 MINDHEXER가 한다
+            // (감도·데드존 같은 튜닝값이 APK에 박히면 조정할 때마다 재빌드해야 하는 문제도 없앤다).
+            // 컨트롤러는 눈먼 터치패드다.
 
             if (!DirectMode) go.AddComponent<PairingFlow>();
 

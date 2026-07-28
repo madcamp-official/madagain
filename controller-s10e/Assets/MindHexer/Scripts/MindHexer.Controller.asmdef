@@ -4,7 +4,8 @@
     "references": [
         "MindHexer.Shared",
         "endel.nativewebsocket",
-        "Unity.XR.ARFoundation"
+        "Unity.XR.ARFoundation",
+        "Unity.XR.Management"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
