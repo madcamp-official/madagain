@@ -90,5 +90,35 @@ namespace MindHexer.Shared.Tests
             Assert.IsFalse(p.AddCell(4), "범위 밖 무시");
             Assert.IsTrue(p.Matches(new[] { 0, 1, 3, 2 }));
         }
+
+        [Test]
+        public void AllowRevisit_PermitsRepeatsButNotConsecutive()
+        {
+            var p = new SwipePattern(2) { AllowRevisit = true };
+            p.Begin();
+            // 예: 0→1→3→1→2→1→0 (1과 3을 여러 번 재방문)
+            Assert.IsTrue(p.AddCell(0));
+            Assert.IsTrue(p.AddCell(1));
+            Assert.IsTrue(p.AddCell(3));
+            Assert.IsTrue(p.AddCell(1), "이미 지난 노드 재방문 허용");
+            Assert.IsTrue(p.AddCell(2));
+            Assert.IsTrue(p.AddCell(1), "재방문 허용");
+            Assert.IsTrue(p.AddCell(0), "재방문 허용");
+            CollectionAssert.AreEqual(new[] { 0, 1, 3, 1, 2, 1, 0 }, p.Snapshot());
+        }
+
+        [Test]
+        public void AllowRevisit_BlocksConsecutiveSameNode()
+        {
+            var p = new SwipePattern(2) { AllowRevisit = true };
+            p.Begin();
+            p.AddCell(0);
+            Assert.IsFalse(p.AddCell(0), "직전 노드 연속 두 번은 금지");
+            p.AddCell(1);
+            Assert.IsFalse(p.AddCell(1), "직전 노드 연속 반복 금지");
+            Assert.IsTrue(p.AddCell(0), "다른 노드로 이동 후 재방문은 허용");
+            CollectionAssert.AreEqual(new[] { 0, 1, 0 }, p.Snapshot());
+            Assert.AreEqual(0, p.Last);
+        }
     }
 }

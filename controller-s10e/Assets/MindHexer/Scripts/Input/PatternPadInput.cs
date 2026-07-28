@@ -45,7 +45,8 @@ namespace MindHexer.Controller.Input
 
         private const int Nodes = 4; // 2x2
 
-        private readonly SwipePattern _pattern = new SwipePattern(2);
+        // AllowRevisit: 이미 지난 노드를 다시 지날 수 있게(단, 직전 노드 연속 반복은 금지). 예: 0→1→3→1→2→1→0
+        private readonly SwipePattern _pattern = new SwipePattern(2) { AllowRevisit = true };
         private readonly Vector2[] _nodeScreen = new Vector2[Nodes]; // 화면(y-up) 노드 좌표
         private int _fingerId = -1;
         private bool _drawing;
@@ -142,11 +143,12 @@ namespace MindHexer.Controller.Input
         private void HitTestAndAdd(Vector2 screenPos)
         {
             float hr = HitRadius;
+            int last = _pattern.Last;
             int best = -1;
             float bestSq = hr * hr;
             for (int k = 0; k < Nodes; k++)
             {
-                if (_pattern.Contains(k)) continue;
+                if (k == last) continue; // 직전 노드만 후보 제외(연속 반복 금지) — 그 외 재방문은 허용
                 float dx = screenPos.x - _nodeScreen[k].x;
                 float dy = screenPos.y - _nodeScreen[k].y;
                 float sq = dx * dx + dy * dy;

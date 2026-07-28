@@ -31,10 +31,19 @@ namespace MindHexer.Shared.Input
         public int Size => _size;
         public int NodeCount => _n;
 
+        /// <summary>
+        /// 이미 지난 노드를 **다시** 지날 수 있게 허용한다(예: 1→2→4→2→3→2→1).
+        /// 단, <b>직전 노드를 연속으로 두 번</b> 지나는 것은 항상 금지. 기본값 false(안드로이드 잠금패턴식 1회 방문).
+        /// </summary>
+        public bool AllowRevisit { get; set; }
+
         /// <summary>지금까지 이어진 노드 순서.</summary>
         public IReadOnlyList<int> Path => _path;
 
         public int Count => _path.Count;
+
+        /// <summary>경로의 마지막(현재) 노드. 비어 있으면 -1.</summary>
+        public int Last => _path.Count > 0 ? _path[_path.Count - 1] : -1;
 
         public bool Contains(int node) => node >= 0 && node < _n && _visited[node];
 
@@ -46,19 +55,24 @@ namespace MindHexer.Shared.Input
         }
 
         /// <summary>
-        /// 손가락이 올라온 노드를 경로에 추가. 이미 방문했으면 무시.
-        /// 직전 노드와 일직선 중간 노드가 미방문이면 그것부터 추가. 실제로 추가됐으면 true.
+        /// 손가락이 올라온 노드를 경로에 추가. **직전 노드와 같으면**(연속 반복) 무시.
+        /// <see cref="AllowRevisit"/> off면 이미 방문한 노드도 무시(1회 방문).
+        /// 직전 노드와 일직선 중간 노드가 있으면 먼저 추가(안드로이드식). 실제로 추가됐으면 true.
         /// </summary>
         public bool AddCell(int node)
         {
             if (node < 0 || node >= _n) return false;
-            if (_visited[node]) return false;
 
-            if (_path.Count > 0)
+            int last = _path.Count > 0 ? _path[_path.Count - 1] : -1;
+            if (node == last) return false;                       // 자기 자신 연속 두 번 금지(항상)
+            if (_visited[node] && !AllowRevisit) return false;    // 재방문 금지 모드: 1회만
+
+            if (last >= 0)
             {
-                int last = _path[_path.Count - 1];
                 int mid = Midpoint(last, node);
-                if (mid >= 0 && !_visited[mid])
+                // 직선 중간 노드 자동 삽입: 재방문 금지 모드에선 미방문일 때만(기존 동작),
+                // 재방문 허용 모드에선 항상 삽입(직선 통과 표현 유지). Midpoint가 mid≠last, mid≠node 보장.
+                if (mid >= 0 && (AllowRevisit || !_visited[mid]))
                 {
                     _visited[mid] = true;
                     _path.Add(mid);
