@@ -5,8 +5,12 @@ using Game.View;
 namespace Game.EditorTools
 {
     /// <summary>
-    /// 레일 세트 authoring 툴 — 축·레일 길이·중앙을 씬에서 재서 채우고, 이동 범위를 숫자와 핸들
-    /// 양쪽으로 조정한다. 칸 눈금을 그려 플릭이 어디에 떨어지는지 눈으로 확인할 수 있다. (§6.2)
+    /// 레일 세트 authoring 툴 — 축·1칸 길이를 씬에서 재고, 이동 범위를 숫자·핸들로 잡는다.
+    /// 칸 눈금으로 플릭이 떨어지는 지점을, 양 끝 고스트로 "끝까지 갔을 때 레일 끝이 보이는지"를
+    /// 눈으로 확인한다. (기초_설계안 §6.2 / 레일_세트_설계)
+    ///
+    /// ★ 기준은 <b>앵커</b>(지금 놓인 자리). 편집 중 세트를 옮기면 앵커도 같이 옮겨진다.
+    ///   그래서 "세트를 칸에 정렬" 같은 버튼은 의미가 없어 두지 않는다(항상 offset=0에서 시작).
     /// </summary>
     [CustomEditor(typeof(RailSet))]
     public class RailSetEditor : Editor
@@ -27,11 +31,7 @@ namespace Game.EditorTools
                 if (GUILayout.Button("축 자동 산출")) DeriveAxis(rs);
             }
 
-            using (new EditorGUILayout.HorizontalScope())
-            {
-                if (GUILayout.Button("레일 길이 측정")) MeasureRailLength(rs);
-                if (GUILayout.Button("중앙 재계산")) RecenterFromRails(rs);
-            }
+            if (GUILayout.Button("레일 1칸 길이 측정")) MeasureRailLength(rs);
 
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
@@ -47,18 +47,33 @@ namespace Game.EditorTools
             }
 
             float span = rs.rangeMax - rs.rangeMin;
-            float cells = rs.railLength > 0.0001f ? span / rs.railLength : 0f;
+            float cells = rs.railLength > 1e-4f ? span / rs.railLength : 0f;
             EditorGUILayout.HelpBox(
-                $"범위 폭 {span:0.###} (레일 {cells:0.##}칸)\n" +
-                $"중앙 기준 {rs.rangeMin:0.###} ~ {rs.rangeMax:0.###}\n" +
-                "플릭 1회 = 레일 1칸. 홀드는 연속 이동.",
+                $"이동 폭 {span:0.###} (레일 {cells:0.##}칸)\n" +
+                $"앵커 기준 {rs.rangeMin:0.###} ~ {rs.rangeMax:0.###}\n" +
+                "플릭 1회 = 레일 1칸. 홀드는 연속 크립.",
                 MessageType.Info);
 
-            if (GUILayout.Button("라이더를 중앙으로")) MoveRider(rs, 0f);
-            if (GUILayout.Button("라이더를 가장 가까운 칸에 정렬")) SnapRider(rs);
+            // 레일이 짧으면 끝까지 갔을 때 레일 끝이 시야에 드러난다.
+            if (TryRailLengthAlongAxis(rs, out float railTotal))
+            {
+                if (railTotal < span - 1e-3f)
+                    EditorGUILayout.HelpBox(
+                        $"레일 총 길이 {railTotal:0.###} < 이동 폭 {span:0.###} — 끝까지 가면 레일 끝이 드러납니다.\n" +
+                        "레일 칸을 더 붙이거나 범위를 줄이십시오. (보이는 구간까지 감안하면 더 길어야 합니다)",
+                        MessageType.Warning);
+                else
+                    EditorGUILayout.LabelField($"레일 총 길이 {railTotal:0.###} (여유 {railTotal - span:0.###})");
+            }
 
             if (rs.railRoot == null || rs.riderRoot == null)
                 EditorGUILayout.HelpBox("railRoot / riderRoot 가 비어 있습니다. 위 버튼으로 찾거나 직접 물리세요.", MessageType.Warning);
+
+            if (rs.railRoot != null && rs.railRoot.GetComponentInChildren<Collider>() != null)
+                EditorGUILayout.HelpBox(
+                    "레일에 콜라이더가 있습니다. 세트가 통째로 미끄러지므로 레일 콜라이더는 벽을 뚫고 지나갑니다.\n" +
+                    "레일은 렌더러만 두고, 콜라이더는 라이더(벽·발판)에만 두십시오.",
+                    MessageType.Warning);
         }
 
         // ── 툴 동작 ───────────────────────────────────────────────────────
@@ -76,7 +91,7 @@ namespace Game.EditorTools
             EditorUtility.SetDirty(rs);
         }
 
-        /// <summary>레일들의 배치가 가장 길게 뻗은 로컬 축을 트랙 방향으로 잡는다.</summary>
+        /// <summary>레일 배치가 가장 길게 뻗은 로컬 축을 트랙 방향으로 잡는다.</summary>
         static void DeriveAxis(RailSet rs)
         {
             if (!TryLocalBounds(rs, out Bounds b)) return;
@@ -87,38 +102,50 @@ namespace Game.EditorTools
             EditorUtility.SetDirty(rs);
         }
 
-        /// <summary>기준 레일의 렌더러 크기를 축에 투영해 1칸 길이를 잰다(사용자가 스케일로 조정한 값 반영).</summary>
+        /// <summary>
+        /// 기준 레일의 월드 크기를 축에 투영해 1칸 길이를 잰다.
+        /// ★ 세트가 <b>부모 공간</b>에서 움직이므로 부모 스케일로 환산한다(자기 스케일이 아니다).
+        /// </summary>
         static void MeasureRailLength(RailSet rs)
         {
             Transform r = rs.referenceRail;
             if (r == null && rs.railRoot != null && rs.railRoot.childCount > 0) r = rs.railRoot.GetChild(0);
             if (r == null) { Debug.LogWarning("[RailSet] 기준 레일이 없습니다."); return; }
 
-            var rends = r.GetComponentsInChildren<Renderer>();
-            if (rends.Length == 0) { Debug.LogWarning("[RailSet] 기준 레일에 Renderer가 없습니다."); return; }
-
-            Bounds wb = rends[0].bounds;
-            for (int i = 1; i < rends.Length; i++) wb.Encapsulate(rends[i].bounds);
-
-            Vector3 axisW = rs.transform.TransformDirection(rs.AxisLocal).normalized;
-            float worldLen = Mathf.Abs(Vector3.Dot(wb.size, new Vector3(Mathf.Abs(axisW.x), Mathf.Abs(axisW.y), Mathf.Abs(axisW.z))));
-            float scale = Mathf.Max(0.0001f, Vector3.Scale(rs.transform.lossyScale, rs.AxisLocal).magnitude);
+            if (!TryWorldExtentAlongAxis(rs, r, out float worldLen))
+            { Debug.LogWarning("[RailSet] 기준 레일에 Renderer가 없습니다."); return; }
 
             Undo.RecordObject(rs, "Measure rail length");
-            rs.railLength = worldLen / scale;
+            rs.railLength = worldLen / rs.ParentScaleAlongAxis;
             EditorUtility.SetDirty(rs);
             Debug.Log($"[RailSet] 레일 1칸 = {rs.railLength:0.###} (월드 {worldLen:0.###})");
         }
 
-        static void RecenterFromRails(RailSet rs)
+        /// <summary>레일 전체가 축 방향으로 차지하는 길이(부모 공간 단위).</summary>
+        static bool TryRailLengthAlongAxis(RailSet rs, out float len)
         {
-            if (!TryLocalBounds(rs, out Bounds b)) return;
-            Undo.RecordObject(rs, "Recenter rail set");
-            rs.center = b.center;
-            EditorUtility.SetDirty(rs);
+            len = 0f;
+            if (rs.railRoot == null) return false;
+            if (!TryWorldExtentAlongAxis(rs, rs.railRoot, out float worldLen)) return false;
+            len = worldLen / rs.ParentScaleAlongAxis;
+            return true;
         }
 
-        /// <summary>레일들의 바운즈를 RailSet 로컬 공간에서 계산.</summary>
+        static bool TryWorldExtentAlongAxis(RailSet rs, Transform root, out float worldLen)
+        {
+            worldLen = 0f;
+            var rends = root.GetComponentsInChildren<Renderer>();
+            if (rends.Length == 0) return false;
+
+            Bounds wb = rends[0].bounds;
+            for (int i = 1; i < rends.Length; i++) wb.Encapsulate(rends[i].bounds);
+
+            Vector3 a = rs.transform.TransformDirection(rs.AxisLocal).normalized;
+            worldLen = Mathf.Abs(wb.size.x * a.x) + Mathf.Abs(wb.size.y * a.y) + Mathf.Abs(wb.size.z * a.z);
+            return true;
+        }
+
+        /// <summary>레일 바운즈를 RailSet 로컬 공간에서 계산(축 산출용).</summary>
         static bool TryLocalBounds(RailSet rs, out Bounds b)
         {
             b = default;
@@ -140,23 +167,6 @@ namespace Game.EditorTools
             return true;
         }
 
-        static void MoveRider(RailSet rs, float offset)
-        {
-            if (rs.riderRoot == null) return;
-            Undo.RecordObject(rs.riderRoot, "Move rider");
-            Vector3 perp = rs.riderRoot.localPosition - rs.center;
-            perp -= rs.AxisLocal * Vector3.Dot(perp, rs.AxisLocal);   // 축 성분만 교체, 나머지는 보존
-            rs.riderRoot.localPosition = rs.center + perp + rs.AxisLocal * offset;
-            EditorUtility.SetDirty(rs.riderRoot);
-        }
-
-        static void SnapRider(RailSet rs)
-        {
-            if (rs.riderRoot == null) return;
-            float cur = Vector3.Dot(rs.riderRoot.localPosition - rs.center, rs.AxisLocal);
-            MoveRider(rs, rs.NearestCell(cur));
-        }
-
         // ── 씬 기즈모·핸들 ────────────────────────────────────────────────
 
         void OnSceneGUI()
@@ -164,56 +174,75 @@ namespace Game.EditorTools
             var rs = (RailSet)target;
             Transform tr = rs.transform;
 
-            Vector3 c = tr.TransformPoint(rs.center);
+            Vector3 anchor = tr.parent != null ? tr.parent.TransformPoint(rs.AnchorLocal) : rs.AnchorLocal;
             Vector3 ax = tr.TransformDirection(rs.AxisLocal).normalized;
-            float scale = Mathf.Max(0.0001f, Vector3.Scale(tr.lossyScale, rs.AxisLocal).magnitude);
+            float scale = rs.ParentScaleAlongAxis;
 
-            Vector3 a = c + ax * (rs.rangeMin * scale);
-            Vector3 b = c + ax * (rs.rangeMax * scale);
+            Vector3 a = anchor + ax * (rs.rangeMin * scale);
+            Vector3 b = anchor + ax * (rs.rangeMax * scale);
 
-            // 트랙 범위
             Handles.color = Color.cyan;
             Handles.DrawLine(a, b, 3f);
 
-            // 중앙 마커
             Handles.color = Color.yellow;
-            float hs = HandleUtility.GetHandleSize(c) * 0.12f;
-            Handles.SphereHandleCap(0, c, Quaternion.identity, hs, EventType.Repaint);
-            Handles.Label(c + Vector3.up * hs * 2f, "중앙");
+            float hs = HandleUtility.GetHandleSize(anchor) * 0.12f;
+            Handles.SphereHandleCap(0, anchor, Quaternion.identity, hs, EventType.Repaint);
+            Handles.Label(anchor + Vector3.up * hs * 2f, "앵커");
 
             // 칸 눈금 — 플릭이 떨어지는 지점
-            if (rs.railLength > 0.0001f)
+            if (rs.railLength > 1e-4f)
             {
                 Handles.color = new Color(1f, 1f, 1f, 0.6f);
                 int lo = Mathf.CeilToInt(rs.rangeMin / rs.railLength);
                 int hi = Mathf.FloorToInt(rs.rangeMax / rs.railLength);
                 for (int i = lo; i <= hi; i++)
                 {
-                    Vector3 p = c + ax * (i * rs.railLength * scale);
+                    Vector3 p = anchor + ax * (i * rs.railLength * scale);
                     Handles.SphereHandleCap(0, p, Quaternion.identity, HandleUtility.GetHandleSize(p) * 0.05f, EventType.Repaint);
                 }
             }
 
-            // 범위 양 끝을 드래그로 조정
+            // 양 끝 고스트 — 끝까지 갔을 때 레일 끝이 드러나는지 눈으로 확인
+            DrawGhost(rs, ax * (rs.rangeMin * scale));
+            DrawGhost(rs, ax * (rs.rangeMax * scale));
+
+            // 범위 양 끝 드래그
             EditorGUI.BeginChangeCheck();
             Vector3 na = Handles.Slider(a, ax, HandleUtility.GetHandleSize(a) * 0.15f, Handles.ConeHandleCap, 0f);
             Vector3 nb = Handles.Slider(b, ax, HandleUtility.GetHandleSize(b) * 0.15f, Handles.ConeHandleCap, 0f);
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(rs, "Adjust rail range");
-                rs.rangeMin = Vector3.Dot(na - c, ax) / scale;
-                rs.rangeMax = Vector3.Dot(nb - c, ax) / scale;
-                if (rs.rangeMin > 0f) rs.rangeMin = 0f;
-                if (rs.rangeMax < 0f) rs.rangeMax = 0f;
+                rs.rangeMin = Mathf.Min(0f, Vector3.Dot(na - anchor, ax) / scale);
+                rs.rangeMax = Mathf.Max(0f, Vector3.Dot(nb - anchor, ax) / scale);
                 EditorUtility.SetDirty(rs);
             }
         }
 
+        /// <summary>세트가 offset만큼 갔을 때의 레일 위치를 반투명 와이어로.</summary>
+        static void DrawGhost(RailSet rs, Vector3 worldOffset)
+        {
+            if (rs.railRoot == null) return;
+            var rends = rs.railRoot.GetComponentsInChildren<Renderer>();
+            if (rends.Length == 0) return;
+
+            Bounds wb = rends[0].bounds;
+            for (int i = 1; i < rends.Length; i++) wb.Encapsulate(rends[i].bounds);
+
+            Handles.color = new Color(0.2f, 1f, 0.6f, 0.35f);
+            Handles.DrawWireCube(wb.center + worldOffset, wb.size);
+        }
+
         // ── 생성 메뉴 ─────────────────────────────────────────────────────
 
-        [MenuItem("GameObject/MINDHEXER/레일 세트", false, 10)]
+        [MenuItem("GameObject/MINDHEXER/레일 세트 (그레이박스)", false, 10)]
         static void CreateRailSet(MenuCommand cmd)
         {
+            const float cellLen = 2f;      // 1칸 길이
+            const int cellCount = 5;       // 총 10 길이
+            const float gauge = 0.6f;      // 두 줄 간격
+            const float thick = 0.1f;
+
             var root = new GameObject("RailSet");
             GameObjectUtility.SetParentAndAlign(root, cmd.context as GameObject);
 
@@ -222,13 +251,48 @@ namespace Game.EditorTools
             var riders = new GameObject("Riders");
             riders.transform.SetParent(root.transform, false);
 
+            // 레일 칸들 — 렌더러만(콜라이더 없음). 축 = +X, 폭 방향 = Z.
+            float start = -(cellCount - 1) * 0.5f * cellLen;
+            for (int i = 0; i < cellCount; i++)
+            {
+                var cell = new GameObject($"Rail_{i}");
+                cell.transform.SetParent(rails.transform, false);
+                cell.transform.localPosition = new Vector3(start + i * cellLen, 0f, 0f);
+
+                for (int s = -1; s <= 1; s += 2)
+                {
+                    var bar = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    bar.name = s < 0 ? "Bar_L" : "Bar_R";
+                    var col = bar.GetComponent<Collider>();
+                    if (col != null) Object.DestroyImmediate(col);   // 규칙: 레일은 콜라이더 없음
+                    bar.transform.SetParent(cell.transform, false);
+                    bar.transform.localPosition = new Vector3(0f, 0f, s * gauge * 0.5f);
+                    bar.transform.localScale = new Vector3(cellLen, thick, thick);
+                }
+            }
+
             var rs = root.AddComponent<RailSet>();
             rs.railRoot = rails.transform;
             rs.riderRoot = riders.transform;
+            rs.referenceRail = rails.transform.GetChild(0);
+            rs.axis = Vector3.right;
+            rs.railLength = cellLen;
+            rs.rangeMax = 2f * cellLen;
+            rs.rangeMin = -rs.rangeMax;
+
+            // 조준용 콜라이더 — 이동을 막지 않게 트리거. Hackable 레이어가 있으면 거기로.
+            var gaze = root.AddComponent<BoxCollider>();
+            gaze.isTrigger = true;
+            gaze.center = Vector3.zero;
+            gaze.size = new Vector3(cellCount * cellLen, 0.6f, gauge + thick * 2f);
+            int layer = LayerMask.NameToLayer("Hackable");
+            if (layer >= 0) root.layer = layer;
 
             var h = root.AddComponent<Hackable>();
             h.kind = HackableKind.RailCarrier;
             h.controlType = ControlType.ExternalControl;
+            h.gazeCollider = gaze;
+            h.glowRenderers = rails.GetComponentsInChildren<Renderer>();   // 하이라이트는 레일 몸통만
 
             root.AddComponent<ControlAxisGizmo>();
 

@@ -1,127 +1,252 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.View
 {
     /// <summary>
-    /// 레일 세트 — 레일 여러 칸이 이어진 트랙 + 그 위에 종속돼 움직이는 오브젝트들. (기초_설계안 §6.2)
+    /// 레일 세트 — 레일 여러 칸 + 그 위의 라이더가 <b>통째로</b> 미끄러지는 이송 기믹. (기초_설계안 §6.2)
     ///
     /// <para><b>구조</b>
     /// <code>
-    /// [RailSet]            ← 이 컴포넌트 + Hackable(외부 조종). 조준·해킹 대상은 여기다.
-    ///  ├ Rails/            ← 레일 칸들(두 줄짜리 한 벌 = 1칸). 움직이지 않는다.
-    ///  └ Riders/           ← 통째로 움직이는 컨테이너. 터렛·벽·또 다른 RailSet을 넣는다.
+    /// [RailSet]            ← 이 컴포넌트 + Hackable(외부 조종). 조준·해킹 대상.  ★ 이 트랜스폼이 움직인다
+    ///  ├ Rails/            ← 레일 칸들(두 줄 한 벌 = 1칸). 렌더러만, 물리 콜라이더 없음
+    ///  └ Riders/           ← 터렛·벽·발판, 또는 또 다른 RailSet(중첩)
     /// </code></para>
     ///
-    /// <para><b>왜 컨테이너를 움직이나</b> — 라이더가 여럿이어도 하나만 옮기면 같이 가고,
-    /// 라이더 안에 <b>레일 세트가 또 들어가도</b>(중첩) 자식 세트가 통째로 실려 간다.
-    /// 모든 계산을 이 트랜스폼의 <b>로컬 공간</b>에서 하므로 부모가 움직여도 자식 좌표계는 안 흔들린다.</para>
+    /// <para><b>레일이 고정 트랙이 아니다.</b> 레일 자체가 이동체의 일부라 세트 전체가 함께 밀린다.
+    /// 그래서 레일은 보이는 구간보다 길게 만들어(§배치 규칙) 끝이 시야에 안 드러나게 한다.</para>
     ///
-    /// <para><b>기준은 트랙 중앙</b> — 이동량(<see cref="Offset"/>)은 라이더의 시작 위치가 아니라
-    /// 레일 전체의 중앙에서 잰다. 그래서 라이더를 어디에 놓든 범위가 흔들리지 않는다.</para>
+    /// <para><b>기준 = 앵커</b>(배치된 자리의 localPosition). 범위는 앵커에서 ±로 재므로 라이더를
+    /// 어디에 놓든 흔들리지 않는다. 모든 계산이 <b>부모 공간</b>이라 중첩 시 바깥 세트가 움직여도
+    /// 안쪽 좌표계는 그대로다(Unity 트랜스폼 계층이 합성을 해준다).</para>
     ///
-    /// <para><b>플릭 = 정확히 레일 1칸</b>(<see cref="railLength"/>). 현재 위치와 무관하게 다음 칸에
-    /// 안착한다 — §6.2의 "스냅 격자"가 여기서 실체를 얻는다. 홀드는 연속 이동.</para>
+    /// <para><b>플릭 = 정확히 레일 1칸.</b> 현재 위치를 격자에 반올림한 뒤 ±1칸으로 간다. 세트가
+    /// 한 마디씩 밀리는 것으로 보여 "기계식 인덱싱"으로 읽힌다. 홀드는 연속 크립.</para>
     /// </summary>
     [DisallowMultipleComponent]
-    public class RailSet : MonoBehaviour, IExternalControl
+    public class RailSet : MonoBehaviour, IExternalControl, IRunResettable
     {
         [Header("구성")]
-        [Tooltip("레일 칸들의 부모. 트랙 길이·중앙 계산에 쓴다(움직이지 않음).")]
+        [Tooltip("레일 칸들의 부모. 길이 측정·범위 경고에 쓴다. (콜라이더 없이 렌더러만 둘 것)")]
         public Transform railRoot;
 
-        [Tooltip("함께 움직이는 것들의 부모. 이 트랜스폼 하나만 옮긴다(라이더 여럿·중첩 세트 지원).")]
+        [Tooltip("함께 실려 가는 것들의 부모. 터렛·벽·발판·중첩 레일 세트.")]
         public Transform riderRoot;
 
         [Tooltip("레일 1칸 길이를 재는 기준 오브젝트. 툴의 '레일 길이 측정'이 쓴다.")]
         public Transform referenceRail;
 
-        [Header("트랙 (이 트랜스폼의 로컬 기준)")]
+        [Header("트랙 (축은 이 트랜스폼의 로컬 기준)")]
         [Tooltip("트랙 진행 방향(로컬). 정규화는 자동.")]
         public Vector3 axis = Vector3.right;
 
-        [Tooltip("레일 1칸 길이 = 플릭 1회 이동량 = 스냅 단위(로컬 단위).")]
+        [Tooltip("레일 1칸 길이 = 플릭 1회 이동량 = 스냅 단위. 단위는 '부모 공간'(localPosition과 같은 단위).")]
         public float railLength = 2f;
 
-        [Tooltip("트랙 중앙(로컬 좌표). 툴의 '중앙 재계산'이 레일 바운즈에서 채운다.")]
-        public Vector3 center;
-
-        [Header("이동 범위 (중앙 기준, 로컬 단위)")]
-        [Tooltip("중앙에서 음(−) 방향 한계. 툴의 '±N칸' 버튼으로도 채울 수 있다.")]
+        [Header("이동 범위 (앵커=배치 위치 기준, 부모 공간 단위)")]
+        [Tooltip("앵커에서 음(−) 방향 한계.")]
         public float rangeMin = -4f;
 
-        [Tooltip("중앙에서 양(+) 방향 한계.")]
+        [Tooltip("앵커에서 양(+) 방향 한계.")]
         public float rangeMax = 4f;
 
-        [Header("조종")]
-        [Tooltip("홀드 시 등속 크립 속도(단위/초).")]
-        public float moveSpeed = 3f;
+        [Header("조종 감각")]
+        [Tooltip("홀드 시 크립 속도(단위/초).")]
+        public float moveSpeed = 2f;
 
-        [Tooltip("플릭 이동 속도(단위/초).")]
-        public float flickSpeed = 30f;
+        [Tooltip("크립 가감속 램프(초). 0이면 즉시.")]
+        public float accelTime = 0.08f;
 
-        /// <summary>중앙 기준 현재 이동량(로컬 단위).</summary>
+        [Tooltip("플릭 1회에 걸리는 시간(초). 거리는 항상 1칸이라 속도가 아니라 시간으로 잡는다.")]
+        public float flickTime = 0.28f;
+
+        [Tooltip("플릭 끝의 오버슈트 세기 — '철컥' 안착감. 0이면 없음.")]
+        [Range(0f, 3f)] public float overshoot = 1.6f;
+
+        [Tooltip("홀드를 놓았을 때 가장 가까운 칸으로 붙일지. 기본 끔(크립은 미세 조정용).")]
+        public bool snapAnalog = false;
+
+        /// <summary>앵커 기준 현재 이동량(부모 공간 단위).</summary>
         public float Offset { get; private set; }
 
-        Vector3 _riderAuthoredLocal;   // 씬에 배치된 그대로의 라이더 컨테이너 위치
-        float _authoredOffset;         // 그 위치가 중앙에서 얼마나 떨어져 있었는지
-        float _flickTarget;
+        /// <summary>이번 프레임 월드 이동량. 발판 탑승(<see cref="RailPlatform"/>)이 쓴다.</summary>
+        public Vector3 WorldDelta { get; private set; }
+
+        /// <summary>플릭·크립이 모두 멈춘 상태.</summary>
+        public bool AtRest => !_flicking && Mathf.Approximately(_vel, 0f);
+
+        /// <summary>현재 위치가 몇 번째 칸인지(앵커=0).</summary>
+        public int CurrentCell => railLength > 1e-4f ? Mathf.RoundToInt(Offset / railLength) : 0;
+
+        /// <summary>정지 상태에서 칸이 바뀌었을 때. 퍼즐 조건(게이트 개방 등) 배선용.</summary>
+        public event Action<int> OnCellArrived;
+
+        Vector3 _anchorLocal;
+        Vector3 _axisParent = Vector3.right;
+        float _analog, _vel;
         bool _flicking;
+        float _flickFrom, _flickTo, _flickT;
+        RailPlatform[] _platforms = Array.Empty<RailPlatform>();
+        int _lastCell;
 
         public Vector3 AxisLocal => axis.sqrMagnitude > 1e-6f ? axis.normalized : Vector3.right;
 
+        /// <summary>축을 부모 공간으로 옮긴 방향. 런타임엔 회전이 없으므로 상수다.</summary>
+        public Vector3 AxisParent => (transform.localRotation * AxisLocal).normalized;
+
+        /// <summary>범위의 기준점. 편집 중엔 지금 놓인 자리가 곧 앵커다.</summary>
+        public Vector3 AnchorLocal => Application.isPlaying ? _anchorLocal : transform.localPosition;
+
+        /// <summary>부모 공간 1단위가 월드 몇 미터인지(툴의 길이 환산용).</summary>
+        public float ParentScaleAlongAxis
+        {
+            get
+            {
+                if (transform.parent == null) return 1f;
+                return Mathf.Max(1e-4f, transform.parent.TransformVector(AxisParent).magnitude);
+            }
+        }
+
         // ── IExternalControl ──────────────────────────────────────────────
         public int AxisCount => 1;
+
         public Vector3 AxisWorld(int slot) => transform.TransformDirection(AxisLocal).normalized;
 
         public void Drive(int slot, float analog, int flick)
         {
             if (slot != 0) return;
 
-            if (flick != 0)
-            {
-                // 현재 위치와 무관하게 '다음 칸'으로(§6.2). 반올림으로 격자에 맞춘 뒤 한 칸 이동.
-                float unit = Mathf.Max(0.0001f, railLength);
-                int cell = Mathf.RoundToInt(Offset / unit);
-                _flickTarget = Mathf.Clamp((cell + flick) * unit, rangeMin, rangeMax);
-                _flicking = true;
-                return;
-            }
+            if (flick != 0) { StartFlick(NextCellTarget(flick)); return; }
 
-            // 플릭 중에는 아날로그를 무시한다(더블클릭 직후에도 버튼이 눌려 있어 즉시 취소되는 것 방지).
+            // 플릭 중에는 아날로그를 무시한다. 더블클릭 = 클릭 2회라 그 직후에도 버튼이 눌려 있어서,
+            // 여기서 끊으면 플릭이 시작하자마자 1프레임 만에 죽는다(실제로 겪은 버그).
             if (_flicking) return;
 
-            if (!Mathf.Approximately(analog, 0f))
-                Offset = Mathf.Clamp(Offset + analog * moveSpeed * Time.deltaTime, rangeMin, rangeMax);
+            _analog = Mathf.Clamp(analog, -1f, 1f);
         }
         // ──────────────────────────────────────────────────────────────────
 
         void Awake()
         {
-            if (riderRoot == null) return;
-            _riderAuthoredLocal = riderRoot.localPosition;
-            _authoredOffset = Vector3.Dot(_riderAuthoredLocal - center, AxisLocal);
-            Offset = Mathf.Clamp(_authoredOffset, rangeMin, rangeMax);   // 배치된 자리에서 시작
+            _anchorLocal = transform.localPosition;
+            _axisParent = AxisParent;
+            _lastCell = 0;
+            CachePlatforms();
         }
 
-        void Update()
+        /// <summary>이 세트가 직접 나르는 발판들. 중첩 세트 소유분은 그쪽이 나르므로 제외한다(이중 이송 방지).</summary>
+        public void CachePlatforms()
         {
-            if (riderRoot == null) return;
+            if (riderRoot == null) { _platforms = Array.Empty<RailPlatform>(); return; }
 
-            if (_flicking)
+            var list = new List<RailPlatform>();
+            foreach (var p in riderRoot.GetComponentsInChildren<RailPlatform>(true))
+                if (p != null && p.Owner == this) list.Add(p);
+            _platforms = list.ToArray();
+        }
+
+        void LateUpdate()
+        {
+            float dt = Time.deltaTime;
+            if (dt <= 0f) { _analog = 0f; return; }
+
+            Vector3 before = transform.position;
+
+            if (_flicking) StepFlick(dt);
+            else StepCreep(dt);
+
+            transform.localPosition = _anchorLocal + _axisParent * Offset;
+            WorldDelta = transform.position - before;
+
+            // 발판 위의 것들을 같이 옮긴다. 계층 부모 지정 대신 델타를 더해 CharacterController와 안 싸운다.
+            if (WorldDelta.sqrMagnitude > 1e-10f)
+                for (int i = 0; i < _platforms.Length; i++)
+                    if (_platforms[i] != null) _platforms[i].Carry(WorldDelta);
+
+            int cell = CurrentCell;
+            if (AtRest && cell != _lastCell)
             {
-                Offset = Mathf.MoveTowards(Offset, _flickTarget, flickSpeed * Time.deltaTime);
-                if (Mathf.Approximately(Offset, _flickTarget)) _flicking = false;
+                _lastCell = cell;
+                OnCellArrived?.Invoke(cell);
             }
 
-            // 배치 당시의 수직 오프셋 등은 보존하고, 축 방향 성분만 갈아끼운다.
-            riderRoot.localPosition = _riderAuthoredLocal + AxisLocal * (Offset - _authoredOffset);
+            _analog = 0f;   // 매 프레임 소비. HackDriver는 입력이 있을 때만 Drive를 부른다.
         }
 
-        /// <summary>현재 위치에서 가장 가까운 칸의 중앙 기준 좌표.</summary>
+        void StepFlick(float dt)
+        {
+            _flickT += dt;
+            float x = flickTime > 1e-4f ? Mathf.Clamp01(_flickT / flickTime) : 1f;
+            Offset = Mathf.LerpUnclamped(_flickFrom, _flickTo, Mech(x));
+            if (x >= 1f) { Offset = _flickTo; _flicking = false; }
+        }
+
+        void StepCreep(float dt)
+        {
+            float target = _analog * moveSpeed;
+            float rate = accelTime > 1e-4f ? moveSpeed / accelTime : float.MaxValue;
+            _vel = Mathf.MoveTowards(_vel, target, rate * dt);
+
+            if (!Mathf.Approximately(_vel, 0f))
+            {
+                float next = Mathf.Clamp(Offset + _vel * dt, rangeMin, rangeMax);
+                if (Mathf.Approximately(next, Offset)) _vel = 0f;   // 범위 끝에 닿으면 정지
+                else Offset = next;
+            }
+
+            if (snapAnalog && Mathf.Approximately(_analog, 0f) && Mathf.Approximately(_vel, 0f))
+            {
+                float n = NearestCell(Offset);
+                if (Mathf.Abs(n - Offset) > 1e-3f) StartFlick(n);
+            }
+        }
+
+        void StartFlick(float target)
+        {
+            if (Mathf.Approximately(target, Offset)) return;
+            _flickFrom = Offset;
+            _flickTo = target;
+            _flickT = 0f;
+            _flicking = true;
+            _vel = 0f;
+        }
+
+        /// <summary>현재 칸에서 dir방향 한 칸. 범위를 넘으면 범위 끝에 붙인다(무시하지 않는다).</summary>
+        float NextCellTarget(int dir)
+        {
+            float unit = Mathf.Max(1e-4f, railLength);
+            int cell = Mathf.RoundToInt(Offset / unit);
+            return Mathf.Clamp((cell + Mathf.Clamp(dir, -1, 1)) * unit, rangeMin, rangeMax);
+        }
+
+        /// <summary>현재 위치에서 가장 가까운 칸의 앵커 기준 좌표.</summary>
         public float NearestCell(float offset)
         {
-            float unit = Mathf.Max(0.0001f, railLength);
+            float unit = Mathf.Max(1e-4f, railLength);
             return Mathf.Clamp(Mathf.RoundToInt(offset / unit) * unit, rangeMin, rangeMax);
+        }
+
+        /// <summary>기계식 이동 곡선 — 부드럽게 가속·감속하다 목표를 살짝 지나쳐 철컥 안착.</summary>
+        float Mech(float x)
+        {
+            x = Mathf.Clamp01(x);
+            float s = x * x * x * (x * (x * 6f - 15f) + 10f);          // smootherstep
+            float k = Mathf.Clamp01((x - 0.6f) / 0.4f);                // 끝 40% 구간
+            return s + overshoot * 0.08f * Mathf.Sin(k * Mathf.PI);    // x=1에서 0으로 돌아옴
+        }
+
+        // ── IRunResettable ────────────────────────────────────────────────
+        /// <summary>아레나 리셋 — 연출 없이 앵커로 즉시 복귀.</summary>
+        public void ResetForRestart()
+        {
+            _flicking = false;
+            _vel = 0f;
+            _analog = 0f;
+            Offset = 0f;
+            _lastCell = 0;
+            WorldDelta = Vector3.zero;
+            transform.localPosition = _anchorLocal;
         }
     }
 }
