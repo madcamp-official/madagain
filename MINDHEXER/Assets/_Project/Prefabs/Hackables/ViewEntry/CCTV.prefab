@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1116687545521905759}
   - component: {fileID: 7817557856293201716}
   - component: {fileID: 65202182388196792}
+  - component: {fileID: 1574130144807684070}
   m_Layer: 8
   m_Name: CCTV
   m_TagString: Untagged
@@ -154,6 +155,27 @@ MonoBehaviour:
   hackRange: 15
   gazeCollider: {fileID: 0}
   glowRenderers: []
+--- !u!114 &1574130144807684070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 580563593641391114}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 626ca024286bb69468a866da0ccc36c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ViewEntryTarget
+  eye: {fileID: 0}
+  panRange: 45
+  tiltRange: 45
+  hardClampPan: 0
+  hardClampTilt: 0
+  allowsMove: 0
+  useBlocker: 1
+  blockerColor: {r: 0.15, g: 0.85, b: 0.25, a: 1}
+  hideOwnMeshWhilePossessed: 1
 --- !u!1 &1065806386734114205
 GameObject:
   m_ObjectHideFlags: 0

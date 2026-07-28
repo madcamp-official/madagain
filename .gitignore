@@ -59,7 +59,15 @@ crashlytics-build.properties
 # ---- MINDHEXER: 대형 서드파티 에셋 팩 제외 (재설치 가능, git 오염 방지) ----
 # TallCity 1.4G(130MB psd 포함 → GitHub 100MB 초과 거부), Remesh 619M(이식_환경 §2.4 "버릴 것").
 # 필요 시 에셋스토어에서 재임포트. 우리 프리팹이 쓰는 CCTV·터렛·경비병 팩은 유지.
-/MINDHEXER/Assets/TallCity/
+# TallCity: 폴더 '내용'만 제외하고 Prefab/은 예외로 추적한다(2.2MB).
+# 우리가 붙인 ClimbLedge 등 게임플레이 수정을 보존하기 위함. 메시·텍스처(1.4G)는 계속 제외 —
+# 다른 머신은 에셋스토어에서 같은 팩을 임포트하면 되고, 패키지가 자기 .meta를 들고 오므로
+# GUID가 동일해 프리팹 참조가 깨지지 않는다.
+# ⚠️ 저장소가 public이면 유료 에셋 재배포(EULA 위반)가 되니 private 유지 전제.
+# ※ 부모 디렉터리를 통째로 제외하면 하위를 !로 되살릴 수 없다 → 반드시 '/*' 형태여야 한다.
+/MINDHEXER/Assets/TallCity/*
+!/MINDHEXER/Assets/TallCity/Prefab/
+!/MINDHEXER/Assets/TallCity/Prefab.meta
 /MINDHEXER/Assets/TallCity.meta
 /MINDHEXER/Assets/Remesh Games/
 /MINDHEXER/Assets/Remesh Games.meta

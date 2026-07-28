@@ -63,11 +63,28 @@ namespace Game.View
         }
 
         CharacterController _cc;
+        MotionFeel _feel;
         float _yaw, _pitch, _vy;
+        bool _wasGrounded;
+        float _suppressLandUntil;
+
+        /// <summary>이 시각까지 일반 착지 연출을 억제 — 잡고 올라가기 완료가 낙하 착지로 오인되지 않게.</summary>
+        public void SuppressLand(float duration) => _suppressLandUntil = Time.time + duration;
+
+        /// <summary>
+        /// 이번 프레임 이 방향(월드 XZ, 정규화)으로 나가는 속도 성분을 막는다 — 가장자리 낙하 방지.
+        /// <b>적분 직후·이동 직전</b>에 적용해야 한다. 적분 전에 깎으면 같은 프레임에 다시 가속해
+        /// 프레임당 가속분(≈accel×dt)만큼 계속 새어 나간다(= 가장자리에서 조금씩 밀리는 버그).
+        /// </summary>
+        public void BlockDirection(Vector2 dir) { _blockDir = dir; _blockFrame = Time.frameCount; }
+
+        Vector2 _blockDir;
+        int _blockFrame = -1;
 
         void Awake()
         {
             _cc = GetComponent<CharacterController>();
+            _feel = GetComponent<MotionFeel>();
             _cc.height = 1.8f;
             _cc.radius = 0.3f;
             _cc.center = new Vector3(0f, -0.7f, 0f);   // 카메라(눈)=1.6 위 → 발이 지면에
@@ -91,12 +108,14 @@ namespace Game.View
             float dt = Time.deltaTime;
 
             // 시점 — 해킹 중엔 마우스가 패턴을 그리므로 잠근다(이동은 아래에서 계속 처리).
+            // 롤은 MotionFeel(당김 스웨이)이 계산한 값을 합성만 한다 — 여기가 회전의 유일한 기록자.
             if (!LookFrozen && mouse != null && Cursor.lockState == CursorLockMode.Locked)
             {
                 Vector2 d = mouse.delta.ReadValue();
                 _yaw += d.x * lookSens;
                 _pitch = Mathf.Clamp(_pitch - d.y * lookSens, -85f, 85f);
-                transform.localRotation = Quaternion.Euler(_pitch, _yaw, 0f);
+                transform.localRotation = Quaternion.Euler(_pitch, _yaw,
+                    _feel != null ? _feel.CurrentRoll : 0f);
             }
 
             if (kb.escapeKey.wasPressedThisFrame)
@@ -117,17 +136,50 @@ namespace Game.View
             Vector2 wish = new Vector2(local.x * cos + local.y * sin,      // 월드 X
                                        local.y * cos - local.x * sin);    // 월드 Z
 
-            move.Step(wish, dt, _cc.isGrounded, InputAge);
+            move.Step(wish, dt, _groundedBelow, InputAge);
             ApplyMove(dt);
         }
 
         void ApplyMove(float dt)
         {
-            if (_cc.isGrounded && _vy < 0f) _vy = -2f;
+            float prevVy = _vy;   // 착지 순간의 낙하 속도(연출 강도 기준)
+
+            // 접지는 isGrounded 단독이 아니라 '실제 아래 접촉'(CollisionFlags.Below)으로 본다.
+            // 모서리에 옆으로 스치는 프레임까지 접지로 치면 낙하 속도가 -2로 계속 리셋돼
+            // 뚝뚝 끊기며 떨어진다.
+            if (_groundedBelow && _vy < 0f) _vy = -2f;
             else _vy -= gravity * dt;
 
-            Vector2 h = move.Velocity;
-            _cc.Move(new Vector3(h.x, _vy, h.y) * dt);
+            Vector2 h = move.Output;   // 적분 속도 + 감쇠 임펄스
+
+            // 가장자리 낙하 방지 — 적분이 끝난 뒤, 이동 직전에 바깥 성분만 깎는다.
+            if (_blockFrame == Time.frameCount && _blockDir.sqrMagnitude > 1e-4f)
+            {
+                Vector2 d = _blockDir.normalized;
+                float outward = Vector2.Dot(h, d);
+                if (outward > 0f)
+                {
+                    h -= d * outward;
+                    move.SetVelocity(h);   // 적분기 상태도 맞춰야 다음 프레임에 되살아나지 않는다
+                    move.ClearBoost();
+                }
+            }
+
+            CollisionFlags flags = _cc.Move(new Vector3(h.x, _vy, h.y) * dt);
+            bool below = (flags & CollisionFlags.Below) != 0;
+
+            // 착지 감지 — 강도는 "얼마나 빨리 떨어지고 있었나"(|vy|). 등반 완료 직후엔 억제됨.
+            if (below && !_groundedBelow && prevVy < 0f
+                && Time.time >= _suppressLandUntil && _feel != null)
+                _feel.OnLand(Mathf.Abs(prevVy));
+
+            _groundedBelow = below;
+            _wasGrounded = below;
         }
+
+        /// <summary>실제 아래 접촉 기준 접지(모서리 스침 제외). 자동 도약 판정도 이걸 쓴다.</summary>
+        public bool Grounded => _groundedBelow;
+
+        bool _groundedBelow;
     }
 }

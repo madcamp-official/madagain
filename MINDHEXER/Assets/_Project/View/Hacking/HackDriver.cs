@@ -28,6 +28,9 @@ namespace Game.View
         [Tooltip("조종 실(플레이어↔대상). 비우면 자동 추가.")]
         public ControlTether tether;
 
+        [Tooltip("빙의 시점 구동(§2.5). 비우면 자동 추가.")]
+        public ViewEntryController viewEntry;
+
         static readonly Color ExternalColor  = new Color(0.4f, 1f, 0.3f);   // 연두 (외부 조종)
         static readonly Color ViewEntryColor = new Color(0f, 0.8f, 0.85f);  // 청록 (시점 진입)
         static readonly Color StunColor      = new Color(1f, 0.85f, 0.1f);  // 노랑 (보스 스턴)
@@ -57,6 +60,7 @@ namespace Game.View
             if (minigame == null) minigame = GetComponent<PatternMinigame>() ?? gameObject.AddComponent<PatternMinigame>();
             if (minigame.ui == null) minigame.ui = GetComponent<PatternUI>() ?? gameObject.AddComponent<PatternUI>();
             if (tether == null) tether = GetComponent<ControlTether>() ?? gameObject.AddComponent<ControlTether>();
+            if (viewEntry == null) viewEntry = GetComponent<ViewEntryController>() ?? gameObject.AddComponent<ViewEntryController>();
             _fpp = GetComponentInParent<FirstPersonPlayer>();
             _freeLook = GetComponentInParent<FreeLookController>();
             _mpb = new MaterialPropertyBlock();
@@ -95,6 +99,7 @@ namespace Game.View
 
                     // 조종은 시선과 무관 — 어디를 보든 잡고 있는 대상이 움직인다.
                     if (Controlled != null) DriveExternal(Controlled, input);
+                    viewEntry.Tick();   // 빙의 중이면 마우스로 pan/tilt(§2.5)
                     break;
                 }
 
@@ -110,6 +115,8 @@ namespace Game.View
 
             if (input.returnToBody && _ctx.Current != ControlContext.Player)
             {
+                viewEntry.Exit(cam);
+                SetPlayerFrozen(false);
                 _ctx.ReturnToBody();
                 Debug.Log("[Hack] 복귀(Q) → Player");
             }
@@ -245,8 +252,22 @@ namespace Game.View
                 // 외부 조종 = 새 조종 대상으로 교체(이전 대상은 SetControlled가 자동으로 풀어준다).
                 if (target != null && target.controlType == ControlType.ExternalControl) SetControlled(target);
                 else if (target != null) target.captureState = CaptureState.None;
+
                 _ctx.OnPatternSucceeded();
-                Debug.Log($"[Hack] 성공 → 조종 대상 = {(Controlled != null ? Controlled.kind.ToString() : "없음")}");
+
+                // 시점 진입 = 대상의 눈으로 카메라를 옮긴다. 이동 허용 여부는 대상이 정한다(경비병만 이동).
+                if (_ctx.Current == ControlContext.ViewEntry && target != null)
+                {
+                    var vet = target.GetComponent<ViewEntryTarget>();
+                    if (vet != null)
+                    {
+                        viewEntry.Enter(vet, cam);
+                        SetPlayerFrozen(!vet.allowsMove);
+                        Debug.Log($"[Hack] 빙의: {target.kind} (좌우±{vet.panRange} 상하±{vet.tiltRange})");
+                    }
+                    else Debug.LogWarning($"[Hack] {target.kind}에 ViewEntryTarget이 없어 빙의 시점을 만들 수 없음.");
+                }
+                Debug.Log($"[Hack] 성공 → 컨텍스트 = {_ctx.Current}");
             }
             else
             {
@@ -255,6 +276,15 @@ namespace Game.View
                 _ctx.OnPatternCancelled();
                 Debug.Log($"[Hack] 실패/취소 → 컨텍스트 = {_ctx.Current}");
             }
+        }
+
+        // 빙의 중 본체 정지 — 시점(본체 카메라는 꺼져 있음)과 이동을 함께 막는다.
+        // 경비병처럼 이동이 허용되는 대상에선 호출되지 않는다.
+        void SetPlayerFrozen(bool frozen)
+        {
+            if (_fpp == null) return;
+            _fpp.LookFrozen = frozen;
+            _fpp.ExternalMotion = frozen;   // 이동·중력 처리를 넘겨 제자리에 세운다
         }
 
         // 해킹 중 마우스가 패턴을 그리므로 시점만 멈춘다(§2.5). WASD 이동은 계속된다.
@@ -266,10 +296,14 @@ namespace Game.View
             else _freeLook.lookEnabled = _lookWasEnabled;
         }
 
+        /// <summary>지금 화면을 그리는 카메라. 빙의 중이면 대상의 눈 — 그래야 릴레이 해킹 조준이 맞는다.</summary>
+        Camera ActiveCam => viewEntry != null && viewEntry.Active ? viewEntry.Cam : cam;
+
         Hackable Raycast()
         {
-            if (cam == null) return null;
-            var ray = new Ray(cam.transform.position, cam.transform.forward);
+            Camera c = ActiveCam;
+            if (c == null) return null;
+            var ray = new Ray(c.transform.position, c.transform.forward);
             if (Physics.Raycast(ray, out RaycastHit hit, 100f))
             {
                 var h = hit.collider.GetComponentInParent<Hackable>();

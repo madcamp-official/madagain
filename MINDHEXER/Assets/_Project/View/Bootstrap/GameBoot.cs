@@ -55,10 +55,15 @@ namespace Game.View
             _cam.transform.position = startPosition + Vector3.up * eyeHeight;
 
             var go = _cam.gameObject;
+            // 연출 레이어를 먼저 — FirstPersonPlayer/AutoTraversal이 Awake에서 캐시한다.
+            if (go.GetComponent<MotionFeel>() == null) go.AddComponent<MotionFeel>();
+            if (go.GetComponent<MantleRig>() == null) go.AddComponent<MantleRig>();
             // 간이 1인칭 본체(CharacterController+WASD+가속+중력). FreeLook(나는 테스트 카메라) 대체.
             if (go.GetComponent<FirstPersonPlayer>() == null) go.AddComponent<FirstPersonPlayer>();
-            // 자동 난간 오르기 + 틈 건너뛰기(버튼 없음 — 앞으로 걸어가면 처리).
+            // 자동 시선 도약 + 잡고 올라가기 + 가장자리 낙하 방지(버튼 없음 — 전부 자동).
             if (go.GetComponent<AutoTraversal>() == null) go.AddComponent<AutoTraversal>();
+            // F1 이동 튜닝 패널(PC 개발 도구).
+            if (go.GetComponent<MoveTuningPanel>() == null) go.AddComponent<MoveTuningPanel>();
             // HackDriver는 [RequireComponent(HackContext)]라 HackContext도 함께 붙는다.
             if (go.GetComponent<HackDriver>() == null) go.AddComponent<HackDriver>();
 

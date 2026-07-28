@@ -44,19 +44,44 @@ namespace Game.View
         [Tooltip("기저 편도 지연 보정(초). LatencyEstimator가 알 수 없는 상수 지연 — 손감각으로 맞춘다.")]
         public float baselineCompensation = 0f;
 
-        /// <summary>현재 수평 속도(월드 XZ). y는 쓰지 않는다.</summary>
+        /// <summary>적분된 수평 속도(월드 XZ). 임펄스는 포함하지 않는다 — 실제 이동엔 <see cref="Output"/>을 쓸 것.</summary>
         public Vector2 Velocity { get; private set; }
 
-        Vector2 _lastWish;
+        /// <summary>
+        /// 실제 이동에 쓸 속도 = 적분 속도 + 감쇠 중인 임펄스.
+        /// Precog 이단점프와 같은 모델 — 임펄스를 일반 이동에 <b>덧셈</b>해서 "힘을 받는" 느낌을 낸다.
+        /// </summary>
+        public Vector2 Output => Velocity + _boostDir * (_boostSpeed * BoostFactor);
+
+        float BoostFactor => _boostDuration > 0f ? Mathf.Clamp01(_boostLeft / _boostDuration) : 0f;
+
+        Vector2 _lastWish, _boostDir;
+        float _boostSpeed, _boostLeft, _boostDuration;
 
         public void Reset()
         {
             Velocity = Vector2.zero;
             _lastWish = Vector2.zero;
+            ClearBoost();
         }
 
         /// <summary>속도를 강제로 지정(자동 등반 종료·도약 등 외부 동작이 제어권을 넘길 때).</summary>
         public void SetVelocity(Vector2 v) => Velocity = v;
+
+        /// <summary>
+        /// 감쇠 임펄스 부여 — 등반 종료·도약처럼 "밀려나가는" 힘. 선형으로 0까지 줄어든다.
+        /// (Precog PlayerMovement의 AirJumpBoost와 같은 모델)
+        /// </summary>
+        public void AddBoost(Vector2 dir, float speed, float duration)
+        {
+            if (dir.sqrMagnitude < 1e-6f || duration <= 0f) return;
+            _boostDir = dir.normalized;
+            _boostSpeed = speed;
+            _boostDuration = duration;
+            _boostLeft = duration;
+        }
+
+        public void ClearBoost() { _boostDir = Vector2.zero; _boostSpeed = 0f; _boostLeft = 0f; _boostDuration = 0f; }
 
         /// <summary>
         /// 한 프레임 전진. <paramref name="wish"/>=원하는 이동 방향(월드 XZ, 크기 0~1),
@@ -64,6 +89,8 @@ namespace Game.View
         /// </summary>
         public void Step(Vector2 wish, float dt, bool grounded, float age = 0f)
         {
+            if (_boostLeft > 0f) _boostLeft -= dt;
+
             float extra = 0f;
             if ((wish - _lastWish).sqrMagnitude > changeThreshold * changeThreshold)
                 extra = Mathf.Clamp(age + baselineCompensation, 0f, maxCatchUp);   // 입력이 바뀐 순간에만 따라잡기
