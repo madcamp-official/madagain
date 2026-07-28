@@ -37,7 +37,8 @@ namespace Game.View
         public Collider[] grabRegions;
 
         [Header("기즈모")]
-        [Tooltip("이 높이를 넘으면 기즈모가 빨갛게 — 플레이어가 못 오른다는 표시. AutoTraversal.maxMantleUp과 맞출 것.")]
+        [Tooltip("면 앞 바닥에서 모서리까지가 이 높이를 넘으면 기즈모가 빨갛게. AutoTraversal.maxMantleUp과 맞출 것.\n" +
+                 "※ 오브젝트 자체 높이가 아니라 '그 앞에 섰을 때 올라야 할 높이'다.")]
         public float gizmoMaxClimbHeight = 2f;
 
         /// <summary>씬에 살아 있는 모든 ClimbLedge — 시선 도약 후보 검색용.</summary>
@@ -87,27 +88,36 @@ namespace Game.View
             if (ld.sqrMagnitude < 1e-6f) return false;
             ld.Normalize();
 
+            Vector3 c = Box.center, e = Box.size * 0.5f;
+
             // 접근 중인 면 = 바깥 법선이 접근 방향과 가장 반대인 면(어느 정도는 마주봐야 인정).
-            int best = -1;
-            float bestDot = -0.35f;
+            // 여기에 <b>"그 면 바깥에 서 있어야 한다"</b>를 더한다 — 없으면 상자에서 멀어지는 중에
+            // 반대편(먼) 면이 잡혀 엉뚱하게 위로 끌려 올라간다.
+            int best = -1, nearest = -1;
+            float bestOpposed = 0.35f, bestSide = float.NegativeInfinity, maxSideAll = float.NegativeInfinity;
+
             for (int i = 0; i < 4; i++)
             {
+                Vector3 nn = Normals[i];
+                float side = Vector3.Dot(lp - c, nn) - Mathf.Abs(Vector3.Dot(e, nn));   // >0 = 그 면 바깥
+                if (side > maxSideAll) maxSideAll = side;
+
                 if ((climbableFaces & Flags[i]) == 0) continue;
-                float d = Vector3.Dot(ld, Normals[i]);
-                if (d < bestDot) { bestDot = d; best = i; }
+                float opposed = -Vector3.Dot(ld, nn);                                   // 그 면을 마주보는 정도
+                if (opposed <= 0.35f) continue;
+
+                if (side >= -OutsideTolerance && opposed > bestOpposed) { bestOpposed = opposed; best = i; }
+                if (side > bestSide) { bestSide = side; nearest = i; }
             }
+
+            // 박스 footprint <b>안</b>에 서 있는 경우(콜라이더가 건물보다 크거나, 안쪽 발판 위)엔
+            // 바깥인 면이 하나도 없다. 그때만 '가장 가까운 면'으로 떨어뜨린다 —
+            // 밖에 서 있을 때는 이 완화를 쓰지 않으므로 위의 '먼 면' 오발동은 그대로 막힌다.
+            if (best < 0 && maxSideAll < 0f) best = nearest;
             if (best < 0) return false;
 
-            Vector3 c = Box.center, e = Box.size * 0.5f;
             float topLocal = useColliderTop ? c.y + e.y : customHeight;
             Vector3 n = Normals[best];
-
-            // 플레이어가 그 면의 <b>바깥</b>에 있어야 한다.
-            // 위 선택은 "이동 방향과 가장 반대인 면"만 보므로, 이 검사가 없으면 상자에서 멀어지는
-            // 중일 때 반대편(먼) 면이 잡혀 엉뚱하게 위로 끌려 올라간다.
-            float ext = Mathf.Abs(Vector3.Dot(e, n));
-            if (Vector3.Dot(lp - c, n) - ext < -OutsideTolerance) return false;
-
             Vector3 along = new Vector3(Mathf.Abs(n.z), 0f, Mathf.Abs(n.x));   // 면을 따라가는 축
 
             // 모서리 선(로컬): 면 상단 가로선. 플레이어 투영 = 그 축으로만 클램프.
@@ -155,10 +165,6 @@ namespace Game.View
             Vector3 c = Box.center, e = Box.size * 0.5f;
             float topY = useColliderTop ? c.y + e.y : customHeight;
 
-            float height = Mathf.Abs(t.TransformVector(Vector3.up * (topY - (c.y - e.y))).y);
-            bool reachable = height <= gizmoMaxClimbHeight;
-            Color col = reachable ? new Color(0.3f, 1f, 0.4f) : new Color(1f, 0.25f, 0.2f);
-
             for (int i = 0; i < 4; i++)
             {
                 if ((climbableFaces & Flags[i]) == 0) continue;
@@ -170,19 +176,44 @@ namespace Game.View
 
                 Vector3 a = t.TransformPoint(mid - half);
                 Vector3 b = t.TransformPoint(mid + half);
+                Vector3 m = (a + b) * 0.5f;
+
+                Vector3 wn = t.TransformDirection(n); wn.y = 0f;
+                bool hasNormal = wn.sqrMagnitude > 1e-6f;
+                if (hasNormal) wn.Normalize();
+
+                // ★ 오를 높이는 <b>이 면 앞에 섰을 때</b>의 높이다 — 오브젝트 자체 높이가 아니다.
+                //   (5.81m 벽이라도 그 앞 바닥이 4m 지점이면 1.8m만 오르면 되는 정상 대상이다.)
+                //   면 바깥에서 아래로 쏘아 서게 될 바닥을 찾고, 거기서 모서리까지를 잰다.
+                float climbH = -1f;
+                if (hasNormal)
+                {
+                    Vector3 stand = m + wn * (landingInset + 0.25f) + Vector3.up * 0.05f;
+                    RaycastHit hit;
+                    if (Physics.Raycast(stand, Vector3.down, out hit, 50f, ~0, QueryTriggerInteraction.Ignore))
+                        climbH = m.y - hit.point.y;
+                }
+
+                bool known = climbH >= 0f;
+                Color col = !known ? new Color(1f, 0.85f, 0.2f)          // 설 바닥을 못 찾음
+                          : climbH <= gizmoMaxClimbHeight ? new Color(0.3f, 1f, 0.4f)
+                                                          : new Color(1f, 0.25f, 0.2f);
 
                 Gizmos.color = col;
                 Gizmos.DrawLine(a, b);
                 Gizmos.DrawLine(a + Vector3.up * 0.03f, b + Vector3.up * 0.03f);
 
-                Vector3 wn = t.TransformDirection(n); wn.y = 0f;
-                if (wn.sqrMagnitude > 1e-6f)
+                if (hasNormal)
                 {
-                    wn.Normalize();
-                    Vector3 m = (a + b) * 0.5f;
                     Gizmos.DrawLine(m, m - wn * landingInset);
                     Gizmos.DrawSphere(m - wn * landingInset, 0.06f);
                 }
+
+#if UNITY_EDITOR
+                UnityEditor.Handles.color = col;
+                UnityEditor.Handles.Label(m + Vector3.up * 0.12f,
+                    known ? climbH.ToString("0.00") + "m" : "설 바닥 없음");
+#endif
             }
         }
     }

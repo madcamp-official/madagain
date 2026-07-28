@@ -69,6 +69,9 @@ namespace Game.View
 
         void Update()
         {
+            // 개발 콘솔이 열려 있으면 타이핑이 해킹 입력으로 새지 않게 통째로 무시한다(` 토글).
+            if (DevConsole.Open) return;
+
             HexInput input = Source.Poll(_ctx.Current);
 
             bool canAim = _ctx.Current == ControlContext.Player || _ctx.Current == ControlContext.ViewEntry;

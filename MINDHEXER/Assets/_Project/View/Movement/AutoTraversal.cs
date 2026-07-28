@@ -20,9 +20,9 @@ namespace Game.View
     /// 붙어 있는 바닥 이음매에서는 아무것도 발동하지 않는다.</para>
     ///
     /// <para><b>궤적</b>: 수평 = 진행 방향으로 치우친 베지어(몸이 관성을 이기고 휘어 들어가는 대각선),
-    /// 수직 = 정점 보장 탄도(모서리를 긁지 않음). 재생 속도는 정점에서 갈라 상승·하강에 <b>다른 지수</b>를
-    /// 적용한다(<see cref="ascendShape"/>/<see cref="descendShape"/>) — 수평·수직이 같은 시각을 쓰므로
-    /// <b>경로는 그대로고 속도만</b> 바뀐다. 두 곡선 다 정점 근처가 느려 체공감이 따라온다.</para>
+    /// 수직 = 정점 보장 탄도(모서리를 긁지 않음). <b>이징은 쓰지 않는다</b> — 탄도에 가속·감속이 이미
+    /// 물리로 들어 있어서, 시간 워핑을 얹으면 정점에서 감속이 이중으로 걸려 멈칫하고 중력감이 죽는다.
+    /// 도약의 세기는 중력(<see cref="flightGravity"/>)과 비행 시간으로 조절한다.</para>
     ///
     /// <para><b>비행 중에는 CharacterController를 끄고</b> 위치를 직접 몬다(켠 채 몰면 벽에 밀려 도착 오차가
     /// 나 중단·재발동을 반복했다). 대신 출발 전에 착지·매달림 지점뿐 아니라 <b>궤적 중간까지 캡슐로 검사</b>해
@@ -45,7 +45,7 @@ namespace Game.View
         [Tooltip("지형 판정 레이어.")]
         public LayerMask obstacleMask = ~0;
 
-        [Tooltip("이 속도(m/s) 미만이면 발동하지 않는다.")]
+        [Tooltip("착지 후 관성으로 이어받을 최소 속도(m/s). 발동 여부 자체는 '입력'으로 판정한다.")]
         public float minSpeed = 0.6f;
 
         [Tooltip("전진이 끊겨도 이 시간(초) 안이면 발동 허용(선입력 손맛).")]
@@ -62,7 +62,7 @@ namespace Game.View
         public float safeDrop = 0.6f;
 
         [Tooltip("도약 목표가 없을 때 이 낙차까지는 그냥 떨어지게 둔다. 넘거나 바닥이 없으면 가장자리에서 멈춘다.")]
-        public float maxSafeFall = 4f;
+        public float maxSafeFall = 2.5f;
 
         [Header("시선 도약")]
         [Tooltip("도약 목표 검색 반경(m).")]
@@ -86,20 +86,11 @@ namespace Game.View
         [Tooltip("이 높이(m)까지는 도약+잡고 올라가기로 처리. 이상이면 도달 불가.")]
         public float maxMantleUp = 2.0f;
 
-        [Tooltip("목표가 발보다 이보다 많이 낮으면 후보에서 제외(그건 추락).")]
-        public float maxDropTarget = 6f;
-
-        [Tooltip("도약 중력(m/s²) — 기본 힌트. 비행 시간이 클램프되면 실제 중력은 여기서 다시 계산된다.")]
-        public float flightGravity = 22f;
+        [Tooltip("목표가 발보다 이보다 많이 낮으면 후보에서 제외(그건 추락). 오르기(2m)와 비대칭인 게 정상이지만 과하면 아래가 너무 헐거워진다.")]
+        public float maxDropTarget = 4f;
 
         [Tooltip("모서리 위 여유 높이(m).")]
         public float clearance = 0.35f;
-
-        [Tooltip("상승 가속 지수. 1=등속, 클수록 '박차고' 올라 정점에서 느려진다.")]
-        [Range(1f, 2.5f)] public float ascendShape = 1.5f;
-
-        [Tooltip("하강 가속 지수. 1=등속, 클수록 정점에서 뜸들이다 '쿵' 내리꽂힌다. (2.2는 과했다 — 끝에서 기어감)")]
-        [Range(1f, 2.5f)] public float descendShape = 1.9f;
 
         [Tooltip("궤적 중간 충돌 검사 샘플 수. 0이면 검사 안 함(지형 관통 허용 — 퍼즐 스킵 위험).")]
         [Range(0, 16)] public int pathSamples = 8;
@@ -111,19 +102,24 @@ namespace Game.View
         [Tooltip("눈앞 ClimbLedge 탐지 반경(m).")]
         public float detectRadius = 1.3f;
 
-        [Tooltip("오를 최소 높이. CharacterController.stepOffset(0.3)보다 확실히 커야 낮은 턱에서 '폴짝' 뛰지 않는다.")]
-        public float minHeight = 0.45f;
+        [Tooltip("오를 최소 높이. CharacterController.stepOffset(0.45)보다 <b>살짝 낮게</b> 둔다 — " +
+                 "같거나 높으면 그 사이 높이를 엔진도 못 넘고 등반도 거부해 아예 못 올라간다(사각지대).")]
+        public float minHeight = 0.4f;
 
-        [Tooltip("걸어서 오르기 전방 판정 반각(도). 옆·등 뒤 모서리로 끌려가는 오발동을 막는다.")]
-        public float walkUpConeAngle = 60f;
+        [Tooltip("걸어서 오르기 전방 판정 반각(도). 등 뒤로 끌려가는 것만 막는 정도로 넉넉하게.")]
+        public float walkUpConeAngle = 90f;
 
         [Header("잡고 올라가기(맨틀)")]
         [Tooltip("팔 길이(m) — 매달렸을 때 눈이 모서리에서 이만큼 아래.")]
         public float armLength = 0.55f;
 
+        [Tooltip("모서리가 이 거리(m) 안이면 도약을 건너뛰고 선 자리에서 바로 잡는다. 0이면 항상 도약으로 붙는다.")]
+        public float directLatchRange = 1f;
+
         public float pullDurationMin = 0.25f;
         public float pullDurationMax = 0.45f;
-        public float overDuration = 0.15f;
+        [Tooltip("모서리를 넘어 올라서는 시간(초). 이 구간에서 발이 모서리 아래에서 윗면까지 한 번에 올라오므로 너무 짧으면 확 튄다.")]
+        public float overDuration = 0.28f;
 
         [Tooltip("당김 중 좌우 교차 기울임 빈도(Hz) — 교차 횟수 = 당김 시간 × 이 값.")]
         public float swayFrequency = 3f;
@@ -195,15 +191,25 @@ namespace Game.View
                 case State.Over: TickMantle(dt); return;
             }
 
-            if (_cooldownLeft > 0f) { _cooldownLeft -= dt; return; }
+            // 쿨다운은 도약·등반 '개시'만 막는다. 가장자리 정지까지 막으면 착지 직후 0.15초 동안
+            // 낙하 방지가 비어 그대로 떨어진다.
+            if (_cooldownLeft > 0f) _cooldownLeft -= dt;
+            bool ready = _cooldownLeft <= 0f;
 
-            Vector2 v = _fpp.move.Output;
-            if (v.magnitude >= minSpeed)
+            // ★ 방향·발동은 <b>입력 의도</b>로 판정한다. 결과 속도로 판정하면 가장자리 정지가 자기를 끈다:
+            //   속도를 깎음 → "안 움직인다"로 뒤집힘 → 정지 해제 → 재가속 → 조금씩 밀려 나가 끼임.
+            //   (그 상태에선 moving=false라 도약 판정도 같이 죽는다)
+            Vector2 w = _fpp.Wish;
+            if (w.sqrMagnitude > 0.04f)
             {
                 _lastMoveTime = Time.time;
-                _lastMoveDir = new Vector3(v.x, 0f, v.y).normalized;
-                _entrySpeed = v.magnitude;
+                _lastMoveDir = new Vector3(w.x, 0f, w.y).normalized;
             }
+
+            // 진입 속도(착지 후 관성)는 실제 속도에서 딴다.
+            Vector2 v = _fpp.move.Output;
+            if (v.magnitude >= minSpeed) _entrySpeed = v.magnitude;
+
             bool moving = Time.time - _lastMoveTime <= inputBuffer && _lastMoveDir.sqrMagnitude > 0.5f;
             if (!moving || !_fpp.Grounded) return;
 
@@ -212,7 +218,7 @@ namespace Game.View
             float drop = DropDepth(dir, out bool bottomless);
             if (bottomless || drop > safeDrop)
             {
-                if (TryGazeJump()) return;
+                if (ready && TryGazeJump()) return;
 
                 // 목표가 없다 — 감당 가능한 낙차면 그냥 떨어지게 둔다(아래층으로 내려가는 유일한 길).
                 // 무저갱이거나 너무 깊을 때만 막는다.
@@ -220,7 +226,7 @@ namespace Game.View
                 return;
             }
 
-            TryWalkUp(dir);
+            if (ready) TryWalkUp(dir);
         }
 
         // ── 가장자리: 낙차 기준 ───────────────────────────────────────────
@@ -260,7 +266,13 @@ namespace Game.View
 
             // 수평(yaw)만 본다 — 높은 난간을 노리려고 고개를 들어도 선정이 흔들리지 않는다.
             // 높이는 아래 dh 조건이 따로 거른다.
+            // 원뿔 축은 <b>시선과 이동 방향 둘 다</b>다.
+            // 가장자리 감지(DropDepth)와 궤적 출발 접선은 이동 방향 기준인데 목표 선정만 시선 기준이면,
+            // 옆걸음·대각선으로 달릴 때 목표가 원뿔 밖으로 빠져 도약이 안 잡히고 그대로 떨어진다.
             Vector3 look = _fpp.FlatForward;
+            Vector3 run = _lastMoveDir; run.y = 0f;
+            run = run.sqrMagnitude > 1e-4f ? run.normalized : look;
+
             float cosCone = Mathf.Cos(coneAngle * Mathf.Deg2Rad);
             float r2 = jumpSearchRadius * jumpSearchRadius;
 
@@ -276,12 +288,15 @@ namespace Game.View
                 Vector3 approach = ledge.transform.position - feet; approach.y = 0f;
                 if (approach.sqrMagnitude < 1e-4f) continue;
                 if (!ledge.TryResolve(feet, approach.normalized, out ClimbLedge.GrabInfo g)) continue;
+                if (!SettleLanding(ref g)) continue;   // 착지점이 허공이면 뺀다
 
                 // 거리도 수평으로 잰다 — 원뿔이 yaw 기준이라 기준을 맞춘다.
                 Vector3 flatTo = g.edgeCenter - feet; flatTo.y = 0f;
                 float dist = flatTo.magnitude;
                 if (dist > jumpSearchRadius || dist < 0.6f) continue;
-                if (Vector3.Dot(look, flatTo / dist) < cosCone) continue;
+
+                Vector3 toDir = flatTo / dist;
+                if (Vector3.Dot(run, toDir) < cosCone && Vector3.Dot(look, toDir) < cosCone) continue;
 
                 float dh = g.landingFeet.y - feet.y;
                 if (dh > maxMantleUp || dh < -maxDropTarget) continue;
@@ -289,7 +304,7 @@ namespace Game.View
 
                 Collider vol = ledge.Volume;
                 if (BlockedAt(g.landingFeet + Vector3.up * 0.03f, vol)) continue;
-                if (needMantle && BlockedAt(HangFeet(g), vol)) continue;
+                if (needMantle && !HangSpaceOk(g, feet, vol)) continue;
 
                 Vector3 t = (needMantle ? HangFeet(g) : g.landingFeet) + Vector3.up * FeetToOrigin;
                 _cands.Add(new Cand { grab = g, target = t, dist = dist, mantle = needMantle, volume = vol });
@@ -328,36 +343,65 @@ namespace Game.View
             bool found = false;
 
             float cosFwd = Mathf.Cos(walkUpConeAngle * Mathf.Deg2Rad);
+            int seen = 0, rejFace = 0, rejDir = 0, rejHeight = 0, rejBlocked = 0;
 
             for (int i = 0; i < n; i++)
             {
                 var ledge = _overlap[i] != null ? _overlap[i].GetComponentInParent<ClimbLedge>() : null;
                 if (ledge == null) continue;
-                if (!ledge.TryResolve(feet, dir, out ClimbLedge.GrabInfo g)) continue;
+                seen++;
+                if (!ledge.TryResolve(feet, dir, out ClimbLedge.GrabInfo g)) { rejFace++; continue; }
+                if (!SettleLanding(ref g)) { rejBlocked++; continue; }   // 착지점이 허공
 
                 // 진행 방향 앞의 모서리만. TryResolve는 "이동 방향과 가장 반대인 면"을 고르므로,
                 // 이 검사가 없으면 옆이나 등 뒤(멀어지는 중인) 상자 위로 끌려 올라간다.
                 Vector3 flatTo = g.edgeCenter - feet; flatTo.y = 0f;
                 float d = flatTo.magnitude;
-                if (d > detectRadius) continue;
-                if (d > 1e-3f && Vector3.Dot(flatTo / d, dir) < cosFwd) continue;
+                if (d > detectRadius) { rejDir++; continue; }
+                if (d > 1e-3f && Vector3.Dot(flatTo / d, dir) < cosFwd) { rejDir++; continue; }
 
                 float h = g.landingFeet.y - feet.y;
                 if (h < minHeight || h > maxMantleUp)
                 {
-                    if (logDecisions && h > maxMantleUp) Debug.Log($"[Climb] 거부 — 높이 {h:F2}m > {maxMantleUp}m @{ledge.name}");
+                    rejHeight++;
+                    if (logDecisions) Debug.Log($"[Climb] 거부 — 오를 높이 {h:F2}m (허용 {minHeight:F2}~{maxMantleUp:F2}) @{ledge.name}");
                     continue;
                 }
-                if (BlockedAt(g.landingFeet + Vector3.up * 0.03f, ledge.Volume)) continue;
+                if (BlockedAt(g.landingFeet + Vector3.up * 0.03f, ledge.Volume)) { rejBlocked++; continue; }
 
                 if (d < bestDist) { bestDist = d; bestGrab = g; bestVolume = ledge.Volume; found = true; }
             }
 
-            if (!found) return;
+            if (!found)
+            {
+                // "감지 자체가 안 되는 건지"를 한 줄로 가른다 — seen=0이면 반경 안에 ClimbLedge가 없는 것.
+                if (logDecisions && (seen > 0 || n > 0))
+                    Debug.Log($"[Climb] 대상 없음 — 콜라이더 {n}개 중 ClimbLedge {seen}개 " +
+                              $"(면 {rejFace} · 방향/거리 {rejDir} · 높이 {rejHeight} · 막힘 {rejBlocked})");
+                return;
+            }
 
             float dh = bestGrab.landingFeet.y - feet.y;
             bool needMantle = dh > maxDirectUp;
-            if (needMantle && BlockedAt(HangFeet(bestGrab), bestVolume)) return;
+            if (needMantle && !HangSpaceOk(bestGrab, feet, bestVolume))
+            {
+                if (logDecisions) Debug.Log($"[Climb] 거부 — 매달릴 공간 막힘 (h={dh:F2}m)");
+                return;
+            }
+
+            // 팔이 닿는 거리면 비행을 건너뛰고 선 자리에서 바로 잡는다.
+            // (모든 등반이 도약을 거치면 벽 앞에서 늘 살짝 뛰어 붙어 어색하다 — 진입점만 하나 더 둔다.)
+            if (needMantle && bestDist <= directLatchRange)
+            {
+                _grab = bestGrab;
+                _arcThenMantle = false;
+                _fpp.ExternalMotion = true;
+                _fpp.VerticalVelocity = 0f;
+                _cc.enabled = false;      // 당김 구간은 위치를 직접 몬다(비행과 동일)
+                BeginPull();
+                if (logDecisions) Debug.Log($"[Climb] 바로 잡기 — 거리 {bestDist:F2}m · h={dh:F2}m");
+                return;
+            }
 
             Vector3 target = (needMantle ? HangFeet(bestGrab) : bestGrab.landingFeet)
                              + Vector3.up * FeetToOrigin;
@@ -385,6 +429,49 @@ namespace Game.View
         /// 이 발 위치에 몸이 들어갈 수 있나. <b>자기 콜라이더는 제외</b>한다 —
         /// 경로 검사는 현재 위치 바로 앞부터 훑기 때문에, 제외하지 않으면 자기 자신에 막혀 영영 못 뛴다.
         /// </summary>
+        /// <summary>
+        /// 착지 지점에 <b>실제로 바닥이 있는지</b> 확인하고 높이를 그 바닥에 맞춘다.
+        /// 모서리 끝(코너)으로 접근하면 착지점이 옆면 밖 허공으로 잡히는데, 그대로 두면
+        /// 올라서자마자 떨어진다. 바닥이 없으면 후보에서 뺀다.
+        /// </summary>
+        bool SettleLanding(ref ClimbLedge.GrabInfo g)
+        {
+            // landingInset(0.45)은 모서리에서 겨우 그만큼이라, 반지름 0.3인 캡슐이 테두리에 걸친다.
+            // 반지름만큼 더 안쪽을 먼저 노리고, 거기 바닥이 없을 때만 원래 지점으로 물러선다.
+            Vector3 inward = -g.faceNormal;
+            Vector3 deeper = g.landingFeet + inward * _cc.radius;
+
+            float y;
+            if (GroundY(deeper, out y)) { g.landingFeet = new Vector3(deeper.x, y, deeper.z); return true; }
+            if (GroundY(g.landingFeet, out y)) { g.landingFeet = new Vector3(g.landingFeet.x, y, g.landingFeet.z); return true; }
+            return false;
+        }
+
+        /// <summary>그 지점 발밑에 바닥이 있나(있으면 정확한 높이).</summary>
+        bool GroundY(Vector3 p, out float y)
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(p + Vector3.up * 0.6f, Vector3.down, out hit, 1.4f,
+                                obstacleMask, QueryTriggerInteraction.Ignore))
+            { y = hit.point.y; return true; }
+            y = 0f;
+            return false;
+        }
+
+        /// <summary>
+        /// 매달릴 자리에 몸이 들어가는가.
+        /// <para><b>그 자리가 지금 서 있는 높이보다 아래면 검사하지 않는다.</b> 매달림 지점은 계산상
+        /// <c>모서리 − 팔길이 − 키</c>라, 지상에서 오르는 경우 늘 발밑(바닥 속)으로 잡힌다.
+        /// 그걸 그대로 막으면 <b>평지에서의 매달림 등반이 전부 거부</b>된다(실제로 그러고 있었다).
+        /// 검사가 의미 있는 건 공중·상단에서 매달릴 때뿐이다.</para>
+        /// </summary>
+        bool HangSpaceOk(in ClimbLedge.GrabInfo g, Vector3 feet, Collider ignore)
+        {
+            Vector3 hang = HangFeet(g);
+            if (hang.y <= feet.y + 0.05f) return true;
+            return !BlockedAt(hang, ignore);
+        }
+
         bool BlockedAt(Vector3 feetPos, Collider ignore = null)
         {
             float r = _cc.radius * 0.95f;
@@ -412,9 +499,17 @@ namespace Game.View
         bool PathClear(in JumpArc a, Collider ignore)
         {
             if (pathSamples <= 0) return true;
+
+            // 출발 지점 근처는 검사하지 않는다 — 이미 서 있던 공간이고, 발밑 발판·경사면이
+            // 캡슐에 걸려 정상 도약까지 막아버린다(경사 바닥에서 못 뛰던 원인).
+            float near = _cc.radius * 2f + 0.3f;
+            float nearSq = near * near;
+
             for (int i = 1; i < pathSamples; i++)
             {
                 Vector3 p = ArcPointRaw(a, a.total * i / pathSamples);
+                float dx = p.x - a.start.x, dz = p.z - a.start.z;
+                if (dx * dx + dz * dz < nearSq) continue;
                 if (BlockedAt(p - Vector3.up * FeetToOrigin, ignore)) return false;
             }
             return true;
@@ -450,6 +545,7 @@ namespace Game.View
 
             // 직행 착지 — 연출은 탄도의 실제 착지 수직 속도로.
             _cc.enabled = true;
+            Physics.SyncTransforms();   // CC 내부 위치가 이전 값으로 남아 첫 Move에서 튀는 것 방지
             if (_feel != null) _feel.OnLand(Mathf.Abs(_arc.LandingVy()));
             _fpp.SuppressLand(0.2f);
             FinishToControl(_arc.EndTangent());   // 방향 = 궤적 끝 접선(벽 법선이 아니라)
@@ -465,8 +561,11 @@ namespace Game.View
             float dh = Mathf.InverseLerp(maxDirectUp, maxMantleUp, _grab.topY - Feet.y);
             _pullDur = Mathf.Lerp(pullDurationMin, pullDurationMax, Mathf.Clamp01(dh));
 
+            // 끝점의 수평 위치는 <b>매달림 지점</b> 기준이다. 비행으로 들어온 경우엔 이미 거기 있으니
+            // 결과가 같고, 지상에서 바로 잡은 경우엔 벽 쪽으로 당겨지며 올라간다(팔을 뻗어 잡는 모양).
+            Vector3 hang = HangFeet(_grab) + Vector3.up * FeetToOrigin;
             _pullStart = transform.position;
-            _pullEnd = new Vector3(_pullStart.x, _grab.topY + 0.35f, _pullStart.z);   // 눈이 모서리 위로
+            _pullEnd = new Vector3(hang.x, _grab.topY + 0.35f, hang.z);   // 눈이 모서리 위로
             _overEnd = _grab.landingFeet + Vector3.up * FeetToOrigin;
 
             // 손 앵커 — 모서리 선 위, 어깨폭 간격(모서리 끝이면 몰림).
@@ -506,9 +605,10 @@ namespace Game.View
                 return;
             }
 
-            // Over — 모서리를 넘어 착지 지점으로.
+            // Over — 모서리를 넘어 착지 지점으로. 이 구간은 발이 모서리 아래에서 윗면까지
+            // (팔 길이만큼) 한 번에 올라온다. 양 끝이 부드러운 smoothstep이라야 안 튄다.
             float v = Mathf.Clamp01(_t / overDuration);
-            float e = 1f - (1f - v) * (1f - v);
+            float e = v * v * (3f - 2f * v);
             transform.position = Vector3.Lerp(_pullEnd, _overEnd, e);
             if (v >= 1f) EndMantle();
         }
@@ -516,7 +616,8 @@ namespace Game.View
         void EndMantle()
         {
             transform.position = _overEnd;
-            _cc.enabled = true;   // 비행부터 꺼져 있던 것을 여기서 되살린다
+            _cc.enabled = true;         // 비행부터 꺼져 있던 것을 여기서 되살린다
+            Physics.SyncTransforms();   // 물리 쪽 CC 위치를 지금 트랜스폼에 맞춘다(안 하면 한 프레임 튄다)
 
             if (_rig != null) _rig.Hide();
             if (_feel != null)
@@ -564,7 +665,6 @@ namespace Game.View
             public Vector3 start, end;
             public Vector2 p0, p1, p2;      // 수평 베지어(XZ)
             public float y0, vy, g, total, apexY;
-            public float sApex;             // 정점의 진행률(0~1) — 상승/하강 지수를 가르는 경계
 
             /// <summary>착지 순간 수직 속도(음수). 착지 연출 강도 기준.</summary>
             public float LandingVy() => vy - g * total;
@@ -611,14 +711,23 @@ namespace Game.View
 
             a.g = (k / a.total) * (k / a.total);
             a.vy = Mathf.Sqrt(2f * a.g * rise);
-            a.sApex = Mathf.Clamp((a.vy / a.g) / a.total, 0.05f, 0.95f);
 
             // 수평: 출발 접선 = 달리던 방향(관성), 그 뒤 목표로 휘어 들어감.
+            // ★ 휘는 정도는 <b>정렬도에 비례</b>시킨다. 목표가 정면이면 제어점이 직선 위라 그대로 직선이지만,
+            //   옆으로 벌어진 목표에 관성을 그대로 살리면 몸이 엉뚱한 쪽으로 나갔다가 크게 휘어 들어와
+            //   대각선 도약만 유독 어색해진다. 벌어질수록 직선에 가깝게 간다.
+            Vector2 toTarget = a.p2 - a.p0;
             Vector2 d0 = new Vector2(moveDir.x, moveDir.z);
-            if (d0.sqrMagnitude < 1e-4f) d0 = a.p2 - a.p0;       // 정지 상태에서 발동한 경우
-            a.p1 = d0.sqrMagnitude > 1e-6f
-                ? a.p0 + d0.normalized * (dist * Mathf.Max(0.05f, curveBias))
-                : Vector2.Lerp(a.p0, a.p2, 0.5f);
+            if (d0.sqrMagnitude < 1e-4f) d0 = toTarget;          // 정지 상태에서 발동한 경우
+
+            Vector2 mid = Vector2.Lerp(a.p0, a.p2, 0.5f);        // 휘지 않는 직선
+            if (d0.sqrMagnitude > 1e-6f && toTarget.sqrMagnitude > 1e-6f)
+            {
+                float align = Mathf.Clamp01(Vector2.Dot(d0.normalized, toTarget.normalized));
+                Vector2 biased = a.p0 + d0.normalized * (dist * Mathf.Max(0.05f, curveBias));
+                a.p1 = Vector2.Lerp(mid, biased, align);
+            }
+            else a.p1 = mid;
             return a;
         }
 
@@ -632,29 +741,13 @@ namespace Game.View
         }
 
         /// <summary>
-        /// 재생 위치 — 정점을 경계로 상승·하강에 <b>다른 가속 지수</b>를 적용한다.
-        /// 수평·수직이 같은 <c>tw</c>를 쓰므로 <b>경로는 그대로고 속도만</b> 바뀐다.
-        /// 상승은 초반 폭발 후 정점에서 느려지고(박차고 오름), 하강은 뜸들이다 가속한다(쿵).
+        /// 재생 위치 — <b>실제 시간 그대로</b>다. 시간 워핑을 하지 않는다.
+        ///
+        /// <para>수직이 이미 탄도라 <b>가속·감속이 물리적으로 들어 있다</b>(올라갈 땐 중력이 깎고,
+        /// 내려갈 땐 붙이고, 정점에서 자연스레 뜬다). 여기에 이징을 또 씌우면 감속이 <b>이중</b>으로 걸려
+        /// 정점에서 멈칫하고 중력감이 죽는다 — 실제로 그렇게 만들었다가 되돌린 자리다.</para>
         /// </summary>
-        Vector3 ArcPos(in JumpArc a, float t)
-        {
-            if (a.total <= 0f) return a.end;
-            float x = Mathf.Clamp01(t / a.total);
-            float tApex = a.sApex * a.total;
-
-            float tw;
-            if (x <= a.sApex)
-            {
-                float xl = x / Mathf.Max(1e-4f, a.sApex);
-                tw = (1f - Mathf.Pow(1f - xl, Mathf.Max(1f, ascendShape))) * tApex;
-            }
-            else
-            {
-                float xl = (x - a.sApex) / Mathf.Max(1e-4f, 1f - a.sApex);
-                tw = tApex + Mathf.Pow(xl, Mathf.Max(1f, descendShape)) * (a.total - tApex);
-            }
-            return ArcPointRaw(a, tw);
-        }
+        Vector3 ArcPos(in JumpArc a, float t) => ArcPointRaw(a, Mathf.Clamp(t, 0f, a.total));
 
         // ── 기즈모 ───────────────────────────────────────────────────────
 

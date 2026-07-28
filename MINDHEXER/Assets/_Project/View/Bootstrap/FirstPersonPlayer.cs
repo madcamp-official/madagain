@@ -44,6 +44,12 @@ namespace Game.View
         /// </summary>
         public bool ExternalMotion;
 
+        /// <summary>
+        /// 이번 프레임 이동 <b>입력</b>(월드 XZ, 크기 0~1). 자동 도약이 "의도"를 읽는 창구다.
+        /// 결과 속도로 판정하면 가장자리 정지가 속도를 깎는 순간 "안 움직인다"로 뒤집혀 스스로 풀린다.
+        /// </summary>
+        public Vector2 Wish { get; private set; }
+
         /// <summary>지금 향하고 있는 수평 방향(피치 제외). 자동 등반의 전방 탐지 기준.</summary>
         public Vector3 FlatForward
         {
@@ -88,8 +94,9 @@ namespace Game.View
             _cc.height = 1.8f;
             _cc.radius = 0.3f;
             _cc.center = new Vector3(0f, -0.7f, 0f);   // 카메라(눈)=1.6 위 → 발이 지면에
-            // 명시해 둔다 — AutoTraversal.minHeight가 이 값보다 커야 낮은 턱에서 등반이 겹치지 않는다.
-            _cc.stepOffset = 0.3f;
+            // 낮은 턱은 <b>엔진이 걸어서</b> 넘게 한다. 여기가 낮으면 그만큼을 AutoTraversal이 도약(0.3~0.4초
+            // 스크립트 구동)으로 처리하게 되어, 작은 단차마다 조작이 끊긴다. minHeight는 이 값보다 커야 한다.
+            _cc.stepOffset = 0.45f;
 
             Vector3 e = transform.eulerAngles;
             _yaw = e.y;
@@ -137,6 +144,7 @@ namespace Game.View
             float sin = Mathf.Sin(yawRad), cos = Mathf.Cos(yawRad);
             Vector2 wish = new Vector2(local.x * cos + local.y * sin,      // 월드 X
                                        local.y * cos - local.x * sin);    // 월드 Z
+            Wish = wish;
 
             move.Step(wish, dt, _groundedBelow, InputAge);
             ApplyMove(dt);

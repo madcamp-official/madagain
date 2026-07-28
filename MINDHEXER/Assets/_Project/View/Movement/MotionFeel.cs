@@ -29,15 +29,32 @@ namespace Game.View
         public AnimationCurve launchCurve = new AnimationCurve(
             new Keyframe(0f, 0f, 0f, 4f), new Keyframe(0.35f, 1f), new Keyframe(1f, 0f, -1.5f, 0f));
 
+        [Header("점프 발구름(업킥) — 위로 '탁' 튀었다 원복")]
+        [Tooltip("도약 높이 1m당 위로 튀는 양(m). 0이면 킥 없음(예전 동작).")]
+        public float launchKickPerMeter = 0.055f;
+        public float launchKickMax = 0.13f;
+        [Tooltip("킥은 침하보다 짧아야 '탁' 하고 튄다.")]
+        public float launchKickDuration = 0.15f;
+        public AnimationCurve launchKickCurve = new AnimationCurve(
+            new Keyframe(0f, 0f, 0f, 9f), new Keyframe(0.22f, 1f), new Keyframe(1f, 0f, -1.8f, 0f));
+
         [Header("착지 (강도 = 착지 순간 낙하 속도)")]
         [Tooltip("낙하 속도 1m/s당 침하 깊이(m).")]
         public float landDipPerSpeed = 0.012f;
         public float landDipMax = 0.22f;
         [Tooltip("이 속도(m/s) 미만의 착지는 연출 없음(계단 내려오기 등).")]
-        public float landMinSpeed = 3.5f;
+        public float landMinSpeed = 2f;
         public float landDuration = 0.3f;
         public AnimationCurve landCurve = new AnimationCurve(
             new Keyframe(0f, 0f, 0f, 5f), new Keyframe(0.25f, 1f), new Keyframe(0.6f, 0.12f), new Keyframe(1f, 0f));
+
+        [Header("착지(업킥) — 충격 뒤 위로 '탁'")]
+        [Tooltip("낙하 속도 1m/s당 위로 튀는 양(m). 0이면 킥 없음.")]
+        public float landKickPerSpeed = 0.014f;
+        public float landKickMax = 0.16f;
+        public float landKickDuration = 0.18f;
+        public AnimationCurve landKickCurve = new AnimationCurve(
+            new Keyframe(0f, 0f, 0f, 9f), new Keyframe(0.22f, 1f), new Keyframe(1f, 0f, -1.8f, 0f));
 
         [Header("잡고 올라가기 안착 (높이 무관 고정)")]
         public float settleDip = 0.05f;
@@ -55,7 +72,8 @@ namespace Game.View
         public float CurrentRoll { get; private set; }
 
         struct Fx { public bool active; public float amp, dur, t; }
-        Fx _launch, _land, _settle;
+        Fx _launch, _land, _settle;       // 아래로(침하)
+        Fx _launchKick, _landKick;        // 위로(킥)
 
         // 당김 스웨이 상태(AutoTraversal 구동)
         bool _swayActive;
@@ -65,19 +83,22 @@ namespace Game.View
 
         public void OnJumpLaunch(float rise)
         {
-            _launch.active = true;
-            _launch.amp = Mathf.Min(launchDipMax, launchDipPerMeter * Mathf.Max(0f, rise));
-            _launch.dur = launchDuration;
-            _launch.t = 0f;
+            float r = Mathf.Max(0f, rise);
+            Fire(ref _launch, Mathf.Min(launchDipMax, launchDipPerMeter * r), launchDuration);
+            Fire(ref _launchKick, Mathf.Min(launchKickMax, launchKickPerMeter * r), launchKickDuration);
         }
 
         public void OnLand(float impactSpeed)
         {
             if (impactSpeed < landMinSpeed) return;
-            _land.active = true;
-            _land.amp = Mathf.Min(landDipMax, landDipPerSpeed * impactSpeed);
-            _land.dur = landDuration;
-            _land.t = 0f;
+            Fire(ref _land, Mathf.Min(landDipMax, landDipPerSpeed * impactSpeed), landDuration);
+            Fire(ref _landKick, Mathf.Min(landKickMax, landKickPerSpeed * impactSpeed), landKickDuration);
+        }
+
+        static void Fire(ref Fx fx, float amp, float dur)
+        {
+            if (amp <= 0.0001f || dur <= 0f) return;
+            fx.active = true; fx.amp = amp; fx.dur = dur; fx.t = 0f;
         }
 
         public void OnMantleFinish()
@@ -121,6 +142,10 @@ namespace Game.View
                       + Tick(ref _land, landCurve, dt)
                       + Tick(ref _settle, settleCurve, dt);
 
+            // 위로 튀는 성분 — 킥이 침하보다 짧아 '탁' 튀었다 원복하는 순서로 읽힌다.
+            float kick = Tick(ref _launchKick, launchKickCurve, dt)
+                       + Tick(ref _landKick, landKickCurve, dt);
+
             float roll = 0f;
             if (_swayActive)
             {
@@ -134,7 +159,7 @@ namespace Game.View
             float posScale = vr ? vrPositionScale : 1f;
             CurrentRoll = roll * (vr ? vrRollScale : 1f);
 
-            _appliedPos = Vector3.down * (dip * posScale);
+            _appliedPos = Vector3.up * ((kick - dip) * posScale);
             transform.position += _appliedPos;
         }
 

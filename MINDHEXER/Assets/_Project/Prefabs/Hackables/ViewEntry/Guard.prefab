@@ -973,6 +973,9 @@ GameObject:
   - component: {fileID: 2587183691597745427}
   - component: {fileID: 3279437353058488729}
   - component: {fileID: 2586309349245246812}
+  - component: {fileID: 1465655198789595522}
+  - component: {fileID: 4322990628325820910}
+  - component: {fileID: 3180163995857866921}
   m_Layer: 8
   m_Name: Guard
   m_TagString: Untagged
@@ -995,6 +998,7 @@ Transform:
   m_Children:
   - {fileID: 7575864332798337597}
   - {fileID: 8191162108361140683}
+  - {fileID: 4616749703648436438}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &3279437353058488729
@@ -1007,7 +1011,7 @@ Animator:
   m_GameObject: {fileID: 4357080393334123487}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 4835a6657e57ded45b7a7fe2c2d62822, type: 3}
-  m_Controller: {fileID: 9100000, guid: 6a3c707cecab1a349b358e52ef7e30c4, type: 2}
+  m_Controller: {fileID: 9100000, guid: 4dfc5a88bdcb45b41af5ceb8fcd0c1d6, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -1035,8 +1039,66 @@ MonoBehaviour:
   controlType: 1
   patternLineCount: 7
   hackRange: 15
-  gazeCollider: {fileID: 0}
-  glowRenderers: []
+  gazeCollider: {fileID: 1465655198789595522}
+  glowRenderers:
+  - {fileID: 430676367782093916}
+--- !u!136 &1465655198789595522
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4357080393334123487}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.35
+  m_Height: 1.9424056
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.9712028, z: 0}
+--- !u!114 &4322990628325820910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4357080393334123487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 962e76be8b19a054a89d7e2ab7f65c2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.GuardDetection
+  DetectRadius: 6
+--- !u!114 &3180163995857866921
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4357080393334123487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 626ca024286bb69468a866da0ccc36c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ViewEntryTarget
+  eye: {fileID: 4616749703648436438}
+  panRange: 180
+  tiltRange: 85
+  hardClampPan: 0
+  hardClampTilt: 0
+  allowsMove: 1
+  useBlocker: 0
+  blockerColor: {r: 0.15, g: 0.85, b: 0.25, a: 1}
+  hideOwnMeshWhilePossessed: 1
 --- !u!1 &4501838392818531922
 GameObject:
   m_ObjectHideFlags: 0
@@ -1631,6 +1693,37 @@ Transform:
   m_Children:
   - {fileID: 6506598926372406618}
   m_Father: {fileID: 3869074885719605637}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6730539354264712410
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4616749703648436438}
+  m_Layer: 0
+  m_Name: Camera
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4616749703648436438
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6730539354264712410}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.8224056, z: 0.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2587183691597745427}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6804737109899184855
 GameObject:

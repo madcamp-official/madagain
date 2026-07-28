@@ -91,3 +91,7 @@ Desktop.ini
 !user.keystore
 secrets.local
 *.env
+
+# ---- 개발 중 생성되는 스크린샷 (MCP/에디터 캡처 산출물) ----
+MINDHEXER/Assets/Screenshots/
+MINDHEXER/Assets/Screenshots.meta

@@ -137,7 +137,8 @@ namespace Game.View
             if (_auto == null || !Section("시선 도약", ref _secJump)) return;
 
             _auto.coneAngle = F("시야 원뿔 반각(도)", _auto.coneAngle, 5f, 70f);
-            Info("원뿔은 <b>필터</b>일 뿐 — 통과한 것 중 <b>가장 가까운</b> 목표로 뛴다");
+            Info("원뿔은 <b>필터</b>일 뿐 — 통과한 것 중 <b>가장 가까운</b> 목표로 뛴다\n" +
+                 "축은 <b>시선 + 이동 방향 둘 다</b> (옆걸음·대각선에서 놓치지 않게)");
             _auto.jumpSearchRadius = F("검색 반경(m)", _auto.jumpSearchRadius, 2f, 20f);
             _auto.maxDirectUp = F("직행 도약 최대 높이(m)", _auto.maxDirectUp, 0.3f, 2f);
             _auto.maxMantleUp = F("잡고 오르기 최대 높이(m)", _auto.maxMantleUp, 0.5f, 3.5f);
@@ -149,9 +150,7 @@ namespace Game.View
             _auto.airSpeedCap = F("수평 속도 상한(m/s)", _auto.airSpeedCap, 2f, 20f);
             _auto.minFlightTime = F("비행 시간 하한(초)", _auto.minFlightTime, 0.05f, 1f);
             _auto.maxFlightTime = F("비행 시간 상한(초)", _auto.maxFlightTime, 0.2f, 2f);
-            _auto.ascendShape = F("상승 가속 지수", _auto.ascendShape, 1f, 2.5f);
-            _auto.descendShape = F("하강 가속 지수", _auto.descendShape, 1f, 2.5f);
-            Info("지수는 <b>재생 속도만</b> 바꾼다 — 정점·착지점·경로는 그대로");
+            Info("가속·감속은 <b>탄도가 알아서</b> 한다(이징 없음) — 세기는 중력·시간으로 조절");
             _auto.curveBias = F("대각선 휘어짐", _auto.curveBias, 0f, 0.8f);
             Info(FlightInfo(4f) + "  ·  " + FlightInfo(8f));
             _auto.pathSamples = Mathf.RoundToInt(F("경로 검사 샘플", _auto.pathSamples, 0f, 16f));
@@ -174,9 +173,12 @@ namespace Game.View
             if (_auto == null || !Section("잡고 올라가기", ref _secClimb)) return;
 
             _auto.armLength = F("팔 길이(m)", _auto.armLength, 0.3f, 0.9f);
+            _auto.directLatchRange = F("바로 잡기 거리(m)", _auto.directLatchRange, 0f, 2.5f);
+            Info("이 거리 안이면 도약 없이 선 자리에서 잡는다 (0 = 항상 도약)");
             _auto.pullDurationMin = F("당김 시간 최소(초)", _auto.pullDurationMin, 0.1f, 0.8f);
             _auto.pullDurationMax = F("당김 시간 최대(초)", _auto.pullDurationMax, 0.1f, 1.2f);
-            _auto.overDuration = F("넘김 시간(초)", _auto.overDuration, 0.05f, 0.5f);
+            _auto.overDuration = F("넘김 시간(초)", _auto.overDuration, 0.05f, 0.8f);
+            Info($"넘김 구간 상승 ≈ {_auto.armLength + 0.35f:0.00}m — 짧으면 확 튄다");
             _auto.swayFrequency = F("좌우 교차 빈도(Hz)", _auto.swayFrequency, 0f, 8f);
             _auto.swayAmplitude = F("좌우 교차 진폭(도)", _auto.swayAmplitude, 0f, 10f);
             Info($"당김 {_auto.pullDurationMax:0.00}초 → 교차 {_auto.pullDurationMax * _auto.swayFrequency:0.0}회");
@@ -198,16 +200,27 @@ namespace Game.View
         {
             if (_feel == null || !Section("화면 연출", ref _secFeel)) return;
 
-            Info("<b>발구름</b>");
+            Info("<b>발구름 — 침하(아래)</b>");
             _feel.launchDipPerMeter = F("높이 1m당 침하(m)", _feel.launchDipPerMeter, 0f, 0.2f);
             _feel.launchDipMax = F("침하 상한(m)", _feel.launchDipMax, 0f, 0.4f);
             _feel.launchDuration = F("지속(초)", _feel.launchDuration, 0.05f, 0.6f);
 
-            Info("<b>착지</b> (강도 = 착지 순간 낙하 속도)");
+            Info("<b>발구름 — 업킥(위로 '탁')</b>");
+            _feel.launchKickPerMeter = F("높이 1m당 킥(m)", _feel.launchKickPerMeter, 0f, 0.2f);
+            _feel.launchKickMax = F("킥 상한(m)", _feel.launchKickMax, 0f, 0.4f);
+            _feel.launchKickDuration = F("지속(초)", _feel.launchKickDuration, 0.05f, 0.5f);
+
+            Info("<b>착지 — 침하(아래)</b> (강도 = 착지 순간 낙하 속도)");
             _feel.landDipPerSpeed = F("속도 1m/s당 침하(m)", _feel.landDipPerSpeed, 0f, 0.05f);
             _feel.landDipMax = F("침하 상한(m)", _feel.landDipMax, 0f, 0.5f);
             _feel.landMinSpeed = F("연출 시작 속도(m/s)", _feel.landMinSpeed, 0f, 12f);
             _feel.landDuration = F("지속(초)", _feel.landDuration, 0.05f, 0.8f);
+
+            Info("<b>착지 — 업킥(위로 '탁')</b>");
+            _feel.landKickPerSpeed = F("속도 1m/s당 킥(m)", _feel.landKickPerSpeed, 0f, 0.05f);
+            _feel.landKickMax = F("킥 상한(m)", _feel.landKickMax, 0f, 0.5f);
+            _feel.landKickDuration = F("지속(초)", _feel.landKickDuration, 0.05f, 0.6f);
+            Info("킥을 침하보다 <b>짧게</b> 둬야 '탁 튀었다 가라앉는' 순서로 읽힌다");
 
             Info("<b>잡고 오르기 안착</b> (높이 무관 고정)");
             _feel.settleDip = F("침하(m)", _feel.settleDip, 0f, 0.25f);
