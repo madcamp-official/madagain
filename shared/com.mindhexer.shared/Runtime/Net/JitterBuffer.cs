@@ -34,6 +34,19 @@ namespace MindHexer.Shared.Net
         public int Capacity = 64;
         public float HistoryWindowMs = 600f;
 
+        // ---- 지연 보정(예측 외삽) ----
+        /// <summary>
+        /// 송신 타임스탬프로 패킷 나이를 추정해 최신 샘플을 속도로 외삽(예측)한다 → 전송 지연 우회.
+        /// off면 기존 지연 재생(TrySample)만.
+        /// </summary>
+        public bool LatencyCompensation = true;
+        /// <summary>전송 지연 하한(편도)만큼 추가로 앞서 예측하는 양(ms). 대략 RTT/2. 0이면 시계 지터만 상쇄.</summary>
+        public float PredictAheadMs = 40f;
+        /// <summary>최신 샘플 이후로 외삽할 수 있는 최대 시간(ms). 오버슛/노이즈 증폭 방지 상한.</summary>
+        public float MaxExtrapolationMs = 120f;
+        /// <summary>외삽 속도 추정 창(ms). 이 구간 평균 속도로 예측(단일 프레임 노이즈 완화).</summary>
+        public float VelocityWindowMs = 40f;
+
         private struct Sample { public long ts; public InputPacket p; }
         private readonly List<Sample> _buf = new List<Sample>(64);
 
@@ -45,12 +58,20 @@ namespace MindHexer.Shared.Net
         private double _jitterEma;          // RFC3550식 지터(ms)
         private long _lastTs = long.MinValue;
         private long _lastArrival = long.MinValue;
+        // 두 폰 시계 오프셋 추정: min(arrival - sendTs) ≈ (시계차 + 최소 편도지연). 느린 상향 누수로 드리프트 추종.
+        private double _clockOffset = double.NaN;
 
         public int Count => _buf.Count;
         public bool HasData => _init && _buf.Count > 0;
         public double PlaybackTs => _playbackTs;
         public double IntervalMs => _intervalEma < 0 ? 0 : _intervalEma;
         public double JitterMs => _jitterEma;
+        /// <summary>시계 오프셋 추정치 확보 여부(패킷 1개 이상 수신).</summary>
+        public bool HasClock => !double.IsNaN(_clockOffset);
+        /// <summary>추정 시계 오프셋(ms) = min(수신 - 송신).</summary>
+        public double ClockOffsetMs => double.IsNaN(_clockOffset) ? 0 : _clockOffset;
+        /// <summary>직전 SampleCompensated의 예측 리드(ms, 최신 샘플 대비). 실제로 얼마나 앞서 예측 중인지.</summary>
+        public double LastLeadMs { get; private set; }
 
         /// <summary>실효 재생 지연(ms).</summary>
         public float CurrentDelayMs
@@ -75,6 +96,7 @@ namespace MindHexer.Shared.Net
             _init = false;
             _intervalEma = -1; _jitterEma = 0;
             _lastTs = long.MinValue; _lastArrival = long.MinValue;
+            _clockOffset = double.NaN; LastLeadMs = 0;
             _playbackTs = 0;
         }
 
@@ -97,6 +119,11 @@ namespace MindHexer.Shared.Net
             }
             _lastTs = ts;
             _lastArrival = arrivalLocalMs;
+
+            // 시계 오프셋(누수 최소필터): 최솟값을 추종하되 느린 상향 누수로 클럭 드리프트를 따라간다.
+            double off = (double)arrivalLocalMs - ts;
+            if (double.IsNaN(_clockOffset) || off < _clockOffset) _clockOffset = off;
+            else _clockOffset += 0.02; // ≈1–2 ms/s 상향 누수 (수신 레이트에 비례)
 
             InsertSorted(ts, p);
             Prune();
@@ -146,6 +173,50 @@ namespace MindHexer.Shared.Net
             return true;
         }
 
+        /// <summary>
+        /// **지연 보정 샘플**. 헤드셋 단조시계 now(ms)를 송신 타임스탬프 축으로 변환하고
+        /// PredictAheadMs만큼 더 앞선 시점을 목표로 최신 샘플을 속도 외삽해 전송 지연을 상쇄한다.
+        /// 시계 미확보/보정 off면 기존 지연 재생(TrySample)으로 폴백.
+        /// (컨트롤러가 보낸 송신 시각 TimestampMs를 실제로 활용하는 지점.)
+        /// </summary>
+        public bool SampleCompensated(long headsetNowMs, out InputPacket result)
+        {
+            int n = _buf.Count;
+            if (n == 0) { result = default; LastLeadMs = 0; return false; }
+            if (!LatencyCompensation || double.IsNaN(_clockOffset))
+            {
+                LastLeadMs = 0;
+                return TrySample(out result);
+            }
+            long newest = _buf[n - 1].ts;
+            double target = (headsetNowMs - _clockOffset) + PredictAheadMs; // 송신축 예측 목표
+            double cap = newest + MaxExtrapolationMs;
+            if (target > cap) target = cap;   // 오버슛 상한
+            LastLeadMs = target - newest;
+            return SampleExtrapolated(target, out result);
+        }
+
+        /// <summary>ts가 최신 샘플보다 미래면 최근 속도로 외삽, 아니면 기존 보간/홀드.</summary>
+        public bool SampleExtrapolated(double ts, out InputPacket result)
+        {
+            int n = _buf.Count;
+            if (n == 0) { result = default; return false; }
+            long newest = _buf[n - 1].ts;
+            if (ts <= newest || n < 2) return SampleAt(ts, out result);
+
+            // 속도 추정 기준: 최신에서 VelocityWindowMs 이전 샘플(없으면 가장 오래된 것)
+            int j = n - 1;
+            while (j > 0 && (newest - _buf[j].ts) < VelocityWindowMs) j--;
+            Sample vb = _buf[j];
+            Sample nb = _buf[n - 1];
+            double vdt = nb.ts - vb.ts;
+            if (vdt <= 0) { result = nb.p; result.TimestampMs = (long)ts; return true; }
+
+            float f = (float)((ts - nb.ts) / vdt); // 창 대비 외삽 배율(속도×시간과 동치)
+            result = Extrapolate(in vb.p, in nb.p, f, (long)ts);
+            return true;
+        }
+
         // ---- 내부 ----
 
         private void InsertSorted(long ts, in InputPacket p)
@@ -176,6 +247,20 @@ namespace MindHexer.Shared.Net
             r.Acceleration = LerpV3(a.Acceleration, b.Acceleration, t);
             r.MoveAxis = LerpV2(a.MoveAxis, b.MoveAxis, t);
             r.Rotation = Slerp(a.Rotation, b.Rotation, t);
+            return r;
+        }
+
+        // 기준 두 샘플(vb=창 시작, nb=최신)의 속도로 위치 선형 외삽 + 회전 slerp 연장.
+        // 제어/이산 필드(터치·이동축·가속도·Phase 등)는 예측이 무의미·위험하므로 최신값 유지.
+        private static InputPacket Extrapolate(in InputPacket vb, in InputPacket nb, float f, long ts)
+        {
+            var r = nb; // 이산/제어 필드는 최신 샘플 것 그대로
+            r.TimestampMs = ts;
+            r.Position = new Vector3(
+                nb.Position.x + (nb.Position.x - vb.Position.x) * f,
+                nb.Position.y + (nb.Position.y - vb.Position.y) * f,
+                nb.Position.z + (nb.Position.z - vb.Position.z) * f);
+            r.Rotation = Slerp(vb.Rotation, nb.Rotation, 1f + f); // t>1 → 최신 너머로 연장(예측)
             return r;
         }
 

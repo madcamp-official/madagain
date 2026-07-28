@@ -28,6 +28,14 @@ namespace MindHexer.Headset.Input
         [Range(0f, 200f)] public float MinDelayMs = 30f;
         [Range(50f, 500f)] public float MaxDelayMs = 250f;
 
+        [Header("지연 보정(예측 외삽)")]
+        [Tooltip("컨트롤러 송신 시각으로 패킷 나이를 추정해 최신 포즈를 속도 외삽 → 전송 지연 우회.")]
+        public bool LatencyCompensation = true;
+        [Tooltip("편도 전송 지연만큼 추가로 앞서 예측(ms). 대략 RTT/2. 0이면 시계 지터만 상쇄.")]
+        [Range(0f, 120f)] public float PredictAheadMs = 40f;
+        [Tooltip("최신 샘플 이후 외삽 최대 시간(ms). 오버슛/노이즈 증폭 방지 상한.")]
+        [Range(0f, 200f)] public float MaxExtrapolationMs = 120f;
+
         private readonly JitterBuffer _buffer = new JitterBuffer();
         private bool _wasTimedOut;
 
@@ -50,6 +58,10 @@ namespace MindHexer.Headset.Input
         public double JitterMs => _buffer.JitterMs;
         public double IntervalMs => _buffer.IntervalMs;
         public int BufferedSamples => _buffer.Count;
+        /// <summary>지연 보정으로 최신 샘플 대비 앞서 예측 중인 양(ms).</summary>
+        public double PredictLeadMs => _buffer.LastLeadMs;
+        /// <summary>시계 오프셋 추정 확보 여부(보정 활성 조건).</summary>
+        public bool ClockLocked => _buffer.HasClock;
 
         private void Awake()
         {
@@ -66,6 +78,9 @@ namespace MindHexer.Headset.Input
             _buffer.CatchupRate = CatchupRate;
             _buffer.MinDelayMs = MinDelayMs;
             _buffer.MaxDelayMs = MaxDelayMs;
+            _buffer.LatencyCompensation = LatencyCompensation;
+            _buffer.PredictAheadMs = PredictAheadMs;
+            _buffer.MaxExtrapolationMs = MaxExtrapolationMs;
 
             if (_receiver.IsTimedOut)
             {
@@ -78,9 +93,10 @@ namespace MindHexer.Headset.Input
             long nowMs = (long)(Time.realtimeSinceStartupAsDouble * 1000.0);
             _receiver.Drain(p => _buffer.Push(p, nowMs)); // 프레임 사이 도착분 전부 적재
 
-            _buffer.Advance(Time.deltaTime * 1000.0);
+            _buffer.Advance(Time.deltaTime * 1000.0); // 폴백(_playbackTs) 유지용
 
-            if (_buffer.TrySample(out var s))
+            // 지연 보정: 컨트롤러 송신 시각으로 예측 외삽. 시계 미확보 시 내부에서 지연 재생으로 폴백.
+            if (_buffer.SampleCompensated(nowMs, out var s))
             {
                 _smoothedUv = s.NormalizedPos;
                 _smoothedPos = s.Position;

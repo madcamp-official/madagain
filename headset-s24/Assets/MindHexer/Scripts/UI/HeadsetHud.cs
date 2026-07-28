@@ -119,6 +119,10 @@ namespace MindHexer.Headset.UI
                 GUILayout.Label($"rot = ({e.x:0.0}, {e.y:0.0}, {e.z:0.0})", _label);
                 GUILayout.Label($"move = ({m.x:0.00}, {m.y:0.00})", _label);
                 GUILayout.Label($"지터버퍼: 지연 {_bridge.BufferDelayMs:0} ms, 지터 {_bridge.JitterMs:0.0} ms, 간격 {_bridge.IntervalMs:0.0} ms, 샘플 {_bridge.BufferedSamples}", _label);
+                string comp = _bridge.LatencyCompensation
+                    ? (_bridge.ClockLocked ? $"예측 +{_bridge.PredictLeadMs:0} ms" : "시계 동기화 중…")
+                    : "off";
+                GUILayout.Label($"지연 보정(송신시각 기반): {comp}", _label);
             }
 
             if (_hack != null)
