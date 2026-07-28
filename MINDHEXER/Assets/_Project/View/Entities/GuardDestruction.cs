@@ -21,15 +21,15 @@ namespace Game.View
         [Tooltip("미리 구워둔 조각 프리팹들(GuardDebris/). 각자 Rigidbody+BoxCollider를 갖고 있다.")]
         public GameObject[] debrisPrefabs;
 
-        [Header("흩어짐")]
-        [Tooltip("바깥으로 밀어내는 세기(m/s).")]
-        public float burst = 3.5f;
+        [Header("흩어짐 — 폭발이 아니라 '무너져 내림'")]
+        [Tooltip("바깥으로 밀어내는 세기(m/s). 아주 작게 둔다 — 크면 폭발처럼 튄다.")]
+        public float burst = 0.4f;
 
-        [Tooltip("위로 띄우는 정도 — 0이면 바닥을 기어간다.")]
-        public float upBias = 1.6f;
+        [Tooltip("위로 띄우는 정도. 0에 가까울수록 제자리에서 주저앉는다.")]
+        public float upBias = 0.1f;
 
         [Tooltip("회전 임펄스 세기.")]
-        public float spin = 4f;
+        public float spin = 1f;
 
         [Tooltip("이 시간(초) 뒤 조각을 정리한다. 드로우콜 회수 — 방치하면 계속 쌓인다.")]
         public float life = 8f;

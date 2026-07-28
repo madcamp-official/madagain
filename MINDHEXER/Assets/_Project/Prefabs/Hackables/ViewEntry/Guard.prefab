@@ -1123,9 +1123,9 @@ MonoBehaviour:
   - {fileID: 2281163495195798426, guid: 5ab01042c041b8b499ca10c244a31832, type: 3}
   - {fileID: 1613101358731857440, guid: 39eb8916585e6674baa25e2485b9bf26, type: 3}
   - {fileID: 626048839808364877, guid: 42d708647d3abb04fa7641b017cbce63, type: 3}
-  burst: 3.5
-  upBias: 1.6
-  spin: 4
+  burst: 0.4
+  upBias: 0.1
+  spin: 1
   life: 8
 --- !u!1 &4501838392818531922
 GameObject:

@@ -128,10 +128,20 @@ namespace Game.View
             if (tether != null)
             {
                 bool hacking = _ctx.Current == ControlContext.Hacking && _ctx.ActiveTarget != null;
-                Hackable tetherTarget = hacking ? _ctx.ActiveTarget : Controlled;
-                tether.UpdateTether(cam != null ? cam.transform : transform,
+
+                // 빙의 중이면 실은 <b>남겨진 본체 셸 → 빙의한 대상</b>을 잇는다(§6.3의 "손에서 이어지는 줄").
+                // 리그가 대상 자리로 옮겨갔으므로 카메라를 시작점으로 쓰면 길이가 0이 된다.
+                bool possessing = !hacking && viewEntry != null && viewEntry.Active;
+                Transform from = possessing && viewEntry.Shell != null
+                    ? viewEntry.Shell
+                    : (cam != null ? cam.transform : transform);
+
+                Hackable tetherTarget = hacking ? _ctx.ActiveTarget
+                                      : (possessing ? _ctx.ActiveTarget : Controlled);
+
+                tether.UpdateTether(from,
                                     tetherTarget != null ? tetherTarget.transform : null,
-                                    captured: !hacking && Controlled != null);
+                                    captured: !hacking && tetherTarget != null);
             }
         }
 
@@ -265,6 +275,8 @@ namespace Game.View
                     if (vet != null)
                     {
                         viewEntry.Enter(vet, cam);
+                        // 경비병(allowsMove)은 리그가 통째로 그 몸이 되므로 얼리면 안 된다 —
+                        // 고정 시점(CCTV·터렛)일 때만 본체를 세운다.
                         SetPlayerFrozen(!vet.allowsMove);
                         Debug.Log($"[Hack] 빙의: {target.kind} (좌우±{vet.panRange} 상하±{vet.tiltRange})");
                     }
@@ -300,7 +312,15 @@ namespace Game.View
         }
 
         /// <summary>지금 화면을 그리는 카메라. 빙의 중이면 대상의 눈 — 그래야 릴레이 해킹 조준이 맞는다.</summary>
-        Camera ActiveCam => viewEntry != null && viewEntry.Active ? viewEntry.Cam : cam;
+        // 몸 이동(경비병) 빙의는 플레이어 카메라를 그대로 쓰므로 viewEntry.Cam이 null이다 → 그때는 cam으로.
+        Camera ActiveCam
+        {
+            get
+            {
+                if (viewEntry != null && viewEntry.Active && viewEntry.Cam != null) return viewEntry.Cam;
+                return cam;
+            }
+        }
 
         Hackable Raycast()
         {
