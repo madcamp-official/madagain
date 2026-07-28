@@ -105,6 +105,7 @@ namespace Game.View
                     Print("  anim              — 경비병 애니메이션 목록(번호 표시)");
                     Print("  anim <이름|번호>   — 씬의 모든 경비병에게 강제 재생");
                     Print("  spawn guard [n]   — 시선 앞 바닥에 경비병 n기 배치(기본 1)");
+                    Print("  kill guard        — 경비병 파괴(조각 흩어짐)");
                     Print("  guards            — 씬의 경비병 목록·위치");
                     Print("  clear guards      — 경비병 전부 제거");
                     Print("  clear             — 로그 지우기");
@@ -118,6 +119,11 @@ namespace Game.View
                         SpawnGuards(Mathf.Clamp(cnt, 1, 20));
                     }
                     else Print("  사용: spawn guard [개수]");
+                    break;
+
+                case "kill":
+                    if (a.Length >= 2 && a[1].ToLowerInvariant().StartsWith("guard")) KillGuards();
+                    else Print("  사용: kill guard");
                     break;
 
                 case "anim":
@@ -197,6 +203,26 @@ namespace Game.View
                 made++;
             }
             Print("  경비병 " + made + "기 배치 (앞 3m)");
+        }
+
+        /// <summary>씬의 경비병을 파괴 연출로 터뜨린다(§12.0 소규모 = 런타임 리지드바디).</summary>
+        void KillGuards()
+        {
+            Camera c = Camera.main != null ? Camera.main : Object.FindFirstObjectByType<Camera>();
+            int n = 0, noComp = 0;
+            foreach (var h in Object.FindObjectsByType<Hackable>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (h.kind != HackableKind.Guard) continue;
+                var d = h.GetComponent<GuardDestruction>();
+                if (d == null) { noComp++; continue; }
+
+                // 맞은 방향 = 카메라에서 대상 쪽. 조각이 시선 반대로 날아간다.
+                Vector3 dir = c != null ? (h.transform.position - c.transform.position) : Vector3.zero;
+                dir.y = 0f;
+                d.Destruct(dir);
+                n++;
+            }
+            Print("  파괴 " + n + "기" + (noComp > 0 ? " / GuardDestruction 없음 " + noComp + "기" : ""));
         }
 
         void ClearGuards()

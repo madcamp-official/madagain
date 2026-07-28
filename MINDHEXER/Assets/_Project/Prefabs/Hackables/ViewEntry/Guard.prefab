@@ -976,6 +976,7 @@ GameObject:
   - component: {fileID: 1465655198789595522}
   - component: {fileID: 4322990628325820910}
   - component: {fileID: 3180163995857866921}
+  - component: {fileID: 3628375487612758766}
   m_Layer: 8
   m_Name: Guard
   m_TagString: Untagged
@@ -1099,6 +1100,33 @@ MonoBehaviour:
   useBlocker: 0
   blockerColor: {r: 0.15, g: 0.85, b: 0.25, a: 1}
   hideOwnMeshWhilePossessed: 1
+--- !u!114 &3628375487612758766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4357080393334123487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de305abfa1a5b0b4197e533653469281, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.GuardDestruction
+  debrisPrefabs:
+  - {fileID: 2981006995002011261, guid: a2414ef7c67a7af4e85722b6d3507a6c, type: 3}
+  - {fileID: 6103408501420675440, guid: 1f1edb59f68554b438d2fce56c42c9fe, type: 3}
+  - {fileID: 7471467187749992996, guid: 42f4f5836d499404bbba81314064aea7, type: 3}
+  - {fileID: 9041359917058016127, guid: 6197591de60b9f946b7fcb0612279229, type: 3}
+  - {fileID: 9066428174644834921, guid: 420b944308c6a8d4d8f5c4680a18864f, type: 3}
+  - {fileID: 6158946508767718659, guid: 3aa759531bda2244eb1bf83c55af315a, type: 3}
+  - {fileID: 1640229409607841621, guid: 72490fb4472ee574f8de75e50a2b4a84, type: 3}
+  - {fileID: 2281163495195798426, guid: 5ab01042c041b8b499ca10c244a31832, type: 3}
+  - {fileID: 1613101358731857440, guid: 39eb8916585e6674baa25e2485b9bf26, type: 3}
+  - {fileID: 626048839808364877, guid: 42d708647d3abb04fa7641b017cbce63, type: 3}
+  burst: 3.5
+  upBias: 1.6
+  spin: 4
+  life: 8
 --- !u!1 &4501838392818531922
 GameObject:
   m_ObjectHideFlags: 0
