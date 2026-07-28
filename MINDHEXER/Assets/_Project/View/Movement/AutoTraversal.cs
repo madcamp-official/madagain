@@ -6,9 +6,10 @@ namespace Game.View
     /// <summary>
     /// 자동 지형 통과 — <b>버튼 없이</b> 전부 자동. 판정은 3중 게이트로 엄격하게(후한 판정은 오히려 불편).
     ///
-    /// <para><b>시선 도약</b>: 실제 낙차가 있는 가장자리에서 전진 중일 때, 시야 원뿔 안의
+    /// <para><b>자동 도약</b>: 실제 낙차가 있는 가장자리에서, <b>이동 방향</b> 원뿔 안의
     /// <see cref="ClimbLedge"/> 중 <b>가장 가까운</b> 도달 가능 목표로 자동 도약한다(원뿔은 필터로만 쓴다 —
-    /// "보이는 것 중 제일 가까운 데로 뛴다"는 규칙 하나라 예측이 쉽다).
+    /// "가는 방향에 있는 것 중 제일 가까운 데로 뛴다"는 규칙 하나라 예측이 쉽다).
+    /// 시선은 선정에 관여하지 않는다 — 시선이 승인하면 뒤·옆 낙하 보호가 뚫린다(decisions/0004).
     ///  · 목표가 낮거나 조금 위 → 한 번의 도약으로 착지
     ///  · 키보다 높음(≤maxMantleUp) → 도약으로 모서리를 잡고(손 월드 고정) 당겨 올라감
     ///  · 도달 가능한 목표가 없음 → 낙차가 <see cref="maxSafeFall"/> 이하면 <b>그냥 떨어지고</b>,
@@ -69,7 +70,7 @@ namespace Game.View
         [Tooltip("도약 목표 검색 반경(m).")]
         public float jumpSearchRadius = 8f;
 
-        [Tooltip("시야 원뿔 반각(도) — 수평(yaw)만 본다. 위아래로 두리번거려도 선정이 안 흔들린다.")]
+        [Tooltip("도약 원뿔 반각(도) — 축은 <b>이동 방향</b>(수평). 시선은 관여하지 않는다(decisions/0004).")]
         public float coneAngle = 25f;
 
         [Tooltip("수평 속도 상한(m/s). 비행 시간 = max(탄도 시간, 거리/이 값) — 먼 도약이 총알처럼 빠르지 않게.")]
@@ -144,6 +145,12 @@ namespace Game.View
         public bool logDecisions;
         public bool drawGizmos = true;
 
+        [Tooltip("접지가 풀리는 순간 직전 프레임들을 한꺼번에 콘솔에 덤프한다. 낙하 원인 추적용.")]
+        public bool traceFall = true;
+
+        [Tooltip("덤프할 프레임 수.")]
+        [Range(5, 150)] public int traceLines = 45;
+
         FirstPersonPlayer _fpp;
         CharacterController _cc;
         MotionFeel _feel;
@@ -151,6 +158,8 @@ namespace Game.View
         readonly Collider[] _overlap = new Collider[12];
         // BlockedAt 전용 버퍼 — _overlap을 순회하는 도중에 호출되므로 같은 배열을 쓰면 반복이 깨진다.
         readonly Collider[] _blockBuf = new Collider[8];
+        // DropDepth 프로브 전용 — 위와 같은 이유로 따로 둔다.
+        readonly Collider[] _probeBuf = new Collider[8];
 
         /// <summary>도약 후보 하나. 원뿔을 통과한 것들을 모아 거리순으로 훑는다.</summary>
         struct Cand
@@ -217,23 +226,87 @@ namespace Game.View
             Vector2 v = _fpp.move.Output;
             if (v.magnitude >= minSpeed) _entrySpeed = v.magnitude;
 
+            bool grounded = _fpp.Grounded;
             bool moving = Time.time - _lastMoveTime <= inputBuffer && _lastMoveDir.sqrMagnitude > 0.5f;
-            if (!moving || !_fpp.Grounded) return;
+
+            // 접지가 풀리는 순간(= 떨어지기 시작) 직전 기록을 통째로 덤프한다.
+            // 매 프레임 찍으면 콘솔이 넘쳐 정작 그 구간을 못 보므로, 링버퍼에 모아뒀다 한 번에 낸다.
+            if (_prevGrounded && !grounded) DumpTrace();
+            _prevGrounded = grounded;
+
+            if (!moving || !grounded)
+            {
+                Trace(grounded, moving, w, v, "-", moving ? "스킵:공중" : "스킵:moving=false");
+                return;
+            }
 
             Vector3 dir = _lastMoveDir;
 
             float drop = DropDepth(dir, out bool bottomless);
+            string d = (bottomless ? "INF" : drop.ToString("F2")) + "[" + _dropReason + "]";
+
             if (bottomless || drop > safeDrop)
             {
-                if (ready && TryGazeJump()) return;
+                if (ready && TryGazeJump()) { Trace(grounded, moving, w, v, d, "도약 성립"); return; }
 
                 // 목표가 없다 — 감당 가능한 낙차면 그냥 떨어지게 둔다(아래층으로 내려가는 유일한 길).
                 // 무저갱이거나 너무 깊을 때만 막는다.
-                if (bottomless || drop > maxSafeFall) EdgeStop(dir);
+                if (bottomless || drop > maxSafeFall)
+                {
+                    EdgeStop(dir);
+                    Trace(grounded, moving, w, v, d, "EdgeStop 발동");
+                }
+                else
+                {
+                    Trace(grounded, moving, w, v, d,
+                          $"의도적 낙하 허용(≤maxSafeFall {maxSafeFall:F1})" + (ready ? "" : " ·쿨다운"));
+                }
                 return;
             }
 
+            Trace(grounded, moving, w, v, d, "평지");
             if (ready) TryWalkUp(dir);
+        }
+
+        string _dropReason = "";
+
+        // ── 낙하 추적 링버퍼 ─────────────────────────────────────────────
+        // "EdgeStop은 발동했는데 왜 떨어졌나"를 가르려면 그 전후 프레임의 실제 값이 필요하다.
+        // 매 프레임 로그로 흘리면 스팸에 묻히므로 모아뒀다가 낙하 순간에만 덤프한다.
+
+        readonly string[] _trace = new string[150];
+        int _traceHead, _traceCount;
+        bool _prevGrounded = true;
+
+        void Trace(bool grounded, bool moving, Vector2 wish, Vector2 vel, string drop, string act)
+        {
+            if (!traceFall) return;
+            Vector3 p = transform.position;
+            _trace[_traceHead] = string.Format(
+                "f{0} pos=({1:F2},{2:F2},{3:F2}) wish=({4:F2},{5:F2}) dir=({6:F2},{7:F2}) " +
+                "mv={8} gnd={9} v=({10:F2},{11:F2}) vy={12:F2} blk={13} drop={14} -> {15}",
+                Time.frameCount, p.x, p.y, p.z, wish.x, wish.y, _lastMoveDir.x, _lastMoveDir.z,
+                moving ? "T" : "F", grounded ? "T" : "F", vel.x, vel.y, _fpp.VerticalVelocity,
+                _fpp.BlockedThisFrame ? "T" : "F", drop, act);
+
+            _traceHead = (_traceHead + 1) % _trace.Length;
+            if (_traceCount < _trace.Length) _traceCount++;
+        }
+
+        void DumpTrace()
+        {
+            if (!traceFall || _traceCount == 0) return;
+
+            int n = Mathf.Min(_traceCount, Mathf.Clamp(traceLines, 5, _trace.Length));
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"[Fall] 접지 해제 — 직전 {n}프레임 (오래된 것부터):");
+            for (int i = n; i >= 1; i--)
+            {
+                int idx = ((_traceHead - i) % _trace.Length + _trace.Length) % _trace.Length;
+                if (_trace[idx] != null) sb.AppendLine(_trace[idx]);
+            }
+            Debug.Log(sb.ToString());
+            _traceCount = 0;   // 같은 낙하로 연속 덤프되지 않게
         }
 
         // ── 가장자리: 낙차 기준 ───────────────────────────────────────────
@@ -248,25 +321,74 @@ namespace Game.View
 
             // 발 높이에서 쏘면 코앞의 턱 <b>안에서</b> 출발하게 된다. 유니티는 시작점이 내부인 콜라이더를
             // 잡지 않으므로 아래 바닥을 못 찾고 무저갱으로 오판 → 가장자리 정지가 걸려 끼어버린다.
-            // 그래서 충분히 위에서 쏘고, 그래도 지형 안이면 "앞이 벽"이라는 뜻이니 낭떠러지가 아니다.
-            const float Up = 0.6f;
-            Vector3 probe = feet + dir * edgeProbeAhead + Vector3.up * Up;
+            //
+            // 예전엔 "지형 안이면 앞이 벽이니 낭떠러지가 아니다"로 <b>단정</b>하고 낙차 0을 반환했다.
+            // 그게 낭떠러지에서 오발동하면 그 프레임의 보호가 통째로 사라져, 판정이 깜빡일 때마다
+            // 조금씩 밀려 결국 떨어졌다(실측). 이제는 포기하지 않고 <b>빈 공간이 나올 때까지 프로브를
+            // 올려서 다시 검사</b>한다 — 앞이 벽이면 그 벽 윗면을 바닥으로 잡아 결과가 같고,
+            // 낭떠러지면 정상적으로 무저갱이 나온다.
+            const float BaseUp = 0.6f;
+            const float StepUp = 0.4f;
+            const int MaxLift = 6;         // 최대 0.6 + 0.4×6 = 3.0m까지 올려본다
 
-            if (Physics.CheckSphere(probe, 0.06f, obstacleMask, QueryTriggerInteraction.Ignore))
+            Vector2 flat = new Vector2(dir.x, dir.z);
+            Vector3 ahead = feet + new Vector3(flat.x, 0f, flat.y).normalized * edgeProbeAhead;
+
+            float up = BaseUp;
+            string blocker = null;
+            for (int i = 0; i <= MaxLift; i++)
             {
-                bottomless = false;
-                return 0f;
+                Vector3 p = ahead + Vector3.up * up;
+                Collider inside = OverlapAt(p);
+                if (inside == null) break;              // 빈 공간 확보
+                blocker = inside.name;
+                up += StepUp;
+                if (i == MaxLift)
+                {
+                    // 3m를 올려도 계속 지형 안 = 앞이 통짜 벽. 낭떠러지가 아니다.
+                    bottomless = false;
+                    _dropReason = $"3m까지 전부 지형 안(통짜 벽) @{blocker}";
+                    return 0f;
+                }
             }
 
-            float len = Up + Mathf.Max(safeDrop, maxSafeFall) + 0.6f;
-            if (Physics.Raycast(probe, Vector3.down, out RaycastHit hit, len,
+            Vector3 origin = ahead + Vector3.up * up;
+            float len = up + Mathf.Max(safeDrop, maxSafeFall) + 0.6f;
+
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, len,
                                 obstacleMask, QueryTriggerInteraction.Ignore))
             {
                 bottomless = false;
+                _dropReason = blocker == null
+                    ? $"레이 적중 @{hit.collider.name}"
+                    : $"레이 적중 @{hit.collider.name} (프로브 {up:F1}m로 올림 — 막던 것: {blocker})";
                 return Mathf.Max(0f, feet.y - hit.point.y);
             }
+
             bottomless = true;
+            _dropReason = blocker == null
+                ? $"레이 {len:F1}m 안에 바닥 없음"
+                : $"레이 {len:F1}m 안에 바닥 없음 (프로브 {up:F1}m로 올림 — 막던 것: {blocker})";
             return float.PositiveInfinity;
+        }
+
+        /// <summary>
+        /// 그 지점이 지형 안인가. 막고 있는 콜라이더를 <b>이름까지</b> 돌려준다 —
+        /// bool만 받던 <c>CheckSphere</c>로는 "무엇이 막았는지"를 알 수 없어 원인 추적이 막혔다.
+        /// <b>플레이어 자신은 제외</b>한다(BlockedAt과 같은 규칙 — DropDepth만 빠져 있었다).
+        /// </summary>
+        Collider OverlapAt(Vector3 p)
+        {
+            int n = Physics.OverlapSphereNonAlloc(p, 0.06f, _probeBuf, obstacleMask,
+                                                  QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < n; i++)
+            {
+                Collider c = _probeBuf[i];
+                if (c == null) continue;
+                if (c.transform == transform || c.transform.IsChildOf(transform)) continue;
+                return c;
+            }
+            return null;
         }
 
         // 클램프는 FPP가 적분을 끝낸 뒤에 적용한다 — 여기서 직접 깎으면 같은 프레임에 재가속돼 샌다.
@@ -282,14 +404,17 @@ namespace Game.View
         {
             Vector3 feet = Feet;
 
-            // 수평(yaw)만 본다 — 높은 난간을 노리려고 고개를 들어도 선정이 흔들리지 않는다.
-            // 높이는 아래 dh 조건이 따로 거른다.
-            // 원뿔 축은 <b>시선과 이동 방향 둘 다</b>다.
-            // 가장자리 감지(DropDepth)와 궤적 출발 접선은 이동 방향 기준인데 목표 선정만 시선 기준이면,
-            // 옆걸음·대각선으로 달릴 때 목표가 원뿔 밖으로 빠져 도약이 안 잡히고 그대로 떨어진다.
-            Vector3 look = _fpp.FlatForward;
+            // 원뿔 축은 <b>이동 방향 하나뿐</b>이다. 시선은 쓰지 않는다.
+            //
+            // 원칙: <b>발판을 떠나는 방향은 이동 방향이다. 그러니 목표도 그 방향에 있어야 한다.</b>
+            // 시선을 OR로 같이 인정하면, 앞에 후보를 둔 채 뒤·옆으로 나갈 때 그 앞 후보가 시선으로
+            // 통과해 TryGazeJump가 true를 반환하고, 정작 <b>나가는 방향은 아무 판단도 없이</b>
+            // EdgeStop만 건너뛴 채 그대로 떨어진다. (자세한 경위: decisions/0004)
+            //
+            // 수평(yaw)만 본다 — 고개를 들든 숙이든 선정이 흔들리지 않는다. 높이는 아래 dh가 따로 거른다.
             Vector3 run = _lastMoveDir; run.y = 0f;
-            run = run.sqrMagnitude > 1e-4f ? run.normalized : look;
+            if (run.sqrMagnitude < 1e-4f) return false;   // 이동 방향이 없으면 떠날 방향도 없다
+            run.Normalize();
 
             float cosCone = Mathf.Cos(coneAngle * Mathf.Deg2Rad);
             float r2 = jumpSearchRadius * jumpSearchRadius;
@@ -317,8 +442,7 @@ namespace Game.View
                 if (dist > jumpSearchRadius || dist < 0.2f) { Rej(ledge, $"거리 {dist:F2}m"); continue; }
 
                 Vector3 toDir = flatTo / dist;
-                if (Vector3.Dot(run, toDir) < cosCone && Vector3.Dot(look, toDir) < cosCone)
-                { Rej(ledge, "원뿔 밖"); continue; }
+                if (Vector3.Dot(run, toDir) < cosCone) { Rej(ledge, "원뿔 밖(이동 방향)"); continue; }
 
                 float dh = g.landingFeet.y - feet.y;
                 if (dh > maxMantleUp || dh < -maxDropTarget) { Rej(ledge, $"높이차 {dh:F2}m"); continue; }
@@ -800,17 +924,20 @@ namespace Game.View
             if (!drawGizmos || _cc == null) return;
             Vector3 feet = Feet;
 
-            // 시야 원뿔(대략) + 검색 반경
+            // 도약 원뿔 + 검색 반경. 축은 <b>이동 방향</b>이다(정지 중엔 정면으로 대신 그린다).
+            Vector3 f = transform.forward; f.y = 0f;
+            if (f.sqrMagnitude > 1e-4f) f.Normalize();
+            Vector3 axis = Application.isPlaying && _lastMoveDir.sqrMagnitude > 0.5f ? _lastMoveDir : f;
+
             Gizmos.color = new Color(0.3f, 0.8f, 1f, 0.3f);
             Gizmos.DrawWireSphere(feet, jumpSearchRadius);
-            Vector3 f = transform.forward;
             Quaternion l = Quaternion.AngleAxis(-coneAngle, Vector3.up);
             Quaternion r = Quaternion.AngleAxis(coneAngle, Vector3.up);
-            Gizmos.DrawRay(transform.position, l * f * jumpSearchRadius);
-            Gizmos.DrawRay(transform.position, r * f * jumpSearchRadius);
+            Gizmos.DrawRay(transform.position, l * axis * jumpSearchRadius);
+            Gizmos.DrawRay(transform.position, r * axis * jumpSearchRadius);
 
             // 가장자리 낙차 프로브
-            Vector3 dir = Application.isPlaying && _lastMoveDir.sqrMagnitude > 0.5f ? _lastMoveDir : f;
+            Vector3 dir = axis;
             dir.y = 0f;
             if (dir.sqrMagnitude > 1e-4f)
             {

@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 6504823314557576672}
   - component: {fileID: 7920175615505672773}
   - component: {fileID: 5336460493399645839}
-  - component: {fileID: 6759761385420177929}
+  - component: {fileID: 7976183033837537812}
+  - component: {fileID: 8730665528939521544}
   m_Layer: 0
   m_Name: ground corner
   m_TagString: Untagged
@@ -26,13 +27,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5840631037064019802}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7920175615505672773
 MeshFilter:
@@ -59,6 +60,11 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -82,21 +88,48 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &6759761385420177929
-MeshCollider:
+--- !u!65 &7976183033837537812
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5840631037064019802}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 2383543240802099511, guid: 791dac8ca5e9ad545abd0770c751cd7c, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 4.640277, y: 1.187477, z: 4.646036}
+  m_Center: {x: 0.3201382, y: -0.4062634, z: 0.31725857}
+--- !u!114 &8730665528939521544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5840631037064019802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5abb777edc057040a9a14750a34510d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ClimbLedge
+  climbableFaces: 15
+  useColliderTop: 1
+  customHeight: 1
+  landingInset: 0.45
+  grabRegions: []
+  gizmoMaxClimbHeight: 2

@@ -136,9 +136,9 @@ namespace Game.View
         {
             if (_auto == null || !Section("시선 도약", ref _secJump)) return;
 
-            _auto.coneAngle = F("시야 원뿔 반각(도)", _auto.coneAngle, 5f, 70f);
+            _auto.coneAngle = F("도약 원뿔 반각(도)", _auto.coneAngle, 5f, 70f);
             Info("원뿔은 <b>필터</b>일 뿐 — 통과한 것 중 <b>가장 가까운</b> 목표로 뛴다\n" +
-                 "축은 <b>시선 + 이동 방향 둘 다</b> (옆걸음·대각선에서 놓치지 않게)");
+                 "축은 <b>이동 방향 하나</b> — 시선은 관여 안 함(뒤·옆 낙하 보호가 뚫려서)");
             _auto.jumpSearchRadius = F("검색 반경(m)", _auto.jumpSearchRadius, 2f, 20f);
             _auto.maxDirectUp = F("직행 도약 최대 높이(m)", _auto.maxDirectUp, 0.3f, 2f);
             _auto.maxMantleUp = F("잡고 오르기 최대 높이(m)", _auto.maxMantleUp, 0.5f, 3.5f);
@@ -239,6 +239,20 @@ namespace Game.View
             _feel.landRollDuration = F("착지 지속(초)", _feel.landRollDuration, 0.05f, 0.8f);
             _feel.landRollCycles = F("착지 왕복 수", _feel.landRollCycles, 0.5f, 4f);
             Info("방향은 매번 반대쪽부터 — 같은 쪽만 기울면 금방 티가 난다");
+
+            Info("<b>실려가기 — 지하철 스웨이</b> (레일·피스톤·프레서 등 강제 이동 전부 공통)");
+            _feel.carryRollGain = F("좌우 버티는 각(도/m·s⁻¹)", _feel.carryRollGain, 0f, 6f);
+            _feel.carryRollMax = F("롤 상한(도)", _feel.carryRollMax, 0f, 20f);
+            _feel.carryFovGain = F("전후 FOV 변화(도/m·s⁻¹)", _feel.carryFovGain, 0f, 4f);
+            _feel.carryFovMax = F("FOV 변화 상한(도)", _feel.carryFovMax, 0f, 25f);
+            _feel.carryFrequency = F("반응성(완만한 승차)", _feel.carryFrequency, 2f, 20f);
+            _feel.carryDamping = F("댐핑(1 미만 = 정지 시 반대로 넘어갔다 흔들림)", _feel.carryDamping, 0.1f, 1f);
+            _feel.carrySmoothTime = F("입력 스무딩(초)", _feel.carrySmoothTime, 0f, 0.3f);
+            Info("물리 충돌처럼 델타가 들쭉날쭉할 때 떨림 방지. 0=끔");
+            _feel.carryImpactSpeed = F("충돌 판정 속도(m/s)", _feel.carryImpactSpeed, 1f, 15f);
+            _feel.carryImpactFrequency = F("충돌 시 반응성", _feel.carryImpactFrequency, 2f, 30f);
+            Info("이 속도 넘으면 반응성을 올려 짧게 홀드했다 빨리 정착");
+            Info("0 = 끔. RailPlatform.Carry() 한 곳에서만 발화 — 소스 안 가림");
 
             Info("<b>VR 감쇠</b>");
             _feel.vrPositionScale = F("위치 배율", _feel.vrPositionScale, 0f, 1f);

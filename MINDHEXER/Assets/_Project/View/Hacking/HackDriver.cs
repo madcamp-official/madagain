@@ -7,8 +7,16 @@ namespace Game.View
     /// <b>Space 단발 탭</b> → 점 패턴 미니게임(§2.4) → 성공하면 그 대상을 <b>조종 대상</b>으로 잡는다.
     /// 해킹 중엔 마우스가 패턴을 그리므로 시점만 잠기고 WASD 이동은 계속된다(§2.5).
     ///
-    /// <para>Space는 홀드 없이 탭 하나로 전부 처리한다 — 조준 중이면 해킹 시작 / 그리는 중이면 취소 /
-    /// 그 외(허공·조종 중인 대상)면 조종 해제.</para>
+    /// <para><b>Space 하나로 전부 처리한다(Q 폐기).</b> 길이로 갈린다:
+    ///  · <b>홀드</b>(<see cref="holdThreshold"/> 이상, <b>빙의 중일 때만</b>) → 본체 복귀. 임계 도달 즉시 발동하고
+    ///    이어지는 릴리스는 소비된다(복귀하면서 해킹까지 걸리지 않게).
+    ///  · <b>뗌</b> → 조준 중이면 해킹 시작 / 그리는 중이면 취소 / 그 외면 조종 해제.</para>
+    ///
+    /// <para>홀드를 <b>빙의 중에만</b> 인정하는 이유: 평소에 길게 눌렀다 떼면 아무 일도 안 하는 죽은 입력이
+    /// 생긴다. 홀드가 발동하지 않았으면 릴리스는 <b>무조건</b> 탭 동작을 하므로, 길게 눌러도 해킹은 걸린다.</para>
+    ///
+    /// <para>홀드 판정을 리더가 아니라 여기서 하는 이유: <see cref="HexInput"/>의 raw 3필드
+    /// (held/pressed/released)만 채우면 <b>VR도 같은 판정을 공짜로</b> 얻는다.</para>
     ///
     /// <para>조종 대상은 <b>한 번에 하나</b>이고 <b>시선과 무관하게</b> 계속 조종된다(도주하며 조종, §2.5).
     /// 다른 대상을 해킹하면 이전 대상은 자동으로 풀린다 — 되찾으려면 다시 해킹해야 한다.
@@ -31,9 +39,13 @@ namespace Game.View
         [Tooltip("빙의 시점 구동(§2.5). 비우면 자동 추가.")]
         public ViewEntryController viewEntry;
 
+        [Tooltip("Space를 이 시간(초) 이상 유지하면 본체 복귀(빙의 중일 때만). 이하로 떼면 평소의 탭 동작.")]
+        public float holdThreshold = 0.25f;
+
         static readonly Color ExternalColor  = new Color(0.4f, 1f, 0.3f);   // 연두 (외부 조종)
         static readonly Color ViewEntryColor = new Color(0f, 0.8f, 0.85f);  // 청록 (시점 진입)
         static readonly Color StunColor      = new Color(1f, 0.85f, 0.1f);  // 노랑 (보스 스턴)
+        static readonly Color HackedColor    = new Color(0.45f, 0.78f, 1f); // 밝은 하늘색 (한 번이라도 해킹됨, 영구)
 
         /// <summary>입력 출처. 기본 PC(키보드/마우스). VR에선 GameBoot이 네트워크 소스로 교체.</summary>
         public IHexInputSource Source = new PcHexInputSource();
@@ -52,6 +64,10 @@ namespace Game.View
         // 해킹 성공 시점에 고정되는 슬롯↔축 배정·부호(§6.2). 조종 중에는 절대 안 바뀐다.
         readonly int[] _slotAxis = { -1, -1 };
         readonly float[] _slotSign = { 1f, 1f };
+
+        // Space 홀드 판정. _holdConsumed면 그 릴리스는 탭 동작을 하지 않는다(복귀+해킹 이중 발동 방지).
+        float _spaceDownTime = -1f;
+        bool _holdConsumed;
 
         void Awake()
         {
@@ -79,23 +95,51 @@ namespace Game.View
             UpdateHighlight(aimed);
             UpdateGazeFlags(aimed);
 
+            // ── Space 홀드 = 본체 복귀 (빙의 중일 때만). 임계 도달 즉시 발동한다. ──
+            if (input.hackPressed) { _spaceDownTime = Time.unscaledTime; _holdConsumed = false; }
+
+            if (input.hackHeld && !_holdConsumed && _spaceDownTime >= 0f
+                && Time.unscaledTime - _spaceDownTime >= holdThreshold
+                && _ctx.Current != ControlContext.Player)
+            {
+                _holdConsumed = true;          // 이어지는 릴리스는 탭 동작을 하지 않는다
+                viewEntry.Exit(cam);
+                SetPlayerFrozen(false);
+                _ctx.ReturnToBody();
+                Debug.Log("[Hack] 복귀(Space 홀드) → Player");
+            }
+
+            // 릴리스가 탭 동작을 할 자격이 있는가. 홀드가 이미 소비했으면 없다.
+            bool tap = input.hackReleased && !_holdConsumed;
+            if (input.hackReleased) { _spaceDownTime = -1f; _holdConsumed = false; }
+
             switch (_ctx.Current)
             {
                 case ControlContext.Player:
                 case ControlContext.ViewEntry:
                 {
-                    // Space 단발 탭 하나로 전부 처리(홀드 없음).
+                    // Space를 뗄 때 처리(홀드는 위에서 본체 복귀로 먼저 소비됨).
                     //  · 새 대상을 조준 중이면  → 그 대상 해킹 시작
                     //  · 아니면(허공/조종 중인 대상) → 조종 해제
-                    if (input.hackPressed)
+                    if (tap)
                     {
                         if (aimed != null && aimed != Controlled)
                         {
                             _ctx.BeginHacking(aimed);
                             aimed.captureState = CaptureState.Hacking;
-                            minigame.Begin(aimed);
-                            FreezeLook(true);
-                            Debug.Log($"[Hack] 시작: {aimed.kind} ({aimed.controlType}, {aimed.PatternLineCount}선)");
+
+                            // 한 번이라도 해킹된 적 있으면 패턴 생략, 즉시 성공(전체 해킹 규칙).
+                            if (aimed.everHacked)
+                            {
+                                Debug.Log($"[Hack] 재해킹(패턴 생략): {aimed.kind}");
+                                OnPatternDone(true);
+                            }
+                            else
+                            {
+                                minigame.Begin(aimed);
+                                FreezeLook(true);
+                                Debug.Log($"[Hack] 시작: {aimed.kind} ({aimed.controlType}, {aimed.PatternLineCount}선)");
+                            }
                         }
                         else ReleaseControlled("탭");
                     }
@@ -103,25 +147,25 @@ namespace Game.View
                     // 조종은 시선과 무관 — 어디를 보든 잡고 있는 대상이 움직인다.
                     if (Controlled != null) DriveExternal(Controlled, input);
                     viewEntry.Tick();   // 빙의 중이면 마우스로 pan/tilt(§2.5)
+
+                    // 빙의 중인 대상에 총(TurretGun)이 있으면 좌클릭으로 사격.
+                    // primary/primaryHeld는 HexInput에 시점진입용으로 이미 있었는데 여기서 처음 쓴다.
+                    if (_ctx.Current == ControlContext.ViewEntry && _ctx.ActiveTarget != null)
+                    {
+                        var gun = _ctx.ActiveTarget.GetComponent<TurretGun>();
+                        if (gun != null) gun.TickPlayerFire(input.primary, input.primaryHeld);
+                    }
                     break;
                 }
 
                 case ControlContext.Hacking:
                 {
-                    // 그리는 중 Space 재탭 = 취소.
-                    PatternState st = input.hackPressed ? minigame.Cancel() : minigame.Tick(input.strokeDir);
+                    // 그리는 중 Space를 다시 뗐다 = 취소.
+                    PatternState st = tap ? minigame.Cancel() : minigame.Tick(input.strokeDir);
                     if (st == PatternState.Succeeded) OnPatternDone(true);
                     else if (st == PatternState.Cancelled) OnPatternDone(false);
                     break;
                 }
-            }
-
-            if (input.returnToBody && _ctx.Current != ControlContext.Player)
-            {
-                viewEntry.Exit(cam);
-                SetPlayerFrozen(false);
-                _ctx.ReturnToBody();
-                Debug.Log("[Hack] 복귀(Q) → Player");
             }
 
             // 실은 해킹 시도 순간(초록)부터 붙고, 성공하면 조종 대상으로 넘어가며 파랑이 된다(§7·§6.2).
@@ -262,6 +306,8 @@ namespace Game.View
             FreezeLook(false);
             if (success)
             {
+                if (target != null) target.everHacked = true;   // 영구 기록(전체 해킹 규칙)
+
                 // 외부 조종 = 새 조종 대상으로 교체(이전 대상은 SetControlled가 자동으로 풀어준다).
                 if (target != null && target.controlType == ControlType.ExternalControl) SetControlled(target);
                 else if (target != null) target.captureState = CaptureState.None;
@@ -340,13 +386,15 @@ namespace Game.View
             if (_highlighted == target) return;
             if (_highlighted != null) SetTint(_highlighted, null);
             _highlighted = target;
-            if (_highlighted != null) SetTint(_highlighted, ColorFor(_highlighted.controlType));
+            if (_highlighted != null) SetTint(_highlighted, ColorFor(_highlighted));
         }
 
-        Color ColorFor(ControlType t)
+        // 한 번이라도 해킹된 대상은 종류·상태와 무관하게 항상 하늘색(전체 해킹 규칙 — 영구 표시).
+        Color ColorFor(Hackable h)
         {
-            if (t == ControlType.ViewEntry) return ViewEntryColor;
-            if (t == ControlType.Stun) return StunColor;
+            if (h.everHacked) return HackedColor;
+            if (h.controlType == ControlType.ViewEntry) return ViewEntryColor;
+            if (h.controlType == ControlType.Stun) return StunColor;
             return ExternalColor;
         }
 

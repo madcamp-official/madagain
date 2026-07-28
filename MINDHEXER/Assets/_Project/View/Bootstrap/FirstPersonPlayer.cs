@@ -84,6 +84,9 @@ namespace Game.View
         /// </summary>
         public void BlockDirection(Vector2 dir) { _blockDir = dir; _blockFrame = Time.frameCount; }
 
+        /// <summary>직전 이동에서 차단이 <b>실제로 적용</b>됐는지(속도를 깎았는지). 낙하 추적용.</summary>
+        public bool BlockedThisFrame { get; private set; }
+
         Vector2 _blockDir;
         int _blockFrame = -1;
 
@@ -117,16 +120,19 @@ namespace Game.View
 
             float dt = Time.deltaTime;
 
-            // 시점 — 해킹 중엔 마우스가 패턴을 그리므로 잠근다(이동은 아래에서 계속 처리).
-            // 롤은 MotionFeel(당김 스웨이)이 계산한 값을 합성만 한다 — 여기가 회전의 유일한 기록자.
+            // 시점 — 해킹 중엔 마우스가 패턴을 그리므로 "회전 입력"만 잠근다(이동은 아래에서 계속 처리).
+            // LookFrozen은 yaw/pitch 갱신만 막는다 — 회전 적용 자체(아래 대입)는 항상 실행돼야
+            // MotionFeel의 절차적 롤(지하철 스웨이·착지 킥 등)이 해킹 중에도 계속 보인다. 예전엔
+            // 이 대입이 같은 if 블록 안에 있어서 해킹 중엔 롤 연출까지 통째로 안 먹혔다(버그, 수정됨) —
+            // "회전 불가능"과 "연출 없음"은 다른 요구사항이다.
             if (!LookFrozen && mouse != null && Cursor.lockState == CursorLockMode.Locked)
             {
                 Vector2 d = mouse.delta.ReadValue();
                 _yaw += d.x * lookSens;
                 _pitch = Mathf.Clamp(_pitch - d.y * lookSens, -85f, 85f);
-                transform.localRotation = Quaternion.Euler(_pitch, _yaw,
-                    _feel != null ? _feel.CurrentRoll : 0f);
             }
+            transform.localRotation = Quaternion.Euler(_pitch, _yaw,
+                _feel != null ? _feel.CurrentRoll : 0f);
 
             if (kb.escapeKey.wasPressedThisFrame)
                 Cursor.lockState = Cursor.lockState == CursorLockMode.Locked
@@ -164,6 +170,7 @@ namespace Game.View
             Vector2 h = move.Output;   // 적분 속도 + 감쇠 임펄스
 
             // 가장자리 낙하 방지 — 적분이 끝난 뒤, 이동 직전에 바깥 성분만 깎는다.
+            BlockedThisFrame = false;
             if (_blockFrame == Time.frameCount && _blockDir.sqrMagnitude > 1e-4f)
             {
                 Vector2 d = _blockDir.normalized;
@@ -173,6 +180,7 @@ namespace Game.View
                     h -= d * outward;
                     move.SetVelocity(h);   // 적분기 상태도 맞춰야 다음 프레임에 되살아나지 않는다
                     move.ClearBoost();
+                    BlockedThisFrame = true;
                 }
             }
 

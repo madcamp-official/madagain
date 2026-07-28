@@ -26,7 +26,9 @@ namespace Game.View
     {
         public ControlContext context;
 
-        // 해킹 (Player/ViewEntry 공통) — Space. 홀드=해킹 / 단발 탭=조종 해제. 판단은 HackDriver가 함.
+        // 해킹·복귀 (Player/ViewEntry 공통) — 전부 Space. raw 상태·엣지만 싣고,
+        // 홀드(=본체 복귀) / 탭(=해킹·취소·조종해제) 판단은 HackDriver가 한다.
+        // 이렇게 두면 VR 소스도 이 세 필드만 채우면 같은 판정을 그대로 얻는다.
         public bool    hackHeld;     // Space 눌림 상태(raw)
         public bool    hackPressed;  // Space 눌린 프레임(엣지)
         public bool    hackReleased; // Space 뗀 프레임(엣지)
@@ -40,7 +42,6 @@ namespace Game.View
         // 시점 진입
         public bool primary;         // LMB 눌림(엣지) — 발사/쥐기
         public bool primaryHeld;     // LMB 유지 — 연사
-        public bool returnToBody;    // Q — 복귀·해제
 
         public static HexInput Empty
         {

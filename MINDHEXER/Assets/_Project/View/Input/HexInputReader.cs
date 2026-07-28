@@ -35,13 +35,11 @@ namespace Game.View
 
             bool shift = kb.leftShiftKey.isPressed || kb.rightShiftKey.isPressed;
 
-            // 해킹 = Space. 홀드/탭 구분은 HackDriver가 한다.
+            // 해킹·복귀 전부 Space. 홀드(복귀)/탭(해킹·취소·조종해제) 구분은 HackDriver가 한다.
+            // Q는 폐기됐다 — 복귀도 Space 홀드로 통합.
             cmd.hackHeld = kb.spaceKey.isPressed;
             cmd.hackPressed = kb.spaceKey.wasPressedThisFrame;
             cmd.hackReleased = kb.spaceKey.wasReleasedThisFrame;
-
-            // Q 복귀(빙의)
-            cmd.returnToBody = kb.qKey.wasPressedThisFrame;
 
             if (mouse == null) return cmd;
 
