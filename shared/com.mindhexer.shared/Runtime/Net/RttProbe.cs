@@ -18,8 +18,15 @@ namespace MindHexer.Shared.Net
     {
         private UdpClient _udp;
         private Thread _thread;
+        private Thread _pingThread;
         private volatile bool _running;
         private readonly Stopwatch _sw = Stopwatch.StartNew();
+
+        /// <summary>자동 Ping 간격(ms). 낮을수록 되돌아오는 경로가 계속 깨어 있어 RTT↓(고빈도 권장 20~50ms).</summary>
+        public int PingIntervalMs = 40;
+
+        /// <summary>true면 Connect 시 자동 Ping 스레드를 띄운다. false면 SendPing() 수동 호출(테스트용).</summary>
+        public bool AutoPing = true;
 
         private uint _nextNonce;
         private long _sentCount;
@@ -55,8 +62,27 @@ namespace MindHexer.Shared.Net
             if (!_running)
             {
                 _running = true;
-                _thread = new Thread(ReceiveLoop) { IsBackground = true, Name = "MHX-RttProbe" };
+                // 저지연: 소켓 스레드 우선순위 상향(렌더링으로 바쁜 폰에서 스케줄 지연 완화).
+                _thread = new Thread(ReceiveLoop)
+                { IsBackground = true, Name = "MHX-RttProbe", Priority = ThreadPriority.AboveNormal };
                 _thread.Start();
+                // 자동 Ping: 프레임과 무관하게 고빈도로 보내 되돌아오는 경로를 계속 깨워둔다.
+                if (AutoPing)
+                {
+                    _pingThread = new Thread(PingLoop)
+                    { IsBackground = true, Name = "MHX-RttPing", Priority = ThreadPriority.AboveNormal };
+                    _pingThread.Start();
+                }
+            }
+        }
+
+        private void PingLoop()
+        {
+            while (_running)
+            {
+                try { SendPing(); } catch { /* 일시 오류 무시 */ }
+                int ms = PingIntervalMs; if (ms < 1) ms = 1;
+                Thread.Sleep(ms);
             }
         }
 
@@ -109,7 +135,9 @@ namespace MindHexer.Shared.Net
         {
             _running = false;
             try { _udp?.Close(); } catch { /* ignore */ }
+            _pingThread?.Join(300);
             _thread?.Join(300);
+            _pingThread = null;
             _thread = null;
             _udp = null;
         }

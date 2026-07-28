@@ -37,6 +37,7 @@ namespace MindHexer.Headset
                 cam.backgroundColor = new Color(0.05f, 0.06f, 0.09f);
             }
 
+            go.AddComponent<WifiPerformanceLock>();           // Wi-Fi 절전 방지(RTT↓ + 브로드캐스트 수신)
             go.AddComponent<MainThreadDispatcher>();          // WS 콜백 메인스레드 마샬
             go.AddComponent<UdpReceiver>();                   // S10e 6DoF/이동 스트림 수신
             go.AddComponent<WebSocketServerHost>();           // 내장 WebSocket 서버(페어링/이벤트)

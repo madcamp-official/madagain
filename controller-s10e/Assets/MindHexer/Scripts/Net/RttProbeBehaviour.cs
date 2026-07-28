@@ -5,19 +5,18 @@ using MindHexer.Shared.Net;
 namespace MindHexer.Controller.Net
 {
     /// <summary>
-    /// S10e RTT 프로브 어댑터. 주기적으로 Ping을 보내 왕복시간을 측정한다(SPEC 5.4). 코어는 <see cref="RttProbe"/>.
-    /// HUD에 <see cref="LastRttMs"/>/<see cref="AverageRttMs"/> 표시 권장.
+    /// S10e RTT 프로브 어댑터. 코어(<see cref="RttProbe"/>)가 **자동 고빈도 Ping**을 백그라운드에서 보낸다(SPEC 5.4).
+    /// 고빈도 Ping은 헤드셋→컨트롤러(되돌아오는) 경로를 계속 깨워 Wi-Fi 절전 지연을 줄인다 → RTT↓.
     /// </summary>
     public sealed class RttProbeBehaviour : MonoBehaviour
     {
         [Tooltip("S24+ IP. UdpSender와 동일하게 페어링 결과로 설정.")]
         public string TargetIp = "192.168.0.2";
 
-        [Tooltip("Ping 송신 주기(초).")]
-        [Range(0.1f, 2f)] public float PingIntervalSeconds = 0.5f;
+        [Tooltip("자동 Ping 간격(ms). 낮을수록 경로가 깨어 있어 RTT↓(20~50 권장). 트래픽은 무시할 수준.")]
+        [Range(10, 250)] public int PingIntervalMs = 40;
 
         private RttProbe _core;
-        private float _timer;
 
         public double LastRttMs => _core?.LastRttMs ?? -1;
         public double AverageRttMs => _core?.AverageRttMs ?? -1;
@@ -25,8 +24,8 @@ namespace MindHexer.Controller.Net
 
         private void OnEnable()
         {
-            _core = new RttProbe();
-            _core.Connect(TargetIp, NetworkConstants.UdpRttPort);
+            _core = new RttProbe { PingIntervalMs = PingIntervalMs };
+            _core.Connect(TargetIp, NetworkConstants.UdpRttPort); // Connect가 수신+자동Ping 스레드 기동
         }
 
         private void OnDisable()
@@ -38,17 +37,10 @@ namespace MindHexer.Controller.Net
         public void SetTarget(string ip)
         {
             TargetIp = ip;
-            _core?.Connect(ip, NetworkConstants.UdpRttPort);
-        }
-
-        private void Update()
-        {
-            if (_core == null) return;
-            _timer += Time.deltaTime;
-            if (_timer >= PingIntervalSeconds)
+            if (_core != null)
             {
-                _timer = 0f;
-                _core.SendPing();
+                _core.PingIntervalMs = PingIntervalMs;
+                _core.Connect(ip, NetworkConstants.UdpRttPort);
             }
         }
     }

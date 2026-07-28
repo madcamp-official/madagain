@@ -88,7 +88,7 @@ namespace MindHexer.Shared.Tests
             responder.Start();
             yield return new WaitForSeconds(0.05f);
 
-            using var probe = new RttProbe();
+            using var probe = new RttProbe { AutoPing = false }; // 카운트 검증 위해 수동 Ping
             probe.Connect("127.0.0.1", port);
 
             const int pings = 10;

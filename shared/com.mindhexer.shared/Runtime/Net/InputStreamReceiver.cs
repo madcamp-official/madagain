@@ -64,7 +64,7 @@ namespace MindHexer.Shared.Net
             if (_running) return;
             _udp = new UdpClient(_port);
             _running = true;
-            _thread = new Thread(ReceiveLoop) { IsBackground = true, Name = "MHX-InputRx" };
+            _thread = new Thread(ReceiveLoop) { IsBackground = true, Name = "MHX-InputRx", Priority = ThreadPriority.AboveNormal };
             _thread.Start();
         }
 

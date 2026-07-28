@@ -34,6 +34,7 @@ namespace MindHexer.Controller
             var go = new GameObject(RootName);
             go.SetActive(false);
 
+            go.AddComponent<WifiPerformanceLock>();  // Wi-Fi 절전 방지(RTT↓)
             go.AddComponent<UdpSender>();
             go.AddComponent<WsClient>();
             go.AddComponent<RttProbeBehaviour>();

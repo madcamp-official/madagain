@@ -29,7 +29,7 @@ namespace MindHexer.Shared.Net
             if (_running) return;
             _udp = new UdpClient(_port);
             _running = true;
-            _thread = new Thread(Loop) { IsBackground = true, Name = "MHX-RttResponder" };
+            _thread = new Thread(Loop) { IsBackground = true, Name = "MHX-RttResponder", Priority = ThreadPriority.AboveNormal };
             _thread.Start();
         }
 

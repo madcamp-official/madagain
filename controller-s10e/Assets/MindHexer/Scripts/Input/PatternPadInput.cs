@@ -28,7 +28,11 @@ namespace MindHexer.Controller.Input
                  "맞춰 이보다 작아지므로 **터치 위치에 따라 크기가 가변**한다(여유가 아주 많은 곳에서만 이 상한에 걸림).")]
         [Range(0.15f, 0.7f)] public float MaxSpacingFraction = 0.375f;
 
-        [Tooltip("프레임에서 남길 여백 = 화면 높이 × 이 비율(패턴이 화면 밖으로 넘어가지 않게).")]
+        [Tooltip("최소 노드 간격 = 화면 짧은 변 × 이 비율(≈앱 아이콘 2개 폭). 시작점이 프레임에 붙어도 " +
+                 "이보다 작아지지 않으며, 이 최소 크기여도 화면 밖으로 안 나가도록 시작 앵커가 안쪽으로 보정된다.")]
+        [Range(0.05f, 0.3f)] public float MinSpacingFraction = 0.13f;
+
+        [Tooltip("프레임에서 남길 여백 = 화면 짧은 변 × 이 비율(패턴이 화면 밖으로 넘어가지 않게).")]
         [Range(0f, 0.1f)] public float EdgeMarginFraction = 0.02f;
 
         [Tooltip("노드 히트 반경 = 간격 × 이 비율.")]
@@ -112,16 +116,21 @@ namespace MindHexer.Controller.Input
             // 시작점에서 아래(-y)·오른쪽(+x)로 펼쳐지므로, 프레임까지 남은 공간에 맞춰 간격을 정한다
             // (아래/오른쪽 프레임에 가까울수록 작게 → 화면 밖으로 안 나감). 상단·가로중앙 시작 시 최대.
             // 최대치도 화면 짧은 변 × MaxSpacingFraction으로 제한 → 여백이 충분해도 프레임에 닿지 않는다.
+            // 최소 크기 보장 + 화면 이탈 방지: 여유가 없으면 간격을 줄이되 min 이하로는 안 가고,
+            // 그 경우 최소 크기 박스가 화면에 들어오도록 좌상단 앵커를 안쪽으로 보정한다.
             float shorter = Mathf.Min(Screen.width, Screen.height);
             float maxSpacing = MaxSpacingFraction * shorter;
+            float minSpacing = MinSpacingFraction * shorter;
             float edgeMargin = EdgeMarginFraction * shorter;
-            _spacing = PatternPadLayout.FitSpacing(press.x, press.y, Screen.width, maxSpacing, edgeMargin);
+            var fit = PatternPadLayout.Fit(press.x, press.y, Screen.width, Screen.height, maxSpacing, minSpacing, edgeMargin);
+            _spacing = fit.Spacing;
             float s = _spacing;
-            // 첫 터치 = 좌상단 노드(0). 오른쪽(+x)/아래(-y, 화면 y-up)로 2x2 전개.
-            _nodeScreen[0] = new Vector2(press.x, press.y);         // TL
-            _nodeScreen[1] = new Vector2(press.x + s, press.y);     // TR
-            _nodeScreen[2] = new Vector2(press.x, press.y - s);     // BL
-            _nodeScreen[3] = new Vector2(press.x + s, press.y - s); // BR
+            var a = new Vector2(fit.AnchorX, fit.AnchorY);
+            // 좌상단 노드(0). 오른쪽(+x)/아래(-y, 화면 y-up)로 2x2 전개. (앵커는 보정될 수 있음)
+            _nodeScreen[0] = a;                                     // TL
+            _nodeScreen[1] = new Vector2(a.x + s, a.y);            // TR
+            _nodeScreen[2] = new Vector2(a.x, a.y - s);            // BL
+            _nodeScreen[3] = new Vector2(a.x + s, a.y - s);        // BR
             _hasAnchor = true;
             _drawing = true;
             _liveScreen = press;
