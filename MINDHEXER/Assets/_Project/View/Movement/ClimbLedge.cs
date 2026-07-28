@@ -49,6 +49,16 @@ namespace Game.View
         BoxCollider _box;
         BoxCollider Box => _box != null ? _box : (_box = GetComponent<BoxCollider>());
 
+        /// <summary>월드 AABB — 후보 검색에서 비싼 판정 전에 거리로 먼저 걸러내는 용도.</summary>
+        public Bounds WorldBounds =>
+            Box != null ? Box.bounds : new Bounds(transform.position, Vector3.zero);
+
+        /// <summary>이 모서리의 몸통. 궤적 검사에서 <b>오르려는 대상 자신</b>은 장애물이 아니므로 제외한다.</summary>
+        public Collider Volume => Box;
+
+        /// <summary>면 안쪽으로 이만큼까지는 '바깥'으로 인정한다(면에 바싹 붙어 선 경우).</summary>
+        const float OutsideTolerance = 0.05f;
+
         static readonly Vector3[] Normals = { Vector3.right, Vector3.left, Vector3.forward, Vector3.back };
         static readonly Face[] Flags = { Face.PlusX, Face.MinusX, Face.PlusZ, Face.MinusZ };
 
@@ -91,6 +101,13 @@ namespace Game.View
             Vector3 c = Box.center, e = Box.size * 0.5f;
             float topLocal = useColliderTop ? c.y + e.y : customHeight;
             Vector3 n = Normals[best];
+
+            // 플레이어가 그 면의 <b>바깥</b>에 있어야 한다.
+            // 위 선택은 "이동 방향과 가장 반대인 면"만 보므로, 이 검사가 없으면 상자에서 멀어지는
+            // 중일 때 반대편(먼) 면이 잡혀 엉뚱하게 위로 끌려 올라간다.
+            float ext = Mathf.Abs(Vector3.Dot(e, n));
+            if (Vector3.Dot(lp - c, n) - ext < -OutsideTolerance) return false;
+
             Vector3 along = new Vector3(Mathf.Abs(n.z), 0f, Mathf.Abs(n.x));   // 면을 따라가는 축
 
             // 모서리 선(로컬): 면 상단 가로선. 플레이어 투영 = 그 축으로만 클램프.

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.View
@@ -6,10 +7,12 @@ namespace Game.View
     /// 자동 지형 통과 — <b>버튼 없이</b> 전부 자동. 판정은 3중 게이트로 엄격하게(후한 판정은 오히려 불편).
     ///
     /// <para><b>시선 도약</b>: 실제 낙차가 있는 가장자리에서 전진 중일 때, 시야 원뿔 안의
-    /// <see cref="ClimbLedge"/> 중 도달 가능한 최적 목표로 자동 도약한다.
+    /// <see cref="ClimbLedge"/> 중 <b>가장 가까운</b> 도달 가능 목표로 자동 도약한다(원뿔은 필터로만 쓴다 —
+    /// "보이는 것 중 제일 가까운 데로 뛴다"는 규칙 하나라 예측이 쉽다).
     ///  · 목표가 낮거나 조금 위 → 한 번의 도약으로 착지
     ///  · 키보다 높음(≤maxMantleUp) → 도약으로 모서리를 잡고(손 월드 고정) 당겨 올라감
-    ///  · 도달 가능한 목표가 하나도 없음 → <b>가장자리 정지</b>: 바깥 방향 속도를 깎아 떨어지지 않는다.</para>
+    ///  · 도달 가능한 목표가 없음 → 낙차가 <see cref="maxSafeFall"/> 이하면 <b>그냥 떨어지고</b>,
+    ///    그보다 깊거나 바닥이 아예 없으면 <b>가장자리 정지</b>(바깥 속도를 깎아 안 떨어진다).</para>
     ///
     /// <para><b>걸어서 오르기</b>: 가장자리가 아니어도, 눈앞의 ClimbLedge를 향해 밀면 자동으로 오른다.</para>
     ///
@@ -17,8 +20,13 @@ namespace Game.View
     /// 붙어 있는 바닥 이음매에서는 아무것도 발동하지 않는다.</para>
     ///
     /// <para><b>궤적</b>: 수평 = 진행 방향으로 치우친 베지어(몸이 관성을 이기고 휘어 들어가는 대각선),
-    /// 수직 = 정점 보장 탄도(모서리를 긁지 않음), 발구름 가속 워핑 <c>u=1-(1-x)^shape</c>.
-    /// 비행은 CharacterController를 켠 채 델타로 몰아 관통을 막고, 도착 오차가 크면 중단한다.</para>
+    /// 수직 = 정점 보장 탄도(모서리를 긁지 않음). 재생 속도는 정점에서 갈라 상승·하강에 <b>다른 지수</b>를
+    /// 적용한다(<see cref="ascendShape"/>/<see cref="descendShape"/>) — 수평·수직이 같은 시각을 쓰므로
+    /// <b>경로는 그대로고 속도만</b> 바뀐다. 두 곡선 다 정점 근처가 느려 체공감이 따라온다.</para>
+    ///
+    /// <para><b>비행 중에는 CharacterController를 끄고</b> 위치를 직접 몬다(켠 채 몰면 벽에 밀려 도착 오차가
+    /// 나 중단·재발동을 반복했다). 대신 출발 전에 착지·매달림 지점뿐 아니라 <b>궤적 중간까지 캡슐로 검사</b>해
+    /// 지형을 뚫고 지나가 퍼즐을 건너뛰는 일이 없게 한다(<see cref="pathSamples"/>).</para>
     ///
     /// <para><b>연출 분리</b>: 발구름=OnJumpLaunch(높이), 순수 착지=OnLand(착지 속도), 잡고 올라가기
     /// 완료=OnMantleFinish(고정 소량) — 높이 올라갔다고 큰 착지 흔들림이 나오지 않는다.
@@ -53,6 +61,9 @@ namespace Game.View
         [Tooltip("이보다 얕은 낙차는 그냥 걷는다(이어진 바닥·stepOffset급 턱).")]
         public float safeDrop = 0.6f;
 
+        [Tooltip("도약 목표가 없을 때 이 낙차까지는 그냥 떨어지게 둔다. 넘거나 바닥이 없으면 가장자리에서 멈춘다.")]
+        public float maxSafeFall = 4f;
+
         [Header("시선 도약")]
         [Tooltip("도약 목표 검색 반경(m).")]
         public float jumpSearchRadius = 8f;
@@ -60,11 +71,14 @@ namespace Game.View
         [Tooltip("시야 원뿔 반각(도) — 수평(yaw)만 본다. 위아래로 두리번거려도 선정이 안 흔들린다.")]
         public float coneAngle = 25f;
 
-        [Tooltip("거리 감점(1m당). 점수 = yaw정렬도 − 거리×이 값. 0=순수 정면 우선, 크게=최근접 우선.")]
-        public float distancePenalty = 0.06f;
-
         [Tooltip("수평 속도 상한(m/s). 비행 시간 = max(탄도 시간, 거리/이 값) — 먼 도약이 총알처럼 빠르지 않게.")]
         public float airSpeedCap = 7f;
+
+        [Tooltip("비행 시간 하한(초). 짧은 도약이 순간이동처럼 보이지 않게.")]
+        public float minFlightTime = 0.25f;
+
+        [Tooltip("비행 시간 상한(초). 넘으면 중력을 키워 시간을 줄인다 — 정점·착지점은 그대로.")]
+        public float maxFlightTime = 0.9f;
 
         [Tooltip("이 높이(m)까지는 한 번의 도약으로 바로 올라선다.")]
         public float maxDirectUp = 1.1f;
@@ -75,14 +89,20 @@ namespace Game.View
         [Tooltip("목표가 발보다 이보다 많이 낮으면 후보에서 제외(그건 추락).")]
         public float maxDropTarget = 6f;
 
-        [Tooltip("도약 중력(m/s²). 클수록 짧고 스냅하게.")]
+        [Tooltip("도약 중력(m/s²) — 기본 힌트. 비행 시간이 클램프되면 실제 중력은 여기서 다시 계산된다.")]
         public float flightGravity = 22f;
 
         [Tooltip("모서리 위 여유 높이(m).")]
         public float clearance = 0.35f;
 
-        [Tooltip("발구름 가속 지수. 1=등속, 클수록 초반 폭발.")]
-        public float launchShape = 1.6f;
+        [Tooltip("상승 가속 지수. 1=등속, 클수록 '박차고' 올라 정점에서 느려진다.")]
+        [Range(1f, 2.5f)] public float ascendShape = 1.5f;
+
+        [Tooltip("하강 가속 지수. 1=등속, 클수록 정점에서 뜸들이다 '쿵' 내리꽂힌다. (2.2는 과했다 — 끝에서 기어감)")]
+        [Range(1f, 2.5f)] public float descendShape = 1.9f;
+
+        [Tooltip("궤적 중간 충돌 검사 샘플 수. 0이면 검사 안 함(지형 관통 허용 — 퍼즐 스킵 위험).")]
+        [Range(0, 16)] public int pathSamples = 8;
 
         [Tooltip("수평 경로가 진행 방향으로 치우치는 정도(0=직선, 대각선 휘어짐).")]
         [Range(0f, 0.8f)] public float curveBias = 0.35f;
@@ -91,8 +111,11 @@ namespace Game.View
         [Tooltip("눈앞 ClimbLedge 탐지 반경(m).")]
         public float detectRadius = 1.3f;
 
-        [Tooltip("오를 최소 높이. stepOffset 이하는 엔진이 처리.")]
-        public float minHeight = 0.3f;
+        [Tooltip("오를 최소 높이. CharacterController.stepOffset(0.3)보다 확실히 커야 낮은 턱에서 '폴짝' 뛰지 않는다.")]
+        public float minHeight = 0.45f;
+
+        [Tooltip("걸어서 오르기 전방 판정 반각(도). 옆·등 뒤 모서리로 끌려가는 오발동을 막는다.")]
+        public float walkUpConeAngle = 60f;
 
         [Header("잡고 올라가기(맨틀)")]
         [Tooltip("팔 길이(m) — 매달렸을 때 눈이 모서리에서 이만큼 아래.")]
@@ -123,6 +146,21 @@ namespace Game.View
         MotionFeel _feel;
         MantleRig _rig;
         readonly Collider[] _overlap = new Collider[12];
+        // BlockedAt 전용 버퍼 — _overlap을 순회하는 도중에 호출되므로 같은 배열을 쓰면 반복이 깨진다.
+        readonly Collider[] _blockBuf = new Collider[8];
+
+        /// <summary>도약 후보 하나. 원뿔을 통과한 것들을 모아 거리순으로 훑는다.</summary>
+        struct Cand
+        {
+            public ClimbLedge.GrabInfo grab;
+            public Vector3 target;
+            public float dist;      // 수평 거리 — 원뿔이 yaw 기준이라 높이는 따로 걸렀다
+            public bool mantle;
+            public Collider volume; // 오르려는 대상 자신 — 궤적 검사에서 제외
+        }
+
+        readonly List<Cand> _cands = new List<Cand>(16);
+        static readonly System.Comparison<Cand> ByDistance = (x, y) => x.dist.CompareTo(y.dist);
 
         State _state = State.Idle;
         float _t, _cooldownLeft, _lastMoveTime, _entrySpeed;
@@ -171,10 +209,14 @@ namespace Game.View
 
             Vector3 dir = _lastMoveDir;
 
-            if (DropAhead(dir))
+            float drop = DropDepth(dir, out bool bottomless);
+            if (bottomless || drop > safeDrop)
             {
                 if (TryGazeJump()) return;
-                EdgeStop(dir);                      // 도달 가능한 목표 없음 → 낙하 방지
+
+                // 목표가 없다 — 감당 가능한 낙차면 그냥 떨어지게 둔다(아래층으로 내려가는 유일한 길).
+                // 무저갱이거나 너무 깊을 때만 막는다.
+                if (bottomless || drop > maxSafeFall) EdgeStop(dir);
                 return;
             }
 
@@ -183,11 +225,24 @@ namespace Game.View
 
         // ── 가장자리: 낙차 기준 ───────────────────────────────────────────
 
-        bool DropAhead(Vector3 dir)
+        /// <summary>
+        /// 발 앞의 낙차(m). 콜라이더 경계가 아니라 <b>실제 낙차</b>라 이어진 발판 이음매에선 0에 가깝다.
+        /// 사거리 안에 바닥이 없으면 <paramref name="bottomless"/>=true(무저갱).
+        /// </summary>
+        float DropDepth(Vector3 dir, out bool bottomless)
         {
-            Vector3 probe = Feet + dir * edgeProbeAhead + Vector3.up * 0.1f;
-            return !Physics.Raycast(probe, Vector3.down, safeDrop + 0.1f,
-                                    obstacleMask, QueryTriggerInteraction.Ignore);
+            Vector3 feet = Feet;
+            Vector3 probe = feet + dir * edgeProbeAhead + Vector3.up * 0.1f;
+            float len = Mathf.Max(safeDrop, maxSafeFall) + 0.6f;
+
+            if (Physics.Raycast(probe, Vector3.down, out RaycastHit hit, len,
+                                obstacleMask, QueryTriggerInteraction.Ignore))
+            {
+                bottomless = false;
+                return Mathf.Max(0f, feet.y - hit.point.y);
+            }
+            bottomless = true;
+            return float.PositiveInfinity;
         }
 
         // 클램프는 FPP가 적분을 끝낸 뒤에 적용한다 — 여기서 직접 깎으면 같은 프레임에 재가속돼 샌다.
@@ -195,6 +250,10 @@ namespace Game.View
 
         // ── 시선 도약 ─────────────────────────────────────────────────────
 
+        /// <summary>
+        /// 원뿔 <b>필터</b>를 통과한 후보 중 <b>가장 가까운</b> 것부터 훑어, 궤적이 막히지 않는 첫 후보로 뛴다.
+        /// (정렬도 가중 점수를 쓰면 "왜 저기로 뛰었지"가 생긴다 — 규칙은 하나여야 예측이 된다.)
+        /// </summary>
         bool TryGazeJump()
         {
             Vector3 feet = Feet;
@@ -203,49 +262,57 @@ namespace Game.View
             // 높이는 아래 dh 조건이 따로 거른다.
             Vector3 look = _fpp.FlatForward;
             float cosCone = Mathf.Cos(coneAngle * Mathf.Deg2Rad);
+            float r2 = jumpSearchRadius * jumpSearchRadius;
 
-            float bestScore = float.NegativeInfinity;
-            ClimbLedge.GrabInfo bestGrab = default;
-            bool found = false, bestMantle = false;
-
+            _cands.Clear();
             for (int i = 0; i < ClimbLedge.All.Count; i++)
             {
                 ClimbLedge ledge = ClimbLedge.All[i];
                 if (ledge == null) continue;
 
+                // 싼 검사부터 — 먼 것에까지 TryResolve를 돌리지 않는다(씬 전수 순회라 효과가 크다).
+                if (ledge.WorldBounds.SqrDistance(feet) > r2) continue;
+
                 Vector3 approach = ledge.transform.position - feet; approach.y = 0f;
                 if (approach.sqrMagnitude < 1e-4f) continue;
                 if (!ledge.TryResolve(feet, approach.normalized, out ClimbLedge.GrabInfo g)) continue;
 
-                float dist = Vector3.Distance(feet, g.landingFeet);
+                // 거리도 수평으로 잰다 — 원뿔이 yaw 기준이라 기준을 맞춘다.
+                Vector3 flatTo = g.edgeCenter - feet; flatTo.y = 0f;
+                float dist = flatTo.magnitude;
                 if (dist > jumpSearchRadius || dist < 0.6f) continue;
+                if (Vector3.Dot(look, flatTo / dist) < cosCone) continue;
 
                 float dh = g.landingFeet.y - feet.y;
                 if (dh > maxMantleUp || dh < -maxDropTarget) continue;
                 bool needMantle = dh > maxDirectUp;
 
-                Vector3 flatTo = g.edgeCenter - feet; flatTo.y = 0f;
-                if (flatTo.sqrMagnitude < 1e-4f) continue;
-                float align = Vector3.Dot(look, flatTo.normalized);
-                if (align < cosCone) continue;                 // 원뿔은 필터로만
+                Collider vol = ledge.Volume;
+                if (BlockedAt(g.landingFeet + Vector3.up * 0.03f, vol)) continue;
+                if (needMantle && BlockedAt(HangFeet(g), vol)) continue;
 
-                if (Blocked(g.landingFeet + Vector3.up * 0.03f)) continue;
-                if (needMantle && Blocked(HangFeet(g))) continue;
-
-                // 정면 우선 + 거리 감점. distancePenalty로 두 성향 사이를 조절.
-                float score = align - dist * distancePenalty;
-                if (score > bestScore) { bestScore = score; bestGrab = g; bestMantle = needMantle; found = true; }
+                Vector3 t = (needMantle ? HangFeet(g) : g.landingFeet) + Vector3.up * FeetToOrigin;
+                _cands.Add(new Cand { grab = g, target = t, dist = dist, mantle = needMantle, volume = vol });
             }
 
-            if (!found) return false;
+            if (_cands.Count == 0) return false;
+            _cands.Sort(ByDistance);
 
-            Vector3 target = bestMantle
-                ? HangFeet(bestGrab) + Vector3.up * FeetToOrigin
-                : bestGrab.landingFeet + Vector3.up * FeetToOrigin;
+            for (int i = 0; i < _cands.Count; i++)
+            {
+                Cand c = _cands[i];
+                JumpArc arc = BuildArc(transform.position, c.target, _lastMoveDir);
+                if (!PathClear(arc, c.volume))
+                {
+                    if (logDecisions) Debug.Log($"[Jump] 경로 막힘 — 다음 후보로 (dist={c.dist:F1}m)");
+                    continue;
+                }
 
-            StartFlight(target, bestMantle, bestGrab);
-            if (logDecisions) Debug.Log($"[Jump] 시선 도약 → {(bestMantle ? "잡고 오르기" : "직행")} dist={Vector3.Distance(Feet, bestGrab.landingFeet):F1}m");
-            return true;
+                StartFlight(arc, c.mantle, c.grab);
+                if (logDecisions) Debug.Log($"[Jump] 시선 도약 → {(c.mantle ? "잡고 오르기" : "직행")} dist={c.dist:F1}m");
+                return true;
+            }
+            return false;
         }
 
         // ── 걸어서 오르기 ─────────────────────────────────────────────────
@@ -257,7 +324,10 @@ namespace Game.View
                                                   _overlap, obstacleMask, QueryTriggerInteraction.Ignore);
             float bestDist = float.MaxValue;
             ClimbLedge.GrabInfo bestGrab = default;
+            Collider bestVolume = null;
             bool found = false;
+
+            float cosFwd = Mathf.Cos(walkUpConeAngle * Mathf.Deg2Rad);
 
             for (int i = 0; i < n; i++)
             {
@@ -265,29 +335,41 @@ namespace Game.View
                 if (ledge == null) continue;
                 if (!ledge.TryResolve(feet, dir, out ClimbLedge.GrabInfo g)) continue;
 
+                // 진행 방향 앞의 모서리만. TryResolve는 "이동 방향과 가장 반대인 면"을 고르므로,
+                // 이 검사가 없으면 옆이나 등 뒤(멀어지는 중인) 상자 위로 끌려 올라간다.
+                Vector3 flatTo = g.edgeCenter - feet; flatTo.y = 0f;
+                float d = flatTo.magnitude;
+                if (d > detectRadius) continue;
+                if (d > 1e-3f && Vector3.Dot(flatTo / d, dir) < cosFwd) continue;
+
                 float h = g.landingFeet.y - feet.y;
                 if (h < minHeight || h > maxMantleUp)
                 {
                     if (logDecisions && h > maxMantleUp) Debug.Log($"[Climb] 거부 — 높이 {h:F2}m > {maxMantleUp}m @{ledge.name}");
                     continue;
                 }
-                if (Blocked(g.landingFeet + Vector3.up * 0.03f)) continue;
+                if (BlockedAt(g.landingFeet + Vector3.up * 0.03f, ledge.Volume)) continue;
 
-                float d = (g.landingFeet - feet).sqrMagnitude;
-                if (d < bestDist) { bestDist = d; bestGrab = g; found = true; }
+                if (d < bestDist) { bestDist = d; bestGrab = g; bestVolume = ledge.Volume; found = true; }
             }
 
             if (!found) return;
 
             float dh = bestGrab.landingFeet.y - feet.y;
             bool needMantle = dh > maxDirectUp;
-            if (needMantle && Blocked(HangFeet(bestGrab))) return;
+            if (needMantle && BlockedAt(HangFeet(bestGrab), bestVolume)) return;
 
-            Vector3 target = needMantle
-                ? HangFeet(bestGrab) + Vector3.up * FeetToOrigin
-                : bestGrab.landingFeet + Vector3.up * FeetToOrigin;
+            Vector3 target = (needMantle ? HangFeet(bestGrab) : bestGrab.landingFeet)
+                             + Vector3.up * FeetToOrigin;
 
-            StartFlight(target, needMantle, bestGrab);
+            JumpArc arc = BuildArc(transform.position, target, dir);
+            if (!PathClear(arc, bestVolume))
+            {
+                if (logDecisions) Debug.Log("[Climb] 경로 막힘 — 취소");
+                return;
+            }
+
+            StartFlight(arc, needMantle, bestGrab);
             if (logDecisions) Debug.Log($"[Climb] 걸어서 오르기 → {(needMantle ? "잡고 오르기" : "직행")} h={dh:F2}m");
         }
 
@@ -299,23 +381,50 @@ namespace Game.View
             return new Vector3(xz.x, eyeY - FeetToOrigin, xz.z);
         }
 
-        bool Blocked(Vector3 feetPos)
+        /// <summary>
+        /// 이 발 위치에 몸이 들어갈 수 있나. <b>자기 콜라이더는 제외</b>한다 —
+        /// 경로 검사는 현재 위치 바로 앞부터 훑기 때문에, 제외하지 않으면 자기 자신에 막혀 영영 못 뛴다.
+        /// </summary>
+        bool BlockedAt(Vector3 feetPos, Collider ignore = null)
         {
             float r = _cc.radius * 0.95f;
             Vector3 p0 = feetPos + Vector3.up * (r + 0.02f);
             Vector3 p1 = feetPos + Vector3.up * (_cc.height - r);
-            return Physics.CheckCapsule(p0, p1, r, obstacleMask, QueryTriggerInteraction.Ignore);
+
+            int n = Physics.OverlapCapsuleNonAlloc(p0, p1, r, _blockBuf, obstacleMask,
+                                                   QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < n; i++)
+            {
+                Collider c = _blockBuf[i];
+                if (c == null) continue;
+                if (c == ignore) continue;
+                if (c.transform == transform || c.transform.IsChildOf(transform)) continue;
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 궤적 중간이 지형에 막히지 않는가 — 출발·도착은 이미 검증했으니 사이만 본다.
+        /// <para><b>오르려는 대상 자신은 제외</b>한다. 벽을 타고 오르는 궤적은 그 벽면을 스치는 게 정상이라,
+        /// 제외하지 않으면 정작 등반이 전부 거부된다(막으려는 건 '사이에 낀 다른 지형'이다).</para>
+        /// </summary>
+        bool PathClear(in JumpArc a, Collider ignore)
+        {
+            if (pathSamples <= 0) return true;
+            for (int i = 1; i < pathSamples; i++)
+            {
+                Vector3 p = ArcPointRaw(a, a.total * i / pathSamples);
+                if (BlockedAt(p - Vector3.up * FeetToOrigin, ignore)) return false;
+            }
+            return true;
         }
 
         // ── 비행(도약) ────────────────────────────────────────────────────
 
-        void StartFlight(Vector3 target, bool thenMantle, in ClimbLedge.GrabInfo grab)
+        void StartFlight(in JumpArc arc, bool thenMantle, in ClimbLedge.GrabInfo grab)
         {
-            Vector3 moveDir = _lastMoveDir.sqrMagnitude > 0.5f
-                ? _lastMoveDir
-                : (target - transform.position).normalized;
-
-            _arc = SolveArc(transform.position, target, clearance, flightGravity, moveDir, curveBias, airSpeedCap);
+            _arc = arc;
             _arcThenMantle = thenMantle;
             _grab = grab;
             _t = 0f;
@@ -323,7 +432,7 @@ namespace Game.View
 
             _fpp.ExternalMotion = true;
             _fpp.VerticalVelocity = 0f;
-            _cc.enabled = false;   // 위치 직접 구동 — 출발·도착 공간은 이미 검증했다
+            _cc.enabled = false;   // 위치 직접 구동 — 출발·도착·궤적 중간까지 검증한 뒤다
 
             float rise = Mathf.Max(_arc.apexY - transform.position.y, 0.2f);
             if (_feel != null) _feel.OnJumpLaunch(rise);
@@ -332,7 +441,7 @@ namespace Game.View
         void TickFlight(float dt)
         {
             _t += dt;
-            transform.position = ArcPos(_arc, Mathf.Min(_t, _arc.total), launchShape);
+            transform.position = ArcPos(_arc, Mathf.Min(_t, _arc.total));
             if (_t < _arc.total) return;
 
             transform.position = _arc.end;
@@ -455,6 +564,7 @@ namespace Game.View
             public Vector3 start, end;
             public Vector2 p0, p1, p2;      // 수평 베지어(XZ)
             public float y0, vy, g, total, apexY;
+            public float sApex;             // 정점의 진행률(0~1) — 상승/하강 지수를 가르는 경계
 
             /// <summary>착지 순간 수직 속도(음수). 착지 연출 강도 기준.</summary>
             public float LandingVy() => vy - g * total;
@@ -470,53 +580,80 @@ namespace Game.View
             }
         }
 
-        static JumpArc SolveArc(Vector3 start, Vector3 end, float clearance, float g,
-                                Vector3 moveDir, float bias, float speedCap)
+        /// <summary>
+        /// 궤적 계산. 수직은 정점 보장 탄도, 수평은 진행 방향으로 치우친 2차 베지어.
+        ///
+        /// <para><b>시간과 중력의 관계</b>: <c>total = k/√g</c> (<c>k = √(2·rise) + √(2·fall)</c>).
+        /// 그래서 원하는 비행 시간이 정해지면 중력은 <c>g = (k/total)²</c>로 <b>파생</b>된다.
+        /// 시간을 늘리든 줄이든 같은 식 하나로 처리되고, <b>정점·착지점은 그대로</b>다(모양 불변·재생 시간만 변경).
+        /// <see cref="flightGravity"/>는 클램프 전 기준값을 주는 힌트일 뿐이다.</para>
+        /// </summary>
+        JumpArc BuildArc(Vector3 start, Vector3 end, Vector3 moveDir)
         {
-            var a = new JumpArc { start = start, end = end, y0 = start.y, g = g };
+            var a = new JumpArc { start = start, end = end, y0 = start.y };
 
             a.p0 = new Vector2(start.x, start.z);
             a.p2 = new Vector2(end.x, end.z);
             float dist = Vector2.Distance(a.p0, a.p2);
 
-            // 수직: 정점 보장 탄도. 여기서 나온 시간이 '최소' 비행 시간이다.
             a.apexY = Mathf.Max(start.y, end.y) + Mathf.Max(0.05f, clearance);
             float rise = Mathf.Max(0.0001f, a.apexY - start.y);
             float fall = Mathf.Max(0.0001f, a.apexY - end.y);
-            float ballistic = Mathf.Sqrt(2f * g * rise) / g + Mathf.Sqrt(2f * fall / g);
 
-            // 거리 반영 — 먼 도약이 총알처럼 빠르지 않게. 시간이 늘면 중력도 같이 낮춰
-            // 정점·착지점이 그대로 유지되도록 다시 푼다(궤적 모양 불변).
-            float byDistance = speedCap > 0.01f ? dist / speedCap : 0f;
-            a.total = Mathf.Max(ballistic, byDistance);
+            float g0 = Mathf.Max(0.1f, flightGravity);
+            float k = Mathf.Sqrt(2f * rise) + Mathf.Sqrt(2f * fall);
+            float ballistic = k / Mathf.Sqrt(g0);                                  // 기준 중력에서의 시간
+            float byDistance = airSpeedCap > 0.01f ? dist / airSpeedCap : 0f;      // 먼 도약이 총알이 되지 않게
 
-            if (a.total > ballistic + 1e-4f)
-            {
-                // total = sqrt(2·g'·rise)/g' + sqrt(2·fall/g') = (sqrt(2·rise) + sqrt(2·fall))/sqrt(g')
-                float k = Mathf.Sqrt(2f * rise) + Mathf.Sqrt(2f * fall);
-                a.g = (k / a.total) * (k / a.total);
-            }
+            float lo = Mathf.Max(0.05f, minFlightTime);
+            float hi = Mathf.Max(lo, maxFlightTime);
+            a.total = Mathf.Clamp(Mathf.Max(ballistic, byDistance), lo, hi);
+
+            a.g = (k / a.total) * (k / a.total);
             a.vy = Mathf.Sqrt(2f * a.g * rise);
+            a.sApex = Mathf.Clamp((a.vy / a.g) / a.total, 0.05f, 0.95f);
 
             // 수평: 출발 접선 = 달리던 방향(관성), 그 뒤 목표로 휘어 들어감.
             Vector2 d0 = new Vector2(moveDir.x, moveDir.z);
-            a.p1 = d0.sqrMagnitude > 1e-4f
-                ? a.p0 + d0.normalized * (dist * Mathf.Max(0.05f, bias))
+            if (d0.sqrMagnitude < 1e-4f) d0 = a.p2 - a.p0;       // 정지 상태에서 발동한 경우
+            a.p1 = d0.sqrMagnitude > 1e-6f
+                ? a.p0 + d0.normalized * (dist * Mathf.Max(0.05f, curveBias))
                 : Vector2.Lerp(a.p0, a.p2, 0.5f);
             return a;
         }
 
-        static Vector3 ArcPos(in JumpArc a, float t, float shape)
+        /// <summary>워핑 없는 실제 경과 시각의 위치 — 이게 '경로' 자체다(경로 검사·모양 판단용).</summary>
+        static Vector3 ArcPointRaw(in JumpArc a, float tw)
         {
-            if (a.total <= 0f) return a.end;
-            float x = Mathf.Clamp01(t / a.total);
-            float u = 1f - Mathf.Pow(1f - x, Mathf.Max(0.05f, shape));   // 발구름 가속
-            float tw = u * a.total;
-
-            float s = tw / a.total;
+            float s = a.total > 0f ? Mathf.Clamp01(tw / a.total) : 1f;
             Vector2 flat = (1f - s) * (1f - s) * a.p0 + 2f * (1f - s) * s * a.p1 + s * s * a.p2;
             float y = a.y0 + a.vy * tw - 0.5f * a.g * tw * tw;
             return new Vector3(flat.x, y, flat.y);
+        }
+
+        /// <summary>
+        /// 재생 위치 — 정점을 경계로 상승·하강에 <b>다른 가속 지수</b>를 적용한다.
+        /// 수평·수직이 같은 <c>tw</c>를 쓰므로 <b>경로는 그대로고 속도만</b> 바뀐다.
+        /// 상승은 초반 폭발 후 정점에서 느려지고(박차고 오름), 하강은 뜸들이다 가속한다(쿵).
+        /// </summary>
+        Vector3 ArcPos(in JumpArc a, float t)
+        {
+            if (a.total <= 0f) return a.end;
+            float x = Mathf.Clamp01(t / a.total);
+            float tApex = a.sApex * a.total;
+
+            float tw;
+            if (x <= a.sApex)
+            {
+                float xl = x / Mathf.Max(1e-4f, a.sApex);
+                tw = (1f - Mathf.Pow(1f - xl, Mathf.Max(1f, ascendShape))) * tApex;
+            }
+            else
+            {
+                float xl = (x - a.sApex) / Mathf.Max(1e-4f, 1f - a.sApex);
+                tw = tApex + Mathf.Pow(xl, Mathf.Max(1f, descendShape)) * (a.total - tApex);
+            }
+            return ArcPointRaw(a, tw);
         }
 
         // ── 기즈모 ───────────────────────────────────────────────────────
@@ -550,10 +687,10 @@ namespace Game.View
             if (_state == State.Flight)
             {
                 Gizmos.color = Color.green;
-                Vector3 prev = ArcPos(_arc, 0f, launchShape);
+                Vector3 prev = ArcPos(_arc, 0f);
                 for (int i = 1; i <= 24; i++)
                 {
-                    Vector3 cur = ArcPos(_arc, _arc.total * i / 24f, launchShape);
+                    Vector3 cur = ArcPos(_arc, _arc.total * i / 24f);
                     Gizmos.DrawLine(prev, cur);
                     prev = cur;
                 }

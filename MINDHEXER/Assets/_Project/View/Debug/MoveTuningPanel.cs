@@ -137,24 +137,33 @@ namespace Game.View
             if (_auto == null || !Section("시선 도약", ref _secJump)) return;
 
             _auto.coneAngle = F("시야 원뿔 반각(도)", _auto.coneAngle, 5f, 70f);
-            _auto.distancePenalty = F("거리 감점(1m당)", _auto.distancePenalty, 0f, 0.3f);
-            Info("0 = 순수 정면 우선 · 크게 = 최근접 우선");
+            Info("원뿔은 <b>필터</b>일 뿐 — 통과한 것 중 <b>가장 가까운</b> 목표로 뛴다");
             _auto.jumpSearchRadius = F("검색 반경(m)", _auto.jumpSearchRadius, 2f, 20f);
             _auto.maxDirectUp = F("직행 도약 최대 높이(m)", _auto.maxDirectUp, 0.3f, 2f);
             _auto.maxMantleUp = F("잡고 오르기 최대 높이(m)", _auto.maxMantleUp, 0.5f, 3.5f);
             _auto.maxDropTarget = F("허용 최대 낙차(m)", _auto.maxDropTarget, 1f, 20f);
 
             Info("<b>궤적</b>");
-            _auto.flightGravity = F("도약 중력", _auto.flightGravity, 8f, 60f);
+            _auto.flightGravity = F("도약 중력(기준값)", _auto.flightGravity, 8f, 60f);
             _auto.clearance = F("모서리 위 여유(m)", _auto.clearance, 0.05f, 1.2f);
             _auto.airSpeedCap = F("수평 속도 상한(m/s)", _auto.airSpeedCap, 2f, 20f);
-            _auto.launchShape = F("발구름 가속 지수", _auto.launchShape, 1f, 3f);
+            _auto.minFlightTime = F("비행 시간 하한(초)", _auto.minFlightTime, 0.05f, 1f);
+            _auto.maxFlightTime = F("비행 시간 상한(초)", _auto.maxFlightTime, 0.2f, 2f);
+            _auto.ascendShape = F("상승 가속 지수", _auto.ascendShape, 1f, 2.5f);
+            _auto.descendShape = F("하강 가속 지수", _auto.descendShape, 1f, 2.5f);
+            Info("지수는 <b>재생 속도만</b> 바꾼다 — 정점·착지점·경로는 그대로");
             _auto.curveBias = F("대각선 휘어짐", _auto.curveBias, 0f, 0.8f);
             Info(FlightInfo(4f) + "  ·  " + FlightInfo(8f));
+            _auto.pathSamples = Mathf.RoundToInt(F("경로 검사 샘플", _auto.pathSamples, 0f, 16f));
+            Info(_auto.pathSamples > 0
+                ? "궤적 중간이 막히면 다음 후보로 넘어간다"
+                : "<b>경로 검사 꺼짐</b> — 지형을 뚫고 지나갈 수 있다");
 
             Info("<b>가장자리</b>");
             _auto.edgeProbeAhead = F("낙차 검사 거리(m)", _auto.edgeProbeAhead, 0.1f, 1.2f);
             _auto.safeDrop = F("틈 인정 낙차(m)", _auto.safeDrop, 0.2f, 2f);
+            _auto.maxSafeFall = F("그냥 떨어지는 낙차 상한(m)", _auto.maxSafeFall, 0.5f, 12f);
+            Info($"≤{_auto.safeDrop:0.0}m 걷기 · ≤{_auto.maxSafeFall:0.0}m 자유 낙하 · 그보다 깊거나 무저갱이면 정지");
             _auto.inputBuffer = F("입력 버퍼(초)", _auto.inputBuffer, 0f, 0.5f);
             _auto.minSpeed = F("발동 최소 속도", _auto.minSpeed, 0.1f, 4f);
             _auto.cooldown = F("쿨다운(초)", _auto.cooldown, 0f, 0.6f);
@@ -178,6 +187,8 @@ namespace Game.View
             Info($"밀리는 거리 ≈ {_auto.exitBoost * _auto.exitBoostDuration * 0.5f:0.00} m");
             _auto.detectRadius = F("걸어서 오르기 반경(m)", _auto.detectRadius, 0.5f, 3f);
             _auto.minHeight = F("최소 등반 높이(m)", _auto.minHeight, 0.1f, 1f);
+            _auto.walkUpConeAngle = F("전방 판정 반각(도)", _auto.walkUpConeAngle, 20f, 120f);
+            Info("stepOffset 0.3m — 최소 등반 높이는 그보다 커야 낮은 턱에서 안 뛴다");
 
             _auto.logDecisions = GUILayout.Toggle(_auto.logDecisions, " 판정 로그");
             _auto.drawGizmos = GUILayout.Toggle(_auto.drawGizmos, " 기즈모");
@@ -215,12 +226,19 @@ namespace Game.View
             _rig.armThickness = F("팔 두께(m)", _rig.armThickness, 0.01f, 0.15f);
         }
 
+        /// <summary>평지(rise=fall=clearance) 기준 파생값 — 실제 중력은 시간에서 역산된다.</summary>
         string FlightInfo(float dist)
         {
             float rise = Mathf.Max(0.0001f, _auto.clearance);
-            float ballistic = 2f * Mathf.Sqrt(2f * rise / _auto.flightGravity);
+            float k = 2f * Mathf.Sqrt(2f * rise);                       // total = k/√g
+            float ballistic = k / Mathf.Sqrt(Mathf.Max(0.1f, _auto.flightGravity));
             float byDist = _auto.airSpeedCap > 0.01f ? dist / _auto.airSpeedCap : 0f;
-            return $"{dist:0}m 도약 ≈ {Mathf.Max(ballistic, byDist):0.00}초";
+
+            float lo = Mathf.Max(0.05f, _auto.minFlightTime);
+            float hi = Mathf.Max(lo, _auto.maxFlightTime);
+            float total = Mathf.Clamp(Mathf.Max(ballistic, byDist), lo, hi);
+            float g = (k / total) * (k / total);
+            return $"{dist:0}m ≈ {total:0.00}초 (g {g:0.0}, 상승·하강 {total * 0.5f:0.00}초씩)";
         }
 
         // ── 저장/로드 ───────────────────────────────────────────────────

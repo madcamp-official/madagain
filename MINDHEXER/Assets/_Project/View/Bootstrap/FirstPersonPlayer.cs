@@ -88,6 +88,8 @@ namespace Game.View
             _cc.height = 1.8f;
             _cc.radius = 0.3f;
             _cc.center = new Vector3(0f, -0.7f, 0f);   // 카메라(눈)=1.6 위 → 발이 지면에
+            // 명시해 둔다 — AutoTraversal.minHeight가 이 값보다 커야 낮은 턱에서 등반이 겹치지 않는다.
+            _cc.stepOffset = 0.3f;
 
             Vector3 e = transform.eulerAngles;
             _yaw = e.y;
