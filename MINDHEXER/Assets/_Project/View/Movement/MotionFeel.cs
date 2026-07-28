@@ -22,7 +22,7 @@ namespace Game.View
     public class MotionFeel : MonoBehaviour
     {
         [Header("점프 발구름(다운킥)")]
-        [Tooltip("도약 높이 1m당 침하 깊이(m).")]
+        [Tooltip("도약 높이 1m당 침하 깊이(m). ※업킥과 크기·지속이 비슷하면 서로 상쇄돼 아무것도 안 느껴진다.")]
         public float launchDipPerMeter = 0.05f;
         public float launchDipMax = 0.12f;
         public float launchDuration = 0.18f;
@@ -30,9 +30,11 @@ namespace Game.View
             new Keyframe(0f, 0f, 0f, 4f), new Keyframe(0.35f, 1f), new Keyframe(1f, 0f, -1.5f, 0f));
 
         [Header("점프 발구름(업킥) — 위로 '탁' 튀었다 원복")]
-        [Tooltip("도약 높이 1m당 위로 튀는 양(m). 0이면 킥 없음(예전 동작).")]
-        public float launchKickPerMeter = 0.055f;
-        public float launchKickMax = 0.13f;
+        [Tooltip("높이와 무관하게 항상 붙는 킥(m). 기본 0 — 상하 흔들림은 멀미 유발이라 롤 킥을 먼저 쓴다.")]
+        public float launchKickBase = 0f;
+        [Tooltip("도약 높이 1m당 추가로 위로 튀는 양(m).")]
+        public float launchKickPerMeter = 0f;
+        public float launchKickMax = 0.26f;
         [Tooltip("킥은 침하보다 짧아야 '탁' 하고 튄다.")]
         public float launchKickDuration = 0.15f;
         public AnimationCurve launchKickCurve = new AnimationCurve(
@@ -42,16 +44,17 @@ namespace Game.View
         [Tooltip("낙하 속도 1m/s당 침하 깊이(m).")]
         public float landDipPerSpeed = 0.012f;
         public float landDipMax = 0.22f;
-        [Tooltip("이 속도(m/s) 미만의 착지는 연출 없음(계단 내려오기 등).")]
-        public float landMinSpeed = 2f;
+        [Tooltip("이 속도(m/s) 미만의 착지는 연출 없음. ※접지 중 수직 속도가 -2로 고정되므로 " +
+                 "2 이하로 두면 접지가 깜빡일 때마다 연출이 터져 화면이 계속 흔들린다.")]
+        public float landMinSpeed = 4.5f;
         public float landDuration = 0.3f;
         public AnimationCurve landCurve = new AnimationCurve(
             new Keyframe(0f, 0f, 0f, 5f), new Keyframe(0.25f, 1f), new Keyframe(0.6f, 0.12f), new Keyframe(1f, 0f));
 
         [Header("착지(업킥) — 충격 뒤 위로 '탁'")]
-        [Tooltip("낙하 속도 1m/s당 위로 튀는 양(m). 0이면 킥 없음.")]
-        public float landKickPerSpeed = 0.014f;
-        public float landKickMax = 0.16f;
+        [Tooltip("낙하 속도 1m/s당 위로 튀는 양(m). 기본 0 — 롤 킥을 먼저 쓴다.")]
+        public float landKickPerSpeed = 0f;
+        public float landKickMax = 0.26f;
         public float landKickDuration = 0.18f;
         public AnimationCurve landKickCurve = new AnimationCurve(
             new Keyframe(0f, 0f, 0f, 9f), new Keyframe(0.22f, 1f), new Keyframe(1f, 0f, -1.8f, 0f));
@@ -61,6 +64,19 @@ namespace Game.View
         public float settleDuration = 0.22f;
         public AnimationCurve settleCurve = new AnimationCurve(
             new Keyframe(0f, 0f, 0f, 4f), new Keyframe(0.4f, 1f), new Keyframe(1f, 0f, -1f, 0f));
+
+        [Header("롤 킥 — 도약·착지 때 좌우로 '파박'")]
+        [Tooltip("도약 발구름 시 좌우 기울임 진폭(도). 등반 당김의 교차 기울임과 같은 계열.")]
+        public float launchRollDeg = 3.5f;
+        [Tooltip("지속(초). 짧을수록 '파박'.")]
+        public float launchRollDuration = 0.26f;
+        [Tooltip("그 사이 좌우로 오가는 횟수. 1.25면 한 번 크게 갔다 반대로 살짝.")]
+        public float launchRollCycles = 1.25f;
+
+        [Tooltip("착지 시 좌우 기울임 진폭(도).")]
+        public float landRollDeg = 2.5f;
+        public float landRollDuration = 0.3f;
+        public float landRollCycles = 1.25f;
 
         [Header("VR 감쇠")]
         [Tooltip("VR에서 위치 오프셋에 곱하는 배율.")]
@@ -79,13 +95,18 @@ namespace Game.View
         bool _swayActive;
         float _swayCycles, _swayAmp, _swaySign, _swayProgress;
 
+        // 롤 킥 — 감쇠 진동 하나로 좌우를 훑는다. 방향은 번갈아 바뀐다(같은 쪽만 기울면 금방 티가 난다).
+        Fx _rollKick;
+        float _rollCycles, _rollSign = 1f;
+
         Vector3 _appliedPos;
 
         public void OnJumpLaunch(float rise)
         {
             float r = Mathf.Max(0f, rise);
             Fire(ref _launch, Mathf.Min(launchDipMax, launchDipPerMeter * r), launchDuration);
-            Fire(ref _launchKick, Mathf.Min(launchKickMax, launchKickPerMeter * r), launchKickDuration);
+            Fire(ref _launchKick, Mathf.Min(launchKickMax, launchKickBase + launchKickPerMeter * r), launchKickDuration);
+            FireRoll(launchRollDeg, launchRollDuration, launchRollCycles);
         }
 
         public void OnLand(float impactSpeed)
@@ -93,6 +114,15 @@ namespace Game.View
             if (impactSpeed < landMinSpeed) return;
             Fire(ref _land, Mathf.Min(landDipMax, landDipPerSpeed * impactSpeed), landDuration);
             Fire(ref _landKick, Mathf.Min(landKickMax, landKickPerSpeed * impactSpeed), landKickDuration);
+            FireRoll(landRollDeg, landRollDuration, landRollCycles);
+        }
+
+        void FireRoll(float deg, float dur, float cycles)
+        {
+            if (deg <= 0.01f || dur <= 0f) return;
+            _rollSign = -_rollSign;                 // 매번 반대쪽부터
+            _rollCycles = Mathf.Max(0.5f, cycles);
+            Fire(ref _rollKick, deg, dur);
         }
 
         static void Fire(ref Fx fx, float amp, float dur)
@@ -146,13 +176,23 @@ namespace Game.View
             float kick = Tick(ref _launchKick, launchKickCurve, dt)
                        + Tick(ref _landKick, landKickCurve, dt);
 
+            // 롤 킥 — 감쇠 진동. sin이 0에서 출발해 빠르게 최고점을 찍으므로 '파박' 하고 튄다.
             float roll = 0f;
+            if (_rollKick.active)
+            {
+                _rollKick.t += dt;
+                float u = _rollKick.dur > 0f ? _rollKick.t / _rollKick.dur : 1f;
+                if (u >= 1f) _rollKick.active = false;
+                else roll += _rollSign * _rollKick.amp
+                           * Mathf.Sin(u * _rollCycles * 2f * Mathf.PI) * (1f - u);
+            }
+
             if (_swayActive)
             {
                 // sin(교차) × sin(진행 포락선) — 시작·끝에서 0으로 수렴해 뚝 끊기지 않는다.
                 float envelope = Mathf.Sin(_swayProgress * Mathf.PI);
-                roll = _swaySign * _swayAmp * envelope
-                     * Mathf.Sin(_swayProgress * _swayCycles * 2f * Mathf.PI);
+                roll += _swaySign * _swayAmp * envelope
+                      * Mathf.Sin(_swayProgress * _swayCycles * 2f * Mathf.PI);
             }
 
             bool vr = VrMode.Enabled;

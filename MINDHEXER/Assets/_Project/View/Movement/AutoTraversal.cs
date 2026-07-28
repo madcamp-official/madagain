@@ -22,7 +22,8 @@ namespace Game.View
     /// <para><b>궤적</b>: 수평 = 진행 방향으로 치우친 베지어(몸이 관성을 이기고 휘어 들어가는 대각선),
     /// 수직 = 정점 보장 탄도(모서리를 긁지 않음). <b>이징은 쓰지 않는다</b> — 탄도에 가속·감속이 이미
     /// 물리로 들어 있어서, 시간 워핑을 얹으면 정점에서 감속이 이중으로 걸려 멈칫하고 중력감이 죽는다.
-    /// 도약의 세기는 중력(<see cref="flightGravity"/>)과 비행 시간으로 조절한다.</para>
+    /// 비행 시간은 실제 이동량으로 정하고 중력은 거기서 역산되므로, 세기는 <see cref="airSpeedCap"/>과
+    /// 비행 시간 상·하한으로 조절한다.</para>
     ///
     /// <para><b>비행 중에는 CharacterController를 끄고</b> 위치를 직접 몬다(켠 채 몰면 벽에 밀려 도착 오차가
     /// 나 중단·재발동을 반복했다). 대신 출발 전에 착지·매달림 지점뿐 아니라 <b>궤적 중간까지 캡슐로 검사</b>해
@@ -75,7 +76,7 @@ namespace Game.View
         public float airSpeedCap = 7f;
 
         [Tooltip("비행 시간 하한(초). 짧은 도약이 순간이동처럼 보이지 않게.")]
-        public float minFlightTime = 0.25f;
+        public float minFlightTime = 0.18f;
 
         [Tooltip("비행 시간 상한(초). 넘으면 중력을 키워 시간을 줄인다 — 정점·착지점은 그대로.")]
         public float maxFlightTime = 0.9f;
@@ -102,12 +103,15 @@ namespace Game.View
         [Tooltip("눈앞 ClimbLedge 탐지 반경(m).")]
         public float detectRadius = 1.3f;
 
-        [Tooltip("오를 최소 높이. CharacterController.stepOffset(0.45)보다 <b>살짝 낮게</b> 둔다 — " +
-                 "같거나 높으면 그 사이 높이를 엔진도 못 넘고 등반도 거부해 아예 못 올라간다(사각지대).")]
-        public float minHeight = 0.4f;
+        [Tooltip("오를 최소 높이. CharacterController.stepOffset(0.3) <b>이하</b>로 둔다 — " +
+                 "더 높게 두면 그 사이 단차를 엔진도 못 넘고 등반도 거부해 아예 못 올라간다(사각지대).")]
+        public float minHeight = 0.3f;
 
         [Tooltip("걸어서 오르기 전방 판정 반각(도). 등 뒤로 끌려가는 것만 막는 정도로 넉넉하게.")]
         public float walkUpConeAngle = 90f;
+
+        [Tooltip("이 높이(m) 이하의 낮은 단차는 방향 판정을 건너뛴다 — 쳐다보지 않아도, 옆·뒤로 움직여도 넘어간다.")]
+        public float lowStepHeight = 0.7f;
 
         [Header("잡고 올라가기(맨틀)")]
         [Tooltip("팔 길이(m) — 매달렸을 때 눈이 모서리에서 이만큼 아래.")]
@@ -132,6 +136,9 @@ namespace Game.View
 
         [Tooltip("종료 임펄스 지속(초). 짧게 '탁' 밀고 즉시 일반 조작으로 넘어간다.")]
         public float exitBoostDuration = 0.08f;
+
+        [Tooltip("이 거리(m) 미만의 짧은 도약은 화면 연출을 넣지 않는다 — 낮은 턱마다 화면이 흔들리지 않게.")]
+        public float feelMinTravel = 1.2f;
 
         [Header("디버그")]
         public bool logDecisions;
@@ -238,9 +245,20 @@ namespace Game.View
         float DropDepth(Vector3 dir, out bool bottomless)
         {
             Vector3 feet = Feet;
-            Vector3 probe = feet + dir * edgeProbeAhead + Vector3.up * 0.1f;
-            float len = Mathf.Max(safeDrop, maxSafeFall) + 0.6f;
 
+            // 발 높이에서 쏘면 코앞의 턱 <b>안에서</b> 출발하게 된다. 유니티는 시작점이 내부인 콜라이더를
+            // 잡지 않으므로 아래 바닥을 못 찾고 무저갱으로 오판 → 가장자리 정지가 걸려 끼어버린다.
+            // 그래서 충분히 위에서 쏘고, 그래도 지형 안이면 "앞이 벽"이라는 뜻이니 낭떠러지가 아니다.
+            const float Up = 0.6f;
+            Vector3 probe = feet + dir * edgeProbeAhead + Vector3.up * Up;
+
+            if (Physics.CheckSphere(probe, 0.06f, obstacleMask, QueryTriggerInteraction.Ignore))
+            {
+                bottomless = false;
+                return 0f;
+            }
+
+            float len = Up + Mathf.Max(safeDrop, maxSafeFall) + 0.6f;
             if (Physics.Raycast(probe, Vector3.down, out RaycastHit hit, len,
                                 obstacleMask, QueryTriggerInteraction.Ignore))
             {
@@ -288,23 +306,34 @@ namespace Game.View
                 Vector3 approach = ledge.transform.position - feet; approach.y = 0f;
                 if (approach.sqrMagnitude < 1e-4f) continue;
                 if (!ledge.TryResolve(feet, approach.normalized, out ClimbLedge.GrabInfo g)) continue;
-                if (!SettleLanding(ref g)) continue;   // 착지점이 허공이면 뺀다
+                if (!SettleLanding(ref g)) { Rej(ledge, "착지 바닥 없음"); continue; }
 
                 // 거리도 수평으로 잰다 — 원뿔이 yaw 기준이라 기준을 맞춘다.
                 Vector3 flatTo = g.edgeCenter - feet; flatTo.y = 0f;
                 float dist = flatTo.magnitude;
-                if (dist > jumpSearchRadius || dist < 0.6f) continue;
+
+                // ★ 하한을 크게 잡으면 <b>바로 앞 낮은 단차가 후보에서 빠져</b> 멀리 있는 발판으로 뛰어버린다.
+                //   같은 자리(0에 가까운 것)만 걸러낼 정도로만 둔다. 높이는 아래에서 따로 거른다.
+                if (dist > jumpSearchRadius || dist < 0.2f) { Rej(ledge, $"거리 {dist:F2}m"); continue; }
 
                 Vector3 toDir = flatTo / dist;
-                if (Vector3.Dot(run, toDir) < cosCone && Vector3.Dot(look, toDir) < cosCone) continue;
+                if (Vector3.Dot(run, toDir) < cosCone && Vector3.Dot(look, toDir) < cosCone)
+                { Rej(ledge, "원뿔 밖"); continue; }
 
                 float dh = g.landingFeet.y - feet.y;
-                if (dh > maxMantleUp || dh < -maxDropTarget) continue;
+                if (dh > maxMantleUp || dh < -maxDropTarget) { Rej(ledge, $"높이차 {dh:F2}m"); continue; }
+
+                // ★ 지금 서 있는 자리와 <b>사실상 같은 곳</b>은 후보가 아니다 —
+                //   가깝고(0.6m 미만) 높이차도 없으면, 발판 위에서 자기 모서리로 '뛰었다 되돌아오는' 왕복이 된다.
+                //   올라갈 턱(minHeight↑)·내려갈 낙차(safeDrop↓)·건널 거리(0.6m↑) 중 하나는 있어야 한다.
+                if (dh < minHeight && dh > -safeDrop && dist < 0.6f)
+                { Rej(ledge, $"제자리 (거리 {dist:F2}m · 높이차 {dh:F2}m)"); continue; }
+
                 bool needMantle = dh > maxDirectUp;
 
                 Collider vol = ledge.Volume;
-                if (BlockedAt(g.landingFeet + Vector3.up * 0.03f, vol)) continue;
-                if (needMantle && !HangSpaceOk(g, feet, vol)) continue;
+                if (BlockedAt(g.landingFeet + Vector3.up * 0.03f, vol)) { Rej(ledge, "착지 막힘"); continue; }
+                if (needMantle && !HangSpaceOk(g, feet, vol)) { Rej(ledge, "매달림 막힘"); continue; }
 
                 Vector3 t = (needMantle ? HangFeet(g) : g.landingFeet) + Vector3.up * FeetToOrigin;
                 _cands.Add(new Cand { grab = g, target = t, dist = dist, mantle = needMantle, volume = vol });
@@ -328,6 +357,12 @@ namespace Game.View
                 return true;
             }
             return false;
+        }
+
+        /// <summary>도약 후보 탈락 사유 로그 — "왜 가까운 걸 두고 멀리 뛰었나"를 가른다.</summary>
+        void Rej(ClimbLedge ledge, string why)
+        {
+            if (logDecisions) Debug.Log($"[Jump] 후보 탈락 — {why} @{ledge.name}");
         }
 
         // ── 걸어서 오르기 ─────────────────────────────────────────────────
@@ -358,7 +393,6 @@ namespace Game.View
                 Vector3 flatTo = g.edgeCenter - feet; flatTo.y = 0f;
                 float d = flatTo.magnitude;
                 if (d > detectRadius) { rejDir++; continue; }
-                if (d > 1e-3f && Vector3.Dot(flatTo / d, dir) < cosFwd) { rejDir++; continue; }
 
                 float h = g.landingFeet.y - feet.y;
                 if (h < minHeight || h > maxMantleUp)
@@ -367,6 +401,11 @@ namespace Game.View
                     if (logDecisions) Debug.Log($"[Climb] 거부 — 오를 높이 {h:F2}m (허용 {minHeight:F2}~{maxMantleUp:F2}) @{ledge.name}");
                     continue;
                 }
+
+                // 낮은 단차는 방향 판정을 건너뛴다 — 걷다 걸리는 턱까지 "정면으로 봐야" 넘어가면 답답하다.
+                // 높은 것에만 전방 판정을 걸어 등 뒤 모서리로 끌려가는 것을 막는다.
+                if (h > lowStepHeight && d > 1e-3f && Vector3.Dot(flatTo / d, dir) < cosFwd)
+                { rejDir++; continue; }
                 if (BlockedAt(g.landingFeet + Vector3.up * 0.03f, ledge.Volume)) { rejBlocked++; continue; }
 
                 if (d < bestDist) { bestDist = d; bestGrab = g; bestVolume = ledge.Volume; found = true; }
@@ -529,8 +568,10 @@ namespace Game.View
             _fpp.VerticalVelocity = 0f;
             _cc.enabled = false;   // 위치 직접 구동 — 출발·도착·궤적 중간까지 검증한 뒤다
 
+            // 작은 턱을 넘는 것까지 발구름 연출을 넣으면 걸을 때마다 화면이 흔들린다.
+            float travel = Vector3.Distance(transform.position, _arc.end);
             float rise = Mathf.Max(_arc.apexY - transform.position.y, 0.2f);
-            if (_feel != null) _feel.OnJumpLaunch(rise);
+            if (_feel != null && travel >= feelMinTravel) _feel.OnJumpLaunch(rise);
         }
 
         void TickFlight(float dt)
@@ -700,14 +741,17 @@ namespace Game.View
             float rise = Mathf.Max(0.0001f, a.apexY - start.y);
             float fall = Mathf.Max(0.0001f, a.apexY - end.y);
 
-            float g0 = Mathf.Max(0.1f, flightGravity);
-            float k = Mathf.Sqrt(2f * rise) + Mathf.Sqrt(2f * fall);
-            float ballistic = k / Mathf.Sqrt(g0);                                  // 기준 중력에서의 시간
-            float byDistance = airSpeedCap > 0.01f ? dist / airSpeedCap : 0f;      // 먼 도약이 총알이 되지 않게
+            float k = Mathf.Sqrt(2f * rise) + Mathf.Sqrt(2f * fall);   // total = k/√g
+
+            // 비행 시간은 <b>실제 이동량</b>(수평+수직)으로 정한다.
+            // 예전엔 기준 중력의 탄도 시간을 하한으로 썼는데, 그러면 0.5m 단차도 0.45초짜리 큰 포물선이
+            // 되어 작은 턱을 넘을 때마다 조작이 끊겼다. 중력은 어차피 시간에서 역산되므로 필요 없다.
+            float travel = Vector3.Distance(start, end);
+            float byTravel = airSpeedCap > 0.01f ? travel / airSpeedCap : 0f;
 
             float lo = Mathf.Max(0.05f, minFlightTime);
             float hi = Mathf.Max(lo, maxFlightTime);
-            a.total = Mathf.Clamp(Mathf.Max(ballistic, byDistance), lo, hi);
+            a.total = Mathf.Clamp(byTravel, lo, hi);
 
             a.g = (k / a.total) * (k / a.total);
             a.vy = Mathf.Sqrt(2f * a.g * rise);

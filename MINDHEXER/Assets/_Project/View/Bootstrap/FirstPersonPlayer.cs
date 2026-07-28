@@ -94,9 +94,10 @@ namespace Game.View
             _cc.height = 1.8f;
             _cc.radius = 0.3f;
             _cc.center = new Vector3(0f, -0.7f, 0f);   // 카메라(눈)=1.6 위 → 발이 지면에
-            // 낮은 턱은 <b>엔진이 걸어서</b> 넘게 한다. 여기가 낮으면 그만큼을 AutoTraversal이 도약(0.3~0.4초
-            // 스크립트 구동)으로 처리하게 되어, 작은 단차마다 조작이 끊긴다. minHeight는 이 값보다 커야 한다.
-            _cc.stepOffset = 0.45f;
+            // 유니티 기본값을 유지한다. 크게 잡으면 컨트롤러가 턱 면을 타고 떠서 Below 접지가 풀리고,
+            // 그러면 AutoTraversal이 Grounded=false로 보고 등반 판정을 아예 안 돌려 낀 채로 멈춘다.
+            // 이 값보다 높은 단차는 AutoTraversal이 맡는다(minHeight를 이 값 이하로 두어 사각지대 없음).
+            _cc.stepOffset = 0.3f;
 
             Vector3 e = transform.eulerAngles;
             _yaw = e.y;
