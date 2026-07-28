@@ -16,6 +16,8 @@ namespace MindHexer.Controller.UI
         [SerializeField] private PairingFlow _flow;
         [SerializeField] private RttProbeBehaviour _rtt;
         [SerializeField] private DiscoveryListenerBehaviour _discovery;
+        [SerializeField] private MindHexer.Controller.Input.ArcorePoseSource _arcore;
+        [SerializeField] private UdpSender _sender;
 
         [Tooltip("고DPI 폰에서 UI가 너무 작지 않도록 하는 스케일.")]
         public float UiScale = 2.0f;
@@ -30,6 +32,8 @@ namespace MindHexer.Controller.UI
             if (_flow == null) _flow = GetComponent<PairingFlow>();
             if (_rtt == null) _rtt = GetComponent<RttProbeBehaviour>();
             if (_discovery == null) _discovery = GetComponent<DiscoveryListenerBehaviour>();
+            if (_arcore == null) _arcore = GetComponent<MindHexer.Controller.Input.ArcorePoseSource>();
+            if (_sender == null) _sender = GetComponent<UdpSender>();
 
             _white = new Texture2D(1, 1);
             _white.SetPixel(0, 0, Color.white);
@@ -63,7 +67,7 @@ namespace MindHexer.Controller.UI
         {
             float pad = 12 * UiScale;
             float panelW = Mathf.Min(Screen.width - pad * 2, 460 * UiScale);
-            float panelH = 190 * UiScale;
+            float panelH = 250 * UiScale;   // AR 상태 2줄 추가분 포함
             float x = (Screen.width - panelW) * 0.5f;
             var area = new Rect(x, pad, panelW, panelH);
             DrawRect(area, new Color(0f, 0f, 0f, 0.55f));
@@ -71,11 +75,22 @@ namespace MindHexer.Controller.UI
             GUILayout.BeginArea(new Rect(area.x + pad, area.y + pad, area.width - pad * 2, area.height - pad * 2));
             GUILayout.Label("MINDHEXER — S10e", _title);
 
-            string status = _flow != null ? _flow.StatusText : "-";
-            GUILayout.Label($"상태: {status}", _label);
+            // PairingFlow가 없으면 직결 모드다(ControllerBootstrap.DirectMode) — 페어링 상태 대신
+            // 실제로 어디로 몇 개나 쏘고 있는지를 보여준다. 이게 유일한 송신 확인 수단이다.
+            if (_flow == null)
+            {
+                string tgt = _sender != null ? _sender.TargetIp : "-";
+                uint sent = _sender != null ? _sender.SentCount : 0;
+                GUILayout.Label($"직결 → {tgt}:{NetworkConstants.UdpInputPort}", _label);
+                GUILayout.Label($"송신: {sent} 패킷", _label);
+            }
+            else
+            {
+                GUILayout.Label($"상태: {_flow.StatusText}", _label);
 
-            string disc = _discovery != null && _discovery.HasServer ? "발견" : "검색 중";
-            GUILayout.Label($"디스커버리: {disc}", _label);
+                string disc = _discovery != null && _discovery.HasServer ? "발견" : "검색 중";
+                GUILayout.Label($"디스커버리: {disc}", _label);
+            }
 
             if (_rtt != null && _rtt.AverageRttMs >= 0)
             {
@@ -85,6 +100,14 @@ namespace MindHexer.Controller.UI
             else
             {
                 GUILayout.Label("RTT: -", _label);
+            }
+
+            // 6DoF 상태 — 손에 든 상태에서 VIO가 실제로 버티는지 기기에서 바로 봐야 한다.
+            if (_arcore != null)
+            {
+                Vector3 p = _arcore.Pose != null ? _arcore.Pose.localPosition : Vector3.zero;
+                GUILayout.Label($"AR: {_arcore.StatusText}", _label);
+                GUILayout.Label($"pos: ({p.x:0.00}, {p.y:0.00}, {p.z:0.00})", _label);
             }
 
             GUILayout.Space(6 * UiScale);

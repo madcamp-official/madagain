@@ -24,9 +24,23 @@ namespace MindHexer.Controller.Input
         [Tooltip("6DoF 트래커(ARCore 등)가 갱신하는 디바이스 포즈. 미할당 시 자이로 회전만 사용(3DoF 폴백).")]
         [SerializeField] private Transform poseSource;
 
+        // 형제로 붙은 ARCore 소스. poseSource가 비어 있으면 여기서 가져온다.
+        private ArcorePoseSource _arcore;
+
         private void Awake()
         {
             if (_sender == null) _sender = GetComponent<UdpSender>();
+            if (poseSource == null) _arcore = GetComponent<ArcorePoseSource>();
+        }
+
+        /// <summary>
+        /// poseSource를 늦게 채운다. ArcorePoseSource가 포즈 Transform을 Awake에서 만들긴 하지만,
+        /// 컴포넌트 추가 순서에 의존하지 않도록 Update에서 한 번 더 확인한다.
+        /// </summary>
+        private void ResolvePoseSource()
+        {
+            if (poseSource != null || _arcore == null) return;
+            poseSource = _arcore.Pose;
         }
 
         private void Start()
@@ -42,10 +56,15 @@ namespace MindHexer.Controller.Input
             long ts = (long)(Time.realtimeSinceStartupAsDouble * 1000.0);
             Vector3 accel = UnityEngine.Input.acceleration;
 
-            // 6DoF 포즈: 트래커가 있으면 위치+회전을, 없으면 자이로 회전 + 0 위치(3DoF 폴백).
+            // 6DoF 포즈: 트래커가 <b>실제로 추적 중일 때만</b> 쓰고, 아니면 자이로 회전 + 0 위치(3DoF 폴백).
+            // ARCore가 아직 기동 중이거나 추적을 잃은 상태에서 poseSource를 그대로 읽으면 회전이
+            // identity로 굳어 자이로보다 못한 값이 나간다 — 그래서 살아 있는지를 먼저 본다.
+            ResolvePoseSource();
+
             Vector3 position;
             Quaternion rotation;
-            if (poseSource != null)
+            bool poseLive = poseSource != null && (_arcore == null || _arcore.HasPosition);
+            if (poseLive)
             {
                 position = poseSource.localPosition;
                 rotation = poseSource.localRotation;

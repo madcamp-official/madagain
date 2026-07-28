@@ -3,7 +3,8 @@
     "rootNamespace": "MindHexer.Controller",
     "references": [
         "MindHexer.Shared",
-        "endel.nativewebsocket"
+        "endel.nativewebsocket",
+        "Unity.XR.ARFoundation"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
