@@ -6,8 +6,11 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/_Project/Scenes/HackSandbox.unity
-    guid: b85cf9f610eb8d845a0594ee185327b6
+    path: Assets/_Project/Scenes/StressLab.unity
+    guid: a4252abe8990284478de79f430403f92
+  - enabled: 1
+    path: Assets/TallCity/DemoScene.unity
+    guid: 45b2cb1f0a0634249b16d231ad54baa4
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: f25da2f12212a904c8b74918538d1af2, type: 2}

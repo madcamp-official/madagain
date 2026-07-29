@@ -142,33 +142,25 @@ namespace Game.View
             Debug.Log("[ControllerDriver] HackDriver에 네트워크 입력 소스 연결");
         }
 
-        [Tooltip("VR 리그를 직접 옮길 때의 이동 속도(m/s). FirstPersonPlayer가 없을 때만 쓴다.")]
-        public float rigMoveSpeed = 3.5f;
+        MouseLook _look;
+        float _nextLookScan;
 
-        Transform _rig;
-
-        /// <summary>
-        /// VR 모드엔 <see cref="FirstPersonPlayer"/>가 없다 — <see cref="GameBoot.SetupVrRig"/>가
-        /// <c>[XR Rig]</c>에 <see cref="FreeLookController"/>만 붙인다. 그쪽은 키보드를 직접 읽고
-        /// 주입 지점이 없어(기기엔 키보드가 없으니 아무 일도 안 한다) 리그를 우리가 직접 옮긴다.
-        /// </summary>
-        void ResolveRigFallback()
+        /// <summary>에디터 자이로 시점의 주입 대상. PC 리그에만 존재한다(VR엔 TPD가 소유).</summary>
+        void ResolveLook()
         {
-            if (player != null || _rig != null) return;
-            var fl = FindFirstObjectByType<FreeLookController>();
-            if (fl != null) { _rig = fl.transform; Debug.Log("[ControllerDriver] XR 리그 연결: " + _rig.name); return; }
-            if (Camera.main != null && Camera.main.transform.parent != null) _rig = Camera.main.transform.parent;
+            if (_look != null || VrMode.Enabled) return;
+            if (Time.unscaledTime < _nextLookScan) return;
+            _nextLookScan = Time.unscaledTime + 0.5f;
+            _look = FindFirstObjectByType<MouseLook>();
         }
 
         void Update()
         {
             ResolvePlayer();
-            ResolveRigFallback();
+            ResolveLook();
             ResolveHackDriver();
 
             var link = ControllerLink.Active;
-            // ⚠️ 예전엔 player가 null이면 여기서 return했다. VR 리그엔 FirstPersonPlayer가 없어서
-            // 기기에서 조이스틱·서보가 통째로 죽었다. 이제 이동 대상이 없어도 나머지는 계속 돈다.
             if (link == null) return;
 
             UpdateScreenMetrics(link.Latest);
@@ -240,21 +232,9 @@ namespace Game.View
             JoystickValue = dir * shaped;
             JoystickActive = true;
 
-            // 화면 x=오른쪽, y=위 → 이동 x=오른쪽, y=앞. 그대로 대응한다.
-            if (player != null) { player.ExternalWish = JoystickValue; return; }
-
-            // VR 리그 경로 — 머리가 보는 방향 기준으로 옮긴다. 조이스틱을 앞으로 밀면
-            // "지금 보고 있는 쪽"으로 가는 게 VR에서 자연스럽다.
-            if (_rig == null) return;
-            Camera cam = Camera.main;
-            if (cam == null) return;
-
-            Vector3 fwd = cam.transform.forward; fwd.y = 0f;
-            Vector3 rgt = cam.transform.right; rgt.y = 0f;
-            if (fwd.sqrMagnitude < 1e-6f || rgt.sqrMagnitude < 1e-6f) return;
-
-            Vector3 worldDir = rgt.normalized * JoystickValue.x + fwd.normalized * JoystickValue.y;
-            _rig.position += worldDir * (rigMoveSpeed * Time.deltaTime);
+            // 화면 x=오른쪽, y=위 → 이동 x=오른쪽, y=앞. 방향 기준(보는 쪽)은 몸이 view에서 읽는다.
+            // 통합 리그라 VR에도 FirstPersonPlayer(몸)가 있다 — 별도 경로가 필요 없다.
+            if (player != null) player.ExternalWish = JoystickValue;
         }
 
         /// <summary>
@@ -503,7 +483,7 @@ namespace Game.View
         {
             // VR에선 머리가 시점을 소유한다. 컨트롤러 자이로까지 시점을 밀면 둘이 싸워서
             // 화면이 제멋대로 돈다 — 수동 플래그에 맡기지 않고 여기서 강제로 막는다.
-            if (VrMode.Enabled || !useGyroLook || player == null) { LookDeltaDeg = Vector2.zero; return; }
+            if (VrMode.Enabled || !useGyroLook || _look == null) { LookDeltaDeg = Vector2.zero; return; }
 
             Quaternion q = link.Latest.Rotation;
             if (q.x == 0f && q.y == 0f && q.z == 0f && q.w == 0f) return;   // 아직 값 없음
@@ -542,8 +522,8 @@ namespace Game.View
 
             LookDeltaDeg = new Vector2(yaw, pitch);
 
-            // FirstPersonPlayer는 "마우스 델타 × lookSens"를 기대하므로 픽셀 상당으로 환산해 넘긴다.
-            player.ExternalLook += new Vector2(yaw, pitch) * gyroLookGain;
+            // MouseLook은 "마우스 델타 × lookSens"를 기대하므로 픽셀 상당으로 환산해 넘긴다.
+            _look.ExternalLook += new Vector2(yaw, pitch) * gyroLookGain;
         }
     }
 }

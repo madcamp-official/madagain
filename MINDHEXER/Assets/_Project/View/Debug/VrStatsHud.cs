@@ -21,13 +21,13 @@ namespace Game.View
         public bool showInView = true;
 
         [Tooltip("카메라 앞 거리(m). 너무 가까우면 눈이 아프고 멀면 안 읽힌다.")]
-        public float distance = 1.4f;
+        public float distance = 1.1f;
 
         [Tooltip("시야 중심에서 아래로 내린 각도(도). 정면을 가리지 않게.")]
-        public float pitchOffsetDeg = 22f;
+        public float pitchOffsetDeg = 18f;
 
-        [Tooltip("텍스트 크기 배율.")]
-        public float scale = 0.0022f;
+        [Tooltip("텍스트 크기 배율. 실기에서 너무 작아 안 읽혀 키웠다 — 더 필요하면 이 값만 올리면 된다.")]
+        public float scale = 0.010f;
 
         [Header("기록")]
         [Tooltip("logcat에 남기는 주기(초). 0이면 안 남긴다.")]
@@ -72,6 +72,9 @@ namespace Game.View
                 float spikeMs = _accumMax;
                 float elapsed = now - _startTime;
 
+                // 씬 규모는 드물게만 센다(세는 것 자체가 스파이크).
+                if (now >= _nextCount) { _nextCount = now + 15f; CountScene(); }
+
                 if (showInView) Render(fps, avgMs, spikeMs, elapsed);
 
                 if (logIntervalSec > 0f && now >= _nextLog)
@@ -79,7 +82,7 @@ namespace Game.View
                     _nextLog = now + logIntervalSec;
                     // 경과 시간을 함께 남긴다 — 스로틀링은 시간에 따른 하락으로만 보인다.
                     Debug.Log($"[VrStats] t={elapsed:F0}s fps={fps:F1} avg={avgMs:F1}ms " +
-                              $"spike={spikeMs:F1}ms worst={_worstMs:F1}ms");
+                              $"spike={spikeMs:F1}ms worst={_worstMs:F1}ms | {_sceneLine}");
                 }
 
                 _accum = 0f; _accumMax = 0f; _frames = 0; _windowStart = now;
@@ -108,11 +111,40 @@ namespace Game.View
         {
             var link = ControllerLink.Active;
             string net = link == null
-                ? "link 없음"
-                : $"{link.PacketRate:F0}/s {link.Latest.Tracking} touch{link.Latest.TouchCount}";
+                ? "link none"
+                : $"{link.PacketRate:F0}/s {link.Latest.Tracking}";
 
             string head = _cam != null ? _cam.transform.eulerAngles.y.ToString("F0") : "-";
-            return $"VR:{(VrMode.Enabled ? "on" : "off")}  head:{head}\n{net}";
+            return $"VR:{(VrMode.Enabled ? "on" : "off")} head:{head}\n{net}\n{_sceneLine}";
+        }
+
+        // ── 씬 규모 ───────────────────────────────────────────────────────
+        // FindObjectsByType은 오브젝트가 수천 개면 그 자체가 스파이크라, 매 프레임 세면
+        // <b>측정하려는 대상을 측정 행위가 오염시킨다</b>. 그래서 드물게만 센다.
+
+        string _sceneLine = "scene …";
+        float _nextCount;
+
+        void CountScene()
+        {
+            var rends = FindObjectsByType<Renderer>(FindObjectsSortMode.None);
+            int skinned = 0;
+            long verts = 0;
+            for (int i = 0; i < rends.Length; i++)
+            {
+                if (rends[i] is SkinnedMeshRenderer smr)
+                {
+                    skinned++;
+                    if (smr.sharedMesh != null) verts += smr.sharedMesh.vertexCount;
+                }
+                else if (rends[i] is MeshRenderer)
+                {
+                    var mf = rends[i].GetComponent<MeshFilter>();
+                    if (mf != null && mf.sharedMesh != null) verts += mf.sharedMesh.vertexCount;
+                }
+            }
+            int anims = FindObjectsByType<Animator>(FindObjectsSortMode.None).Length;
+            _sceneLine = $"rend {rends.Length} (skin {skinned}) anim {anims} vtx {verts / 1000}k";
         }
 
         bool EnsureText()

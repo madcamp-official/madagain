@@ -191,7 +191,8 @@ namespace Game.View
         {
             _fpp = GetComponent<FirstPersonPlayer>();
             _cc = GetComponent<CharacterController>();
-            _feel = GetComponent<MotionFeel>();
+            // 통합 리그: 연출은 자식 카메라에 산다(몸 위치를 안 건드리게).
+            _feel = GetComponentInChildren<MotionFeel>();
             _rig = GetComponent<MantleRig>();
         }
 

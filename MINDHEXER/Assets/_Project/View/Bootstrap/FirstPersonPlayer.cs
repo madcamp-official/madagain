@@ -4,8 +4,12 @@ using UnityEngine.InputSystem;
 namespace Game.View
 {
     /// <summary>
-    /// 간이 1인칭 플레이어 — CharacterController 기반 WASD 이동 + 중력 + 마우스 시점.
-    /// FreeLook(나는 테스트 카메라)을 대체하는 PC 본체. VR 이식 시엔 입력만 네트워크로 교체.
+    /// 플레이어 <b>몸</b> — CharacterController 기반 이동 + 중력. PC·VR 공용.
+    ///
+    /// <para><b>이 컴포넌트는 회전하지 않는다.</b> 시점은 자식 카메라가 소유한다
+    /// (PC=<see cref="MouseLook"/>, VR=TrackedPoseDriver). 몸은 위치·충돌·중력만 갖고,
+    /// 이동 방향 기준으로 <see cref="view"/>(카메라)의 수평 forward를 <b>읽기만</b> 한다 —
+    /// 시점이 몸을 돌리거나 이동이 시점을 돌리는 일은 없다.</para>
     ///
     /// <para>수평 이동은 <see cref="MoveIntegrator"/>가 담당한다 — 즉시 속도가 아니라 가속/감속 램프.
     /// 그래야 네트워크 입력이 늦게 와도 <b>속도를 앞당기는 방식</b>으로 지연을 가릴 수 있다(위치 순간이동 없이).
@@ -20,8 +24,9 @@ namespace Game.View
     [RequireComponent(typeof(CharacterController))]
     public class FirstPersonPlayer : MonoBehaviour
     {
-        [Header("시점")]
-        public float lookSens = 0.1f;
+        [Header("시점 기준")]
+        [Tooltip("이동 방향의 기준이 되는 시점(카메라). GameBoot이 세팅. 없으면 월드 +Z 기준.")]
+        public Transform view;
 
         [Header("이동 (가속/감속 — 값으로 아이작식 관성 조절)")]
         public MoveIntegrator move = new MoveIntegrator();
@@ -50,10 +55,15 @@ namespace Game.View
         /// </summary>
         public Vector2 Wish { get; private set; }
 
-        /// <summary>지금 향하고 있는 수평 방향(피치 제외). 자동 등반의 전방 탐지 기준.</summary>
+        /// <summary>지금 보고 있는 수평 방향(피치 제외). 자동 등반의 전방 탐지 기준 = 시점.</summary>
         public Vector3 FlatForward
         {
-            get { float r = _yaw * Mathf.Deg2Rad; return new Vector3(Mathf.Sin(r), 0f, Mathf.Cos(r)); }
+            get
+            {
+                Vector3 f = view != null ? view.forward : Vector3.forward;
+                f.y = 0f;
+                return f.sqrMagnitude > 1e-6f ? f.normalized : Vector3.forward;
+            }
         }
 
         public CharacterController Controller => _cc;
@@ -70,7 +80,7 @@ namespace Game.View
 
         CharacterController _cc;
         MotionFeel _feel;
-        float _yaw, _pitch, _vy;
+        float _vy;
         bool _wasGrounded;
         float _suppressLandUntil;
 
@@ -98,7 +108,8 @@ namespace Game.View
         void Awake()
         {
             _cc = GetComponent<CharacterController>();
-            _feel = GetComponent<MotionFeel>();
+            // 연출은 카메라(자식)에 산다 — 몸 위치를 건드리면 CC와 싸우므로 시각 전용 트랜스폼에 둔다.
+            _feel = GetComponentInChildren<MotionFeel>();
             _cc.height = 1.8f;
             _cc.radius = 0.3f;
             _cc.center = new Vector3(0f, -0.7f, 0f);   // 카메라(눈)=1.6 위 → 발이 지면에
@@ -107,14 +118,8 @@ namespace Game.View
             // 이 값보다 높은 단차는 AutoTraversal이 맡는다(minHeight를 이 값 이하로 두어 사각지대 없음).
             _cc.stepOffset = 0.3f;
 
-            Vector3 e = transform.eulerAngles;
-            _yaw = e.y;
-            _pitch = e.x;
-        }
-
-        void Start()
-        {
-            Cursor.lockState = CursorLockMode.Locked;
+            // 몸은 회전하지 않는다 — 남아 있던 회전은 기준 오염이므로 지운다.
+            transform.rotation = Quaternion.identity;
         }
 
         /// <summary>
@@ -123,48 +128,20 @@ namespace Game.View
         /// </summary>
         public Vector2 ExternalWish;
 
-        /// <summary>
-        /// 외부 입력의 시점 변화량(마우스 delta와 같은 단위·의미). <b>델타라서 매 프레임 소비</b>된다.
-        /// </summary>
-        public Vector2 ExternalLook;
-
         void Update()
         {
-            var kb = Keyboard.current;
-            var mouse = Mouse.current;
-
-            // ⚠️ 예전엔 여기서 kb == null이면 통째로 return했다. 안드로이드엔 키보드가 없어서
-            // 이동뿐 아니라 시점·중력·ApplyMove까지 전부 죽어 플레이어가 공중에 얼어붙었다.
-            // 키보드·마우스는 이제 <b>선택</b>이다 — 없으면 외부 입력만으로 동작한다.
+            var kb = Keyboard.current;   // 없으면(안드로이드) 외부 입력만으로 동작한다
 
             float dt = Time.deltaTime;
 
-            // 시점 — 해킹 중엔 마우스가 패턴을 그리므로 "회전 입력"만 잠근다(이동은 아래에서 계속 처리).
-            // LookFrozen은 yaw/pitch 갱신만 막는다 — 회전 적용 자체(아래 대입)는 항상 실행돼야
-            // MotionFeel의 절차적 롤(지하철 스웨이·착지 킥 등)이 해킹 중에도 계속 보인다. 예전엔
-            // 이 대입이 같은 if 블록 안에 있어서 해킹 중엔 롤 연출까지 통째로 안 먹혔다(버그, 수정됨) —
-            // "회전 불가능"과 "연출 없음"은 다른 요구사항이다.
-            if (!LookFrozen)
-            {
-                Vector2 d = ExternalLook;   // 컨트롤러 자이로(에디터) — 마우스와 같은 단위
-                if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
-                    d += mouse.delta.ReadValue();
+            // 시점은 이 컴포넌트 소관이 아니다 — 자식 카메라(MouseLook 또는 TrackedPoseDriver)가
+            // 소유한다. 여기는 이동·중력·충돌만 남았다.
 
-                _yaw += d.x * lookSens;
-                _pitch = Mathf.Clamp(_pitch - d.y * lookSens, -85f, 85f);
-            }
-            ExternalLook = Vector2.zero;   // 델타는 매 프레임 소비(LookFrozen이어도 쌓이면 안 된다)
-            transform.localRotation = Quaternion.Euler(_pitch, _yaw,
-                _feel != null ? _feel.CurrentRoll : 0f);
-
-            if (kb != null && kb.escapeKey.wasPressedThisFrame)
-                Cursor.lockState = Cursor.lockState == CursorLockMode.Locked
-                    ? CursorLockMode.None : CursorLockMode.Locked;
-
-            // 자동 등반이 위치를 몰고 있으면 이동·중력은 넘긴다(시점은 위에서 이미 처리됨).
+            // 자동 등반이 위치를 몰고 있으면 이동·중력은 넘긴다.
             if (ExternalMotion) return;
 
-            // 이동 입력(yaw 기준 수평) → 가속 적분기.
+            // 이동 입력 → 시점(카메라)의 수평 기준으로 월드 방향화 → 가속 적분기.
+            // "조이스틱 앞 = 보는 방향" — 시점을 읽기만 하고, 몸은 돌지 않는다.
             // WASD와 외부(컨트롤러 조이스틱)를 합산한다 — 에디터에서 둘 다 쓸 수 있어야 튜닝이 쉽다.
             Vector2 local = ExternalWish;
             if (kb != null)
@@ -174,10 +151,13 @@ namespace Game.View
             }
             if (local.sqrMagnitude > 1f) local.Normalize();
 
-            float yawRad = _yaw * Mathf.Deg2Rad;
-            float sin = Mathf.Sin(yawRad), cos = Mathf.Cos(yawRad);
-            Vector2 wish = new Vector2(local.x * cos + local.y * sin,      // 월드 X
-                                       local.y * cos - local.x * sin);    // 월드 Z
+            Vector3 f = FlatForward;
+            Vector3 r = view != null ? view.right : Vector3.right;
+            r.y = 0f;
+            r = r.sqrMagnitude > 1e-6f ? r.normalized : Vector3.right;
+
+            Vector3 w3 = r * local.x + f * local.y;
+            Vector2 wish = new Vector2(w3.x, w3.z);
             Wish = wish;
 
             move.Step(wish, dt, _groundedBelow, InputAge);

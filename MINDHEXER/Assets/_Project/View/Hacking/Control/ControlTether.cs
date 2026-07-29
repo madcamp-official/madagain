@@ -40,9 +40,24 @@ namespace Game.View
         /// <summary>실 끝(대상) 지점(월드). 거미가 이쪽으로 엉덩이를 겨눈다.</summary>
         public Vector3 EndPoint { get; private set; }
 
+        // 셰이더를 못 찾은 상태를 기억한다. 안 그러면 매 프레임 재시도하며 실패하고,
+        // 그때마다 아래에서 만든 큐브가 남아 <b>프레임당 오브젝트 하나씩 누수</b>된다
+        // (실기에서 실제로 발생 — 렌더러가 12,000개까지 불어나 fps가 60→17로 떨어졌다).
+        bool _barFailed;
+
         void EnsureBar()
         {
-            if (_bar != null) return;
+            if (_bar != null || _barFailed) return;
+
+            // ⚠️ 셰이더를 <b>먼저</b> 찾는다. 오브젝트를 만든 뒤에 찾으면 실패 시 그 오브젝트가 고아가 된다.
+            var shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (shader == null)
+            {
+                _barFailed = true;
+                Debug.LogError("[ControlTether] 'Universal Render Pipeline/Unlit' 셰이더를 못 찾음 — " +
+                               "빌드에선 Always Included Shaders에 넣어야 한다. 실 표시를 건너뛴다.");
+                return;
+            }
 
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = "[TetherBar]";
@@ -52,7 +67,7 @@ namespace Game.View
             if (col != null) Destroy(col);
 
             var r = go.GetComponent<Renderer>();
-            _mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            _mat = new Material(shader);
             r.sharedMaterial = _mat;
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
@@ -64,6 +79,7 @@ namespace Game.View
         public void UpdateTether(Transform from, Transform target, bool captured)
         {
             EnsureBar();
+            if (_bar == null) { Active = false; return; }   // 셰이더 없음 — 표시만 건너뛴다
 
             if (from == null || target == null) { _bar.gameObject.SetActive(false); Active = false; return; }
             _mat.color = captured ? controlColor : hackingColor;

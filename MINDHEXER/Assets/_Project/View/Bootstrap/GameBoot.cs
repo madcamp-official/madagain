@@ -35,8 +35,66 @@ namespace Game.View
         {
             ApplyFrameRate();
             _cam = EnsureCamera();
-            if (VrMode.Enabled) SetupVrRig();
-            else                SetupPcRig();
+            SetupRig();
+        }
+
+        /// <summary>
+        /// 통합 리그 — PC와 VR이 <b>같은 몸</b>을 쓴다. 차이는 카메라에 붙는 시점 드라이버 하나뿐.
+        ///
+        /// <code>
+        /// [PlayerBody]  ← CC + 이동·중력·밀림감지 + AutoTraversal + MantleRig. 회전하지 않는다.
+        ///    └ Main Camera ← 시점 소유(PC=MouseLook / VR=TrackedPoseDriver RotationOnly)
+        ///                    + MotionFeel(연출) + HackDriver(조준=정면)
+        /// </code>
+        ///
+        /// <para>몸 원점 = 눈높이. 기존 이동·등반 코드 전부가 "트랜스폼 위치 = 눈"을 전제하므로
+        /// 그 규약을 유지한다(발 위치는 CC의 center −0.7이 만든다). 카메라 로컬은 0 — VR에서
+        /// TrackedPoseDriver가 RotationOnly라 위치를 안 건드려 눈높이가 꺼지지 않는다.</para>
+        ///
+        /// <para>이동 기준 = 카메라 수평 forward("조이스틱 앞 = 보는 방향" — VR 표준 로코모션이자
+        /// PC의 원래 동작). 예전 VR 전용 [XR Rig]+FreeLookController 경로는 삭제 — 몸이 없어서
+        /// 충돌·중력 없이 벽을 뚫고 다녔고 눈높이도 TPD가 덮어써 땅이 꺼져 보였다.</para>
+        /// </summary>
+        void SetupRig()
+        {
+            var body = new GameObject("[PlayerBody]");
+            body.transform.position = startPosition + Vector3.up * eyeHeight;
+
+            // 카메라 = 시점 전용 자식. 연출(MotionFeel)은 여기 — 몸 위치를 건드리면 CC와 싸운다.
+            _cam.transform.SetParent(body.transform, false);
+            _cam.transform.localPosition = Vector3.zero;
+            _cam.transform.localRotation = Quaternion.identity;
+            if (_cam.GetComponent<MotionFeel>() == null) _cam.gameObject.AddComponent<MotionFeel>();
+
+            // 몸 — MotionFeel(자식)이 먼저 있어야 Awake 캐시가 잡힌다.
+            if (body.GetComponent<MantleRig>() == null) body.AddComponent<MantleRig>();
+            var fpp = body.GetComponent<FirstPersonPlayer>() ?? body.AddComponent<FirstPersonPlayer>();
+            fpp.view = _cam.transform;
+            if (body.GetComponent<AutoTraversal>() == null) body.AddComponent<AutoTraversal>();
+
+            // 해킹 — 조준 = 카메라 정면. [RequireComponent(HackContext)]라 HackContext도 함께 붙는다.
+            if (_cam.GetComponent<HackDriver>() == null) _cam.gameObject.AddComponent<HackDriver>();
+
+            if (VrMode.Enabled)
+            {
+                AttachHeadPoseDriver(_cam);   // RotationOnly — 위치는 몸이 소유
+
+                // ScreenSpace HUD → 머리 앞 World-Space 패널(양안 렌더).
+                var hud = new GameObject("[VrHudSpace]").AddComponent<VrHudSpace>();
+                hud.head = _cam.transform;
+
+                // VR 튜닝 — 눈높이·HUD·렌더스케일 JSON 저장/로드.
+                var tuning = gameObject.AddComponent<VrTuning>();
+                tuning.head = _cam.transform;
+                tuning.hud = hud;
+                tuning.eyeBase = eyeHeight;   // 몸 원점이 이미 눈높이 — 카메라 로컬은 차이만 받는다
+            }
+            else
+            {
+                _cam.gameObject.AddComponent<MouseLook>();
+                if (body.GetComponent<MoveTuningPanel>() == null) body.AddComponent<MoveTuningPanel>();
+                if (lockCursor) Cursor.lockState = CursorLockMode.Locked;
+            }
         }
 
         /// <summary>
@@ -55,21 +113,18 @@ namespace Game.View
             if (cam.GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>() != null) return;
 
             var tpd = cam.gameObject.AddComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>();
-            tpd.trackingType = UnityEngine.InputSystem.XR.TrackedPoseDriver.TrackingType.RotationAndPosition;
+            // RotationOnly — 위치까지 받으면 Cardboard(3DoF)의 거의-0 위치가 카메라 로컬을 덮어써
+            // 눈높이가 지워지고 땅이 꺼져 보인다(실기 확인). 위치는 [PlayerBody]가 소유한다.
+            tpd.trackingType = UnityEngine.InputSystem.XR.TrackedPoseDriver.TrackingType.RotationOnly;
             // Update + BeforeRender — 렌더 직전에 한 번 더 갱신해야 머리 지연이 최소가 된다.
             tpd.updateType = UnityEngine.InputSystem.XR.TrackedPoseDriver.UpdateType.UpdateAndBeforeRender;
 
-            var pos = new UnityEngine.InputSystem.InputAction(
-                "HMD Position", UnityEngine.InputSystem.InputActionType.Value, "<XRHMD>/centerEyePosition");
             var rot = new UnityEngine.InputSystem.InputAction(
                 "HMD Rotation", UnityEngine.InputSystem.InputActionType.Value, "<XRHMD>/centerEyeRotation");
-            pos.Enable();
             rot.Enable();
-
-            tpd.positionInput = new UnityEngine.InputSystem.InputActionProperty(pos);
             tpd.rotationInput = new UnityEngine.InputSystem.InputActionProperty(rot);
 
-            Debug.Log("[GameBoot] 머리 포즈 드라이버 부착 (<XRHMD>/centerEye*)");
+            Debug.Log("[GameBoot] 머리 포즈 드라이버 부착 (<XRHMD>/centerEyeRotation, RotationOnly)");
         }
 
         /// <summary>
@@ -99,60 +154,5 @@ namespace Game.View
             return c;
         }
 
-        /// <summary>PC: 카메라에 WASD+마우스 이동/시점 + 해킹 시스템.</summary>
-        void SetupPcRig()
-        {
-            _cam.transform.SetParent(null, false);
-            _cam.transform.position = startPosition + Vector3.up * eyeHeight;
-
-            var go = _cam.gameObject;
-            // 연출 레이어를 먼저 — FirstPersonPlayer/AutoTraversal이 Awake에서 캐시한다.
-            if (go.GetComponent<MotionFeel>() == null) go.AddComponent<MotionFeel>();
-            if (go.GetComponent<MantleRig>() == null) go.AddComponent<MantleRig>();
-            // 간이 1인칭 본체(CharacterController+WASD+가속+중력). FreeLook(나는 테스트 카메라) 대체.
-            if (go.GetComponent<FirstPersonPlayer>() == null) go.AddComponent<FirstPersonPlayer>();
-            // 자동 시선 도약 + 잡고 올라가기 + 가장자리 낙하 방지(버튼 없음 — 전부 자동).
-            if (go.GetComponent<AutoTraversal>() == null) go.AddComponent<AutoTraversal>();
-            // F1 이동 튜닝 패널(PC 개발 도구).
-            if (go.GetComponent<MoveTuningPanel>() == null) go.AddComponent<MoveTuningPanel>();
-            // HackDriver는 [RequireComponent(HackContext)]라 HackContext도 함께 붙는다.
-            if (go.GetComponent<HackDriver>() == null) go.AddComponent<HackDriver>();
-
-            if (lockCursor) Cursor.lockState = CursorLockMode.Locked;
-        }
-
-        /// <summary>
-        /// VR: XR 리그 루트(이동) + 카메라 자식(머리 트래킹이 회전 소유) + World-Space HUD.
-        /// Main.cs VR 경로 이식 — CinemachineBrain을 붙이지 않는다(XR 헤드트래킹과 충돌).
-        /// </summary>
-        void SetupVrRig()
-        {
-            var rig = new GameObject("[XR Rig]").transform;
-            rig.position = startPosition;
-
-            _cam.transform.SetParent(rig, false);
-            _cam.transform.localPosition = Vector3.up * eyeHeight;
-            _cam.transform.localRotation = Quaternion.identity;   // 로컬 자세는 XR(머리)이 채운다
-
-            AttachHeadPoseDriver(_cam);
-
-            // 리그 이동만(WASD=locomotion 자리표시자, 나중에 S10e). 시점 회전은 머리가 소유.
-            var mover = rig.gameObject.AddComponent<FreeLookController>();
-            mover.lookEnabled = false;
-
-            // 해킹 시선 = 카메라(머리) 정면 → HackDriver는 카메라에.
-            var hd = _cam.GetComponent<HackDriver>() ?? _cam.gameObject.AddComponent<HackDriver>();
-            // VR 입력 = 네트워크(S10e) 소스, 지연 가리기 층 경유. SYB 네트워크가 NetworkHexInputSource.Active로 Push.
-            hd.Source = new NetworkHexInputSource();
-
-            // ScreenSpace HUD → 머리 앞 World-Space 패널(양안 렌더). (사용자 C 작업 이식)
-            var hud = new GameObject("[VrHudSpace]").AddComponent<VrHudSpace>();
-            hud.head = _cam.transform;
-
-            // VR 튜닝 툴 — 눈높이·HUD·렌더스케일을 JSON 저장/로드·적용(기기 오면 값만 조정).
-            var tuning = gameObject.AddComponent<VrTuning>();
-            tuning.head = _cam.transform;
-            tuning.hud = hud;
-        }
     }
 }

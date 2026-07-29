@@ -44,11 +44,21 @@ namespace Game.View
         [Tooltip("3인칭일 때 셸이 서 있을 자리. 비우면 시작 위치를 기억한다.")]
         public Transform worldAnchor;
 
+        [Header("1인칭 기준 자세 (씬에서 잡아둔 값)")]
+        [Tooltip("1인칭일 때 뷰모델 루트의 로컬 위치. Awake에서 씬 값을 그대로 읽어 채운다.\n" +
+                 "★ 여기를 원점으로 덮으면 손으로 잡아둔 구도가 Play 때 날아간다.")]
+        public Vector3 firstPersonLocalPos;
+        public Vector3 firstPersonLocalEuler;
+
+        [Tooltip("끄면 위 값을 무시하고 씬에 있는 그대로 둔다(다른 시스템이 루트를 몰 때).")]
+        public bool applyFirstPersonPose = true;
+
         Mode _mode;
         bool _applied;
         Vector3 _startPos;
         Quaternion _startRot;
         Transform _originalParent;
+        bool _capturedFp;
 
         public Mode Current => _mode;
 
@@ -66,6 +76,15 @@ namespace Game.View
                 _startPos = parts.transform.position;
                 _startRot = parts.transform.rotation;
                 parts.AutoFindBones();
+
+                // 씬에서 잡아둔 1인칭 구도를 그대로 기준으로 삼는다.
+                // 인스펙터 값이 비어 있을 때만 읽는다 — 한번 잡아두면 그게 정본이다.
+                if (firstPersonLocalPos == Vector3.zero && firstPersonLocalEuler == Vector3.zero)
+                {
+                    firstPersonLocalPos   = parts.transform.localPosition;
+                    firstPersonLocalEuler = parts.transform.localRotation.eulerAngles;
+                }
+                _capturedFp = true;
             }
         }
 
@@ -108,9 +127,13 @@ namespace Game.View
 
             if (first)
             {
-                // 카메라 하위에서는 원점에 맞춘다. 세부 위치는 ViewmodelMotion의 basePos가 잡는다.
-                parts.transform.localPosition = Vector3.zero;
-                parts.transform.localRotation = Quaternion.identity;
+                // ★ 원점으로 리셋하지 않는다 — 씬에서 손으로 잡아둔 구도가 곧 기준이고,
+                //   ViewmodelMotion이 이 값을 basePos로 캡처해 그 위에 절차 모션을 얹는다.
+                if (applyFirstPersonPose && _capturedFp)
+                {
+                    parts.transform.localPosition = firstPersonLocalPos;
+                    parts.transform.localRotation = Quaternion.Euler(firstPersonLocalEuler);
+                }
             }
             else if (target == null)
             {

@@ -42,9 +42,13 @@ namespace Game.View
         {
             _fpp = GetComponent<FirstPersonPlayer>();
             _auto = GetComponent<AutoTraversal>();
-            _feel = GetComponent<MotionFeel>();
+            // 통합 리그: 연출·시점은 자식 카메라에 산다.
+            _feel = GetComponentInChildren<MotionFeel>();
+            _look = GetComponentInChildren<MouseLook>();
             _rig = GetComponent<MantleRig>();
         }
+
+        MouseLook _look;
 
         void Start()
         {
@@ -125,7 +129,7 @@ namespace Game.View
                  $"정지 {m.maxSpeed / Mathf.Max(1f, m.deceleration):0.00}초");
             m.airControl = F("공중 제어", m.airControl, 0f, 1f);
             _fpp.gravity = F("중력", _fpp.gravity, 5f, 50f);
-            _fpp.lookSens = F("마우스 감도", _fpp.lookSens, 0.02f, 0.5f);
+            if (_look != null) _look.lookSens = F("마우스 감도", _look.lookSens, 0.02f, 0.5f);
 
             Info("<b>지연 보상</b> (VR용 — PC는 age=0이라 효과 없음)");
             m.maxCatchUp = F("따라잡기 상한(초)", m.maxCatchUp, 0f, 0.4f);

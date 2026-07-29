@@ -54,6 +54,10 @@ namespace Game.View
 
         [Tooltip("눈높이 적용 대상 = XR 카메라 transform. GameBoot이 세팅.")]
         public Transform head;
+
+        [Tooltip("리그가 이미 확보한 기본 눈높이(m). 통합 리그는 몸 원점이 눈높이라 카메라 로컬은 " +
+                 "0이 기본 — 튜닝값과 이 값의 차이만 카메라 로컬에 반영한다. GameBoot이 세팅.")]
+        public float eyeBase = 0f;
         [Tooltip("HUD 배치 적용 대상. GameBoot이 세팅.")]
         public VrHudSpace hud;
 
@@ -74,7 +78,7 @@ namespace Game.View
             if (head != null)
             {
                 Vector3 lp = head.localPosition;
-                lp.y = Data.eyeHeight;
+                lp.y = Data.eyeHeight - eyeBase;   // 기본 눈높이는 몸이 갖고, 카메라는 차이만
                 head.localPosition = lp;
             }
 
