@@ -1015,7 +1015,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: 4dfc5a88bdcb45b41af5ceb8fcd0c1d6, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
@@ -1079,6 +1079,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.GuardDetection
   DetectRadius: 6
+  startClip: Idle_1
 --- !u!114 &3180163995857866921
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1096,6 +1097,7 @@ MonoBehaviour:
   tiltRange: 85
   hardClampPan: 0
   hardClampTilt: 0
+  eyeBlocked: 0
   allowsMove: 1
   useBlocker: 0
   blockerColor: {r: 0.15, g: 0.85, b: 0.25, a: 1}
@@ -1184,7 +1186,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: eac569fffc8708e45bfc4d3eb33a7055, type: 2}
+  - {fileID: 2100000, guid: b3de27fbae44c484cbc6dd54861e1698, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -138,8 +138,12 @@ namespace Game.View
         [Tooltip("종료 임펄스 지속(초). 짧게 '탁' 밀고 즉시 일반 조작으로 넘어간다.")]
         public float exitBoostDuration = 0.08f;
 
-        [Tooltip("이 거리(m) 미만의 짧은 도약은 화면 연출을 넣지 않는다 — 낮은 턱마다 화면이 흔들리지 않게.")]
-        public float feelMinTravel = 1.2f;
+        [Tooltip("이 거리(m) 이하의 짧은 도약은 연출을 안 넣는다. 그 위로는 feelFullTravel까지 선형으로 커진다 " +
+                 "— 이진 컷오프면 경계에서 '1.19m는 무연출, 1.21m는 풀연출'로 튄다.")]
+        public float feelMinTravel = 0.6f;
+
+        [Tooltip("이 거리(m) 이상이면 연출이 100%(기존 크기 그대로).")]
+        public float feelFullTravel = 2.5f;
 
         [Header("디버그")]
         public bool logDecisions;
@@ -158,8 +162,6 @@ namespace Game.View
         readonly Collider[] _overlap = new Collider[12];
         // BlockedAt 전용 버퍼 — _overlap을 순회하는 도중에 호출되므로 같은 배열을 쓰면 반복이 깨진다.
         readonly Collider[] _blockBuf = new Collider[8];
-        // DropDepth 프로브 전용 — 위와 같은 이유로 따로 둔다.
-        readonly Collider[] _probeBuf = new Collider[8];
 
         /// <summary>도약 후보 하나. 원뿔을 통과한 것들을 모아 거리순으로 훑는다.</summary>
         struct Cand
@@ -321,74 +323,32 @@ namespace Game.View
 
             // 발 높이에서 쏘면 코앞의 턱 <b>안에서</b> 출발하게 된다. 유니티는 시작점이 내부인 콜라이더를
             // 잡지 않으므로 아래 바닥을 못 찾고 무저갱으로 오판 → 가장자리 정지가 걸려 끼어버린다.
+            // 그래서 충분히 위에서 쏘고, 그래도 지형 안이면 "앞이 벽"이라는 뜻이니 낭떠러지가 아니다.
             //
-            // 예전엔 "지형 안이면 앞이 벽이니 낭떠러지가 아니다"로 <b>단정</b>하고 낙차 0을 반환했다.
-            // 그게 낭떠러지에서 오발동하면 그 프레임의 보호가 통째로 사라져, 판정이 깜빡일 때마다
-            // 조금씩 밀려 결국 떨어졌다(실측). 이제는 포기하지 않고 <b>빈 공간이 나올 때까지 프로브를
-            // 올려서 다시 검사</b>한다 — 앞이 벽이면 그 벽 윗면을 바닥으로 잡아 결과가 같고,
-            // 낭떠러지면 정상적으로 무저갱이 나온다.
-            const float BaseUp = 0.6f;
-            const float StepUp = 0.4f;
-            const int MaxLift = 6;         // 최대 0.6 + 0.4×6 = 3.0m까지 올려본다
+            // (프로브를 못 찾을 때까지 올려 재검사하는 버전을 시도했다가 되돌렸다 — 새 낙하 버그가
+            // 생겨 원인 분리를 위해 임시로 원래 방식으로 복귀. §대화 기록 참조.)
+            const float Up = 0.6f;
+            Vector3 probe = feet + dir * edgeProbeAhead + Vector3.up * Up;
 
-            Vector2 flat = new Vector2(dir.x, dir.z);
-            Vector3 ahead = feet + new Vector3(flat.x, 0f, flat.y).normalized * edgeProbeAhead;
-
-            float up = BaseUp;
-            string blocker = null;
-            for (int i = 0; i <= MaxLift; i++)
+            if (Physics.CheckSphere(probe, 0.06f, obstacleMask, QueryTriggerInteraction.Ignore))
             {
-                Vector3 p = ahead + Vector3.up * up;
-                Collider inside = OverlapAt(p);
-                if (inside == null) break;              // 빈 공간 확보
-                blocker = inside.name;
-                up += StepUp;
-                if (i == MaxLift)
-                {
-                    // 3m를 올려도 계속 지형 안 = 앞이 통짜 벽. 낭떠러지가 아니다.
-                    bottomless = false;
-                    _dropReason = $"3m까지 전부 지형 안(통짜 벽) @{blocker}";
-                    return 0f;
-                }
+                bottomless = false;
+                _dropReason = "프로브가 지형 안(앞이 벽으로 간주)";
+                return 0f;
             }
 
-            Vector3 origin = ahead + Vector3.up * up;
-            float len = up + Mathf.Max(safeDrop, maxSafeFall) + 0.6f;
-
-            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, len,
+            float len = Up + Mathf.Max(safeDrop, maxSafeFall) + 0.6f;
+            if (Physics.Raycast(probe, Vector3.down, out RaycastHit hit, len,
                                 obstacleMask, QueryTriggerInteraction.Ignore))
             {
                 bottomless = false;
-                _dropReason = blocker == null
-                    ? $"레이 적중 @{hit.collider.name}"
-                    : $"레이 적중 @{hit.collider.name} (프로브 {up:F1}m로 올림 — 막던 것: {blocker})";
+                _dropReason = $"레이 적중 @{hit.collider.name}";
                 return Mathf.Max(0f, feet.y - hit.point.y);
             }
 
             bottomless = true;
-            _dropReason = blocker == null
-                ? $"레이 {len:F1}m 안에 바닥 없음"
-                : $"레이 {len:F1}m 안에 바닥 없음 (프로브 {up:F1}m로 올림 — 막던 것: {blocker})";
+            _dropReason = $"레이 {len:F1}m 안에 바닥 없음";
             return float.PositiveInfinity;
-        }
-
-        /// <summary>
-        /// 그 지점이 지형 안인가. 막고 있는 콜라이더를 <b>이름까지</b> 돌려준다 —
-        /// bool만 받던 <c>CheckSphere</c>로는 "무엇이 막았는지"를 알 수 없어 원인 추적이 막혔다.
-        /// <b>플레이어 자신은 제외</b>한다(BlockedAt과 같은 규칙 — DropDepth만 빠져 있었다).
-        /// </summary>
-        Collider OverlapAt(Vector3 p)
-        {
-            int n = Physics.OverlapSphereNonAlloc(p, 0.06f, _probeBuf, obstacleMask,
-                                                  QueryTriggerInteraction.Ignore);
-            for (int i = 0; i < n; i++)
-            {
-                Collider c = _probeBuf[i];
-                if (c == null) continue;
-                if (c.transform == transform || c.transform.IsChildOf(transform)) continue;
-                return c;
-            }
-            return null;
         }
 
         // 클램프는 FPP가 적분을 끝낸 뒤에 적용한다 — 여기서 직접 깎으면 같은 프레임에 재가속돼 샌다.
@@ -680,6 +640,8 @@ namespace Game.View
 
         // ── 비행(도약) ────────────────────────────────────────────────────
 
+        float _feelScale;   // StartFlight에서 정해 착지 연출까지 같은 배율을 쓴다(0~1, 도약 크기)
+
         void StartFlight(in JumpArc arc, bool thenMantle, in ClimbLedge.GrabInfo grab)
         {
             _arc = arc;
@@ -688,14 +650,21 @@ namespace Game.View
             _t = 0f;
             _state = State.Flight;
 
+            // 등반으로 이어질 도약이면 손 리그에 <b>미리</b> 알린다 — BeginPull에서 Show를 받으면
+            // 이미 몸이 올라가는 시점이라 손이 늦는다. 비행 시간을 손 내리기에 쓴다.
+            if (thenMantle && _rig != null) _rig.Prepare();
+
             _fpp.ExternalMotion = true;
             _fpp.VerticalVelocity = 0f;
             _cc.enabled = false;   // 위치 직접 구동 — 출발·도착·궤적 중간까지 검증한 뒤다
 
-            // 작은 턱을 넘는 것까지 발구름 연출을 넣으면 걸을 때마다 화면이 흔들린다.
+            // 이진 컷오프(작으면 0, 크면 100%)면 경계에서 튄다 — feelMinTravel~feelFullTravel 사이를
+            // 선형으로 램프한다. 발구름·착지 양쪽에 같은 배율을 쓴다.
             float travel = Vector3.Distance(transform.position, _arc.end);
+            _feelScale = Mathf.InverseLerp(feelMinTravel, Mathf.Max(feelFullTravel, feelMinTravel + 0.01f), travel);
+
             float rise = Mathf.Max(_arc.apexY - transform.position.y, 0.2f);
-            if (_feel != null && travel >= feelMinTravel) _feel.OnJumpLaunch(rise);
+            if (_feel != null && _feelScale > 0f) _feel.OnJumpLaunch(rise, _feelScale);
         }
 
         void TickFlight(float dt)
@@ -708,10 +677,17 @@ namespace Game.View
 
             if (_arcThenMantle) { BeginPull(); return; }   // CC는 계속 꺼둔 채 당김으로
 
-            // 직행 착지 — 연출은 탄도의 실제 착지 수직 속도로.
+            // 직행 착지 — 연출 강도는 <b>실제 낙하 높이</b>로 계산한다.
+            // _arc.LandingVy()는 비행 시간을 맞추려 부풀린 중력(g=(k/total)²)에서 나온 값이라,
+            // 짧은 도약도 중력이 4배 넘게 커져 낙하 속도가 실제보다 훨씬 크게 나온다(작은 턱인데
+            // 착지 연출이 크게 터졌다). _fpp.gravity(실제 중력)로 다시 계산한다.
             _cc.enabled = true;
             Physics.SyncTransforms();   // CC 내부 위치가 이전 값으로 남아 첫 Move에서 튀는 것 방지
-            if (_feel != null) _feel.OnLand(Mathf.Abs(_arc.LandingVy()));
+
+            float fall = Mathf.Max(0f, _arc.apexY - _arc.end.y);
+            float realImpactSpeed = Mathf.Sqrt(2f * _fpp.gravity * fall);
+            if (_feel != null) _feel.OnLand(realImpactSpeed, _feelScale);
+
             _fpp.SuppressLand(0.2f);
             FinishToControl(_arc.EndTangent());   // 방향 = 궤적 끝 접선(벽 법선이 아니라)
         }

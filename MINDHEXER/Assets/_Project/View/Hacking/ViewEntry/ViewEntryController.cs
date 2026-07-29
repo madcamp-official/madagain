@@ -54,6 +54,15 @@ namespace Game.View
         /// <summary>남겨진 본체 셸. 조종 실(§7)의 시작점 — 빙의 중이 아니면 null.</summary>
         public Transform Shell => _shell;
 
+        /// <summary>
+        /// 현재 활성 인스턴스(플레이어는 하나뿐이라 안전한 싱글턴). 몸 이동(경비병) 빙의 여부를
+        /// 다른 시스템(터렛 등 "빙의당한 경비병은 안 쏨" 판정)이 물어볼 수 있게.
+        /// </summary>
+        public static ViewEntryController Current { get; private set; }
+
+        void Awake() => Current = this;
+        void OnDestroy() { if (Current == this) Current = null; }
+
         public void Enter(ViewEntryTarget target, Camera playerCam)
         {
             if (target == null) return;
@@ -149,6 +158,20 @@ namespace Game.View
 
             if (_playerCam != null) _playerCam.enabled = false;
             target.SetOwnMeshVisible(false);
+
+            // 렌즈가 가려진 대상(터렛) — 조준(회전)은 되지만 화면엔 항상 검정만 나온다.
+            // _cam은 대상이 바뀔 때마다 재사용되므로 매번 명시적으로 설정/복구한다.
+            if (target.eyeBlocked)
+            {
+                _cam.clearFlags = CameraClearFlags.SolidColor;
+                _cam.backgroundColor = Color.black;
+                _cam.cullingMask = 0;
+            }
+            else
+            {
+                _cam.clearFlags = CameraClearFlags.Skybox;
+                _cam.cullingMask = playerCam != null ? playerCam.cullingMask : ~0;
+            }
 
             if (target.useBlocker)
                 _mask.Begin(target.Eye, target.panRange, target.tiltRange, target.blockerColor);

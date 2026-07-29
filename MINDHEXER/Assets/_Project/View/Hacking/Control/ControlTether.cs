@@ -19,11 +19,26 @@ namespace Game.View
         [Tooltip("실 두께(m).")]
         public float thickness = 0.05f;
 
-        [Tooltip("실이 시작하는 지점의 카메라 기준 오프셋(오른손 위 펫 거미 자리, §2.6).")]
+        [Tooltip("실이 시작하는 지점의 카메라 기준 오프셋(오른손 위 펫 거미 자리, §2.6).\n" +
+                 "★ 거미가 씬에 있으면 originOverride가 이 값을 대신한다 — 이건 거미가 없을 때의 임시 자리다.")]
         public Vector3 handOffset = new Vector3(0.35f, -0.35f, 0.5f);
+
+        [Tooltip("실이 실제로 나오는 지점(거미 방적돌기). SpiderRig가 손목에 있을 때만 채워 넣는다.\n" +
+                 "거미가 대상으로 날아가 붙은 뒤에는 비워야 한다 — 안 그러면 실 길이가 0이 된다.\n" +
+                 "비어 있으면 from + handOffset 을 쓴다(기존 동작).")]
+        public Transform originOverride;
 
         Transform _bar;
         Material _mat;
+
+        /// <summary>지금 실이 보이는가. 펫 거미가 "발사 자세"를 잡는 신호로 쓴다(§2.6).</summary>
+        public bool Active { get; private set; }
+
+        /// <summary>실이 시작하는 지점(월드). 거미가 여기서 실을 뽑는다.</summary>
+        public Vector3 StartPoint { get; private set; }
+
+        /// <summary>실 끝(대상) 지점(월드). 거미가 이쪽으로 엉덩이를 겨눈다.</summary>
+        public Vector3 EndPoint { get; private set; }
 
         void EnsureBar()
         {
@@ -50,14 +65,18 @@ namespace Game.View
         {
             EnsureBar();
 
-            if (from == null || target == null) { _bar.gameObject.SetActive(false); return; }
+            if (from == null || target == null) { _bar.gameObject.SetActive(false); Active = false; return; }
             _mat.color = captured ? controlColor : hackingColor;
 
-            Vector3 a = from.TransformPoint(handOffset);
+            Vector3 a = originOverride != null ? originOverride.position : from.TransformPoint(handOffset);
             Vector3 b = target.position;
             Vector3 d = b - a;
             float len = d.magnitude;
-            if (len < 0.01f) { _bar.gameObject.SetActive(false); return; }
+            if (len < 0.01f) { _bar.gameObject.SetActive(false); Active = false; return; }
+
+            Active = true;
+            StartPoint = a;
+            EndPoint = b;
 
             _bar.gameObject.SetActive(true);
             _bar.position = a + d * 0.5f;

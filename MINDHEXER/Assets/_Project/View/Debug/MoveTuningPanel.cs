@@ -130,6 +130,10 @@ namespace Game.View
             Info("<b>지연 보상</b> (VR용 — PC는 age=0이라 효과 없음)");
             m.maxCatchUp = F("따라잡기 상한(초)", m.maxCatchUp, 0f, 0.4f);
             m.baselineCompensation = F("기저 지연 보정(초)", m.baselineCompensation, 0f, 0.15f);
+
+            Info("<b>의도치 않은 밀림 감지</b> (레일 오브젝트 충돌 등)");
+            _fpp.unexpectedPushThreshold = F("판정 문턱값(m)", _fpp.unexpectedPushThreshold, 0f, 0.2f);
+            Info("이보다 크게 밀리면 MotionFeel.OnCarried() 호출 — 너무 작으면 벽 슬라이딩에도 반응");
         }
 
         void DrawJump()
@@ -165,8 +169,10 @@ namespace Game.View
             Info($"≤{_auto.safeDrop:0.0}m 걷기 · ≤{_auto.maxSafeFall:0.0}m 자유 낙하 · 그보다 깊거나 무저갱이면 정지");
             _auto.inputBuffer = F("입력 버퍼(초)", _auto.inputBuffer, 0f, 0.5f);
             _auto.minSpeed = F("발동 최소 속도", _auto.minSpeed, 0.1f, 4f);
-            _auto.feelMinTravel = F("연출 최소 이동(m)", _auto.feelMinTravel, 0f, 3f);
-            Info("이보다 짧은 도약엔 화면 연출을 넣지 않는다(낮은 턱 흔들림 방지)");
+            _auto.feelMinTravel = F("연출 시작 거리(m)", _auto.feelMinTravel, 0f, 3f);
+            _auto.feelFullTravel = F("연출 100% 거리(m)", _auto.feelFullTravel, 0.5f, 6f);
+            Info($"≤{_auto.feelMinTravel:0.0}m 무연출 · {_auto.feelFullTravel:0.0}m부터 풀연출 · 그 사이는 선형 램프\n" +
+                 "(착지 침하는 실제 낙하 속도로 스스로 조절됨 — 이 램프는 롤·발구름용)");
             _auto.cooldown = F("쿨다운(초)", _auto.cooldown, 0f, 0.6f);
         }
 
@@ -252,7 +258,10 @@ namespace Game.View
             _feel.carryImpactSpeed = F("충돌 판정 속도(m/s)", _feel.carryImpactSpeed, 1f, 15f);
             _feel.carryImpactFrequency = F("충돌 시 반응성", _feel.carryImpactFrequency, 2f, 30f);
             Info("이 속도 넘으면 반응성을 올려 짧게 홀드했다 빨리 정착");
-            Info("0 = 끔. RailPlatform.Carry() 한 곳에서만 발화 — 소스 안 가림");
+            _feel.carryPosLagMax = F("카메라 흡수 지연 상한(m)", _feel.carryPosLagMax, 0f, 0.4f);
+            _feel.carryPosLagDecay = F("흡수 지연 따라잡기 속도", _feel.carryPosLagDecay, 2f, 30f);
+            Info("실제 위치는 안 건드리고 화면만 살짝 뒤처졌다 따라잡음 — 뚝뚝 끊김 흡수");
+            Info("0 = 끔. RailPlatform.Carry() + '의도치 않은 밀림 감지' 두 곳에서만 발화 — 소스 안 가림");
 
             Info("<b>VR 감쇠</b>");
             _feel.vrPositionScale = F("위치 배율", _feel.vrPositionScale, 0f, 1f);

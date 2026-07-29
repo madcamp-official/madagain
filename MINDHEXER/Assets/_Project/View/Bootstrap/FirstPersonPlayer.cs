@@ -77,6 +77,11 @@ namespace Game.View
         /// <summary>이 시각까지 일반 착지 연출을 억제 — 잡고 올라가기 완료가 낙하 착지로 오인되지 않게.</summary>
         public void SuppressLand(float duration) => _suppressLandUntil = Time.time + duration;
 
+        [Header("의도치 않은 밀림 감지 (레일 오브젝트 충돌 등 — 소스 불문)")]
+        [Tooltip("실제 이동량이 의도한 이동량과 이만큼(m) 넘게 차이 나면 '외부가 밀었다'로 보고 " +
+                 "MotionFeel.OnCarried()를 부른다. 너무 작으면 벽 슬라이딩 같은 정상 보정에도 반응한다.")]
+        public float unexpectedPushThreshold = 0.02f;
+
         /// <summary>
         /// 이번 프레임 이 방향(월드 XZ, 정규화)으로 나가는 속도 성분을 막는다 — 가장자리 낙하 방지.
         /// <b>적분 직후·이동 직전</b>에 적용해야 한다. 적분 전에 깎으면 같은 프레임에 다시 가속해
@@ -112,11 +117,25 @@ namespace Game.View
             Cursor.lockState = CursorLockMode.Locked;
         }
 
+        /// <summary>
+        /// 외부 입력(S10e 컨트롤러)의 이동 지령(월드 XZ, 크기 0~1). WASD와 <b>합산</b>된다.
+        /// 연속값이라 매 프레임 소스가 덮어쓴다(0도 명시적으로 써야 한다).
+        /// </summary>
+        public Vector2 ExternalWish;
+
+        /// <summary>
+        /// 외부 입력의 시점 변화량(마우스 delta와 같은 단위·의미). <b>델타라서 매 프레임 소비</b>된다.
+        /// </summary>
+        public Vector2 ExternalLook;
+
         void Update()
         {
             var kb = Keyboard.current;
             var mouse = Mouse.current;
-            if (kb == null) return;
+
+            // ⚠️ 예전엔 여기서 kb == null이면 통째로 return했다. 안드로이드엔 키보드가 없어서
+            // 이동뿐 아니라 시점·중력·ApplyMove까지 전부 죽어 플레이어가 공중에 얼어붙었다.
+            // 키보드·마우스는 이제 <b>선택</b>이다 — 없으면 외부 입력만으로 동작한다.
 
             float dt = Time.deltaTime;
 
@@ -125,26 +144,34 @@ namespace Game.View
             // MotionFeel의 절차적 롤(지하철 스웨이·착지 킥 등)이 해킹 중에도 계속 보인다. 예전엔
             // 이 대입이 같은 if 블록 안에 있어서 해킹 중엔 롤 연출까지 통째로 안 먹혔다(버그, 수정됨) —
             // "회전 불가능"과 "연출 없음"은 다른 요구사항이다.
-            if (!LookFrozen && mouse != null && Cursor.lockState == CursorLockMode.Locked)
+            if (!LookFrozen)
             {
-                Vector2 d = mouse.delta.ReadValue();
+                Vector2 d = ExternalLook;   // 컨트롤러 자이로(에디터) — 마우스와 같은 단위
+                if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
+                    d += mouse.delta.ReadValue();
+
                 _yaw += d.x * lookSens;
                 _pitch = Mathf.Clamp(_pitch - d.y * lookSens, -85f, 85f);
             }
+            ExternalLook = Vector2.zero;   // 델타는 매 프레임 소비(LookFrozen이어도 쌓이면 안 된다)
             transform.localRotation = Quaternion.Euler(_pitch, _yaw,
                 _feel != null ? _feel.CurrentRoll : 0f);
 
-            if (kb.escapeKey.wasPressedThisFrame)
+            if (kb != null && kb.escapeKey.wasPressedThisFrame)
                 Cursor.lockState = Cursor.lockState == CursorLockMode.Locked
                     ? CursorLockMode.None : CursorLockMode.Locked;
 
             // 자동 등반이 위치를 몰고 있으면 이동·중력은 넘긴다(시점은 위에서 이미 처리됨).
             if (ExternalMotion) return;
 
-            // 이동 입력(yaw 기준 수평) → 가속 적분기
-            float x = (kb.dKey.isPressed ? 1f : 0f) - (kb.aKey.isPressed ? 1f : 0f);
-            float z = (kb.wKey.isPressed ? 1f : 0f) - (kb.sKey.isPressed ? 1f : 0f);
-            Vector2 local = new Vector2(x, z);
+            // 이동 입력(yaw 기준 수평) → 가속 적분기.
+            // WASD와 외부(컨트롤러 조이스틱)를 합산한다 — 에디터에서 둘 다 쓸 수 있어야 튜닝이 쉽다.
+            Vector2 local = ExternalWish;
+            if (kb != null)
+            {
+                local.x += (kb.dKey.isPressed ? 1f : 0f) - (kb.aKey.isPressed ? 1f : 0f);
+                local.y += (kb.wKey.isPressed ? 1f : 0f) - (kb.sKey.isPressed ? 1f : 0f);
+            }
             if (local.sqrMagnitude > 1f) local.Normalize();
 
             float yawRad = _yaw * Mathf.Deg2Rad;
@@ -184,8 +211,25 @@ namespace Game.View
                 }
             }
 
-            CollisionFlags flags = _cc.Move(new Vector3(h.x, _vy, h.y) * dt);
+            Vector3 posBefore = transform.position;
+            Vector3 intendedDelta = new Vector3(h.x, _vy, h.y) * dt;
+            CollisionFlags flags = _cc.Move(intendedDelta);
             bool below = (flags & CollisionFlags.Below) != 0;
+
+            // 의도치 않은 밀림 감지 — CharacterController.Move()는 겹친 오브젝트를 자동으로
+            // 밀어내는데(depenetration), 그 보정량은 내가 의도한 이동과 무관하다. "실제로 움직인 양"에서
+            // "내가 의도한 양"을 빼면 남는 게 순수하게 외부(레일에 붙은 충돌 오브젝트 등, 소스 불문)가
+            // 밀어낸 양이다. 이걸 MotionFeel에 넘기면 지하철 스웨이가 소스 상관없이 자동으로 붙고,
+            // MotionFeel 쪽의 짧은 카메라 흡수 지연이 뚝뚝 끊기는 걸 완화한다.
+            //
+            // ※ 수평(XZ)만 본다 — 접지 중엔 _vy=-2f로 매 프레임 살짝 눌러붙이는데 바닥이 그걸
+            // 막아버려서 intendedDelta.y와 actualDelta.y가 항상 약간 어긋난다(정상 동작). 그걸 수직까지
+            // 잔차로 잡으면 가만히 서 있기만 해도 매 프레임 오탐지가 나 미약하게 계속 떨린다.
+            Vector3 actualDelta = transform.position - posBefore;
+            Vector3 extra = actualDelta - intendedDelta;
+            extra.y = 0f;
+            if (extra.sqrMagnitude > unexpectedPushThreshold * unexpectedPushThreshold && _feel != null)
+                _feel.OnCarried(extra);
 
             // 착지 감지 — 강도는 "얼마나 빨리 떨어지고 있었나"(|vy|). 등반 완료 직후엔 억제됨.
             if (below && !_groundedBelow && prevVy < 0f

@@ -18,6 +18,15 @@ namespace Game.View
         Vector3 AxisWorld(int slot);
 
         /// <summary>
+        /// 이동 범위 기준 현재 위치(−1~+1). 앵커=0, 각 방향 한계=±1.
+        ///
+        /// <para>VR의 <b>위치 제어</b>가 오차를 구하는 데 쓴다 — 손 변위로 목표 위치를 만들고
+        /// 그 차이를 <see cref="Drive"/>의 analog(속도 지령)로 바꿔 넣는 서보 구조다.
+        /// 이게 없으면 대상 타입을 검사해야 하고, 부품이 늘 때마다 깨진다.</para>
+        /// </summary>
+        float GetNormalized(int slot);
+
+        /// <summary>
         /// 이번 프레임 조종 입력. <paramref name="analog"/>는 -1~+1 등속 크립(홀드),
         /// <paramref name="flick"/>은 -1/0/+1 임펄스(더블클릭). 부호는 이미 화면 기준으로 보정돼 있다.
         /// </summary>

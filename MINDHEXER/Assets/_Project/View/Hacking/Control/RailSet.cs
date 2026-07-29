@@ -113,6 +113,14 @@ namespace Game.View
 
         public Vector3 AxisWorld(int slot) => transform.TransformDirection(AxisLocal).normalized;
 
+        /// <summary>앵커=0, 양 끝=±1. 범위가 비대칭이어도 각 방향을 따로 정규화한다.</summary>
+        public float GetNormalized(int slot)
+        {
+            if (slot != 0) return 0f;
+            if (Offset >= 0f) return rangeMax > 1e-4f ? Mathf.Clamp01(Offset / rangeMax) : 0f;
+            return rangeMin < -1e-4f ? -Mathf.Clamp01(Offset / rangeMin) : 0f;
+        }
+
         public void Drive(int slot, float analog, int flick)
         {
             if (slot != 0) return;

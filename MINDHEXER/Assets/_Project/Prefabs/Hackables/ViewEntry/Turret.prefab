@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 1474382372554472168}
   - component: {fileID: 1499881089934816987}
   - component: {fileID: 3946925539658892375}
+  - component: {fileID: 1090879342955629824}
+  - component: {fileID: 6798278562109568758}
   m_Layer: 8
   m_Name: Turret
   m_TagString: Untagged
@@ -68,7 +70,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 5073b9c8741ac4b89a914b4cc231bcb0, type: 2}
+  - {fileID: 2100000, guid: b3de27fbae44c484cbc6dd54861e1698, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -109,7 +111,55 @@ MonoBehaviour:
   patternLineCount: 7
   hackRange: 20
   gazeCollider: {fileID: 0}
-  glowRenderers: []
+  glowRenderers:
+  - {fileID: 1499881089934816987}
+  - {fileID: 6490263529684782526}
+  - {fileID: 1084667975450488394}
+--- !u!114 &1090879342955629824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2666440652627555177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 626ca024286bb69468a866da0ccc36c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ViewEntryTarget
+  eye: {fileID: 0}
+  panRange: 360
+  tiltRange: 30
+  hardClampPan: 0
+  hardClampTilt: 0
+  eyeBlocked: 0
+  allowsMove: 0
+  useBlocker: 1
+  blockerColor: {r: 0.15, g: 0.85, b: 0.25, a: 1}
+  hideOwnMeshWhilePossessed: 1
+--- !u!114 &6798278562109568758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2666440652627555177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75d7b56437998e345b869de2a638c231, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.TurretGun
+  muzzle: {fileID: 2438608408001286819}
+  range: 20
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  fireInterval: 0.2
+  showRangeGizmo: 1
+  gizmoRadius: 0.15
+  gizmoColor: {r: 1, g: 0.15, b: 0.1, a: 0.22}
+  playerFireInterval: 0.25
+  playerFireRange: 40
 --- !u!1 &3034995794242897228
 GameObject:
   m_ObjectHideFlags: 0
@@ -207,7 +257,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 175daa564480b4152a781568fd5a4422, type: 2}
+  - {fileID: 2100000, guid: b3de27fbae44c484cbc6dd54861e1698, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -360,7 +410,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 175daa564480b4152a781568fd5a4422, type: 2}
+  - {fileID: 2100000, guid: b3de27fbae44c484cbc6dd54861e1698, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

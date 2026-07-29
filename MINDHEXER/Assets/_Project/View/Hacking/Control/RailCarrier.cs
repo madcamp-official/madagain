@@ -29,6 +29,15 @@ namespace Game.View
         public int AxisCount => axes != null ? Mathf.Min(axes.Length, 2) : 0;
         public Vector3 AxisWorld(int slot) => axes[slot].Dir;
 
+        /// <summary>시작 위치=0, 양 끝=±1. 범위가 비대칭이어도 각 방향을 따로 정규화한다.</summary>
+        public float GetNormalized(int slot)
+        {
+            if (slot < 0 || slot >= AxisCount) return 0f;
+            ControlAxis a = axes[slot];
+            if (a.Offset >= 0f) return a.travelMax > 1e-4f ? Mathf.Clamp01(a.Offset / a.travelMax) : 0f;
+            return a.travelMin < -1e-4f ? -Mathf.Clamp01(a.Offset / a.travelMin) : 0f;
+        }
+
         void Awake() => _start = transform.position;
 
         public void Drive(int slot, float analog, int flick)

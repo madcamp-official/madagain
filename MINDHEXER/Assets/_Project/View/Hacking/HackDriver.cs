@@ -3,8 +3,10 @@ using UnityEngine;
 namespace Game.View
 {
     /// <summary>
-    /// 해킹 루프 배선. 카메라 중앙 시선 Raycast로 Hackable 조준 → controlType 색 하이라이트 →
-    /// <b>Space 단발 탭</b> → 점 패턴 미니게임(§2.4) → 성공하면 그 대상을 <b>조종 대상</b>으로 잡는다.
+    /// 해킹 루프 배선. 카메라 중앙 시선 기준 조준 보정(<see cref="FindAimedHackable"/>, precog 런지 방식)으로
+    /// Hackable 조준 → <b>Space 단발 탭</b> → 점 패턴 미니게임(§2.4) → 성공하면 그 대상을 <b>조종 대상</b>으로 잡는다.
+    /// (조준 시 베이스 컬러를 틴트하던 구 하이라이트 시스템은 제거됨 — 시각 신호는 HackableGlitchManager의
+    /// 치지직 오버레이가 전담한다.)
     /// 해킹 중엔 마우스가 패턴을 그리므로 시점만 잠기고 WASD 이동은 계속된다(§2.5).
     ///
     /// <para><b>Space 하나로 전부 처리한다(Q 폐기).</b> 길이로 갈린다:
@@ -42,10 +44,12 @@ namespace Game.View
         [Tooltip("Space를 이 시간(초) 이상 유지하면 본체 복귀(빙의 중일 때만). 이하로 떼면 평소의 탭 동작.")]
         public float holdThreshold = 0.25f;
 
-        static readonly Color ExternalColor  = new Color(0.4f, 1f, 0.3f);   // 연두 (외부 조종)
-        static readonly Color ViewEntryColor = new Color(0f, 0.8f, 0.85f);  // 청록 (시점 진입)
-        static readonly Color StunColor      = new Color(1f, 0.85f, 0.1f);  // 노랑 (보스 스턴)
-        static readonly Color HackedColor    = new Color(0.45f, 0.78f, 1f); // 밝은 하늘색 (한 번이라도 해킹됨, 영구)
+        [Tooltip("조준 보정 반경(perp 허용치, m). 크로스헤어가 대상 중심에서 이만큼 벗어나도 조준으로 " +
+                 "인정한다(정확한 raycast 히트 요구 안 함). precog 런지(FindLungeTarget)와 같은 방식.")]
+        public float aimAssistRadius = 1.2f;
+
+        [Tooltip("조준 판정 최소 거리(m). 카메라 바로 앞은 제외.")]
+        public float aimMinRange = 0.2f;
 
         /// <summary>입력 출처. 기본 PC(키보드/마우스). VR에선 GameBoot이 네트워크 소스로 교체.</summary>
         public IHexInputSource Source = new PcHexInputSource();
@@ -53,13 +57,18 @@ namespace Game.View
         FirstPersonPlayer _fpp;         // PC 본체 — 해킹 중 정지 + 점프 요청(§2.5)
         FreeLookController _freeLook;   // VR 리그 mover fallback — 해킹 중 시점 고정
         bool _lookWasEnabled;
-        Hackable _highlighted;
         Hackable _gazed;
-        MaterialPropertyBlock _mpb;
-        int _baseColorId;
 
         /// <summary>지금 조종 중인 대상(한 번에 하나). 시선과 무관하게 유지된다.</summary>
         public Hackable Controlled { get; private set; }
+
+        /// <summary>
+        /// 조종 대상이 바뀐 순간(해제면 null). <see cref="FreezeControlMapping"/>과 <b>같은 시점</b>이다.
+        ///
+        /// <para>VR 위치 제어의 리센터가 이걸 구독한다 — 손 원점을 다른 순간에 잡으면 슬롯↔축
+        /// 배정이 고정된 기준과 어긋나 손 방향과 부품 축이 안 맞는다.</para>
+        /// </summary>
+        public event System.Action<Hackable> OnControlledChanged;
 
         // 해킹 성공 시점에 고정되는 슬롯↔축 배정·부호(§6.2). 조종 중에는 절대 안 바뀐다.
         readonly int[] _slotAxis = { -1, -1 };
@@ -79,8 +88,6 @@ namespace Game.View
             if (viewEntry == null) viewEntry = GetComponent<ViewEntryController>() ?? gameObject.AddComponent<ViewEntryController>();
             _fpp = GetComponentInParent<FirstPersonPlayer>();
             _freeLook = GetComponentInParent<FreeLookController>();
-            _mpb = new MaterialPropertyBlock();
-            _baseColorId = Shader.PropertyToID("_BaseColor");
         }
 
         void Update()
@@ -91,8 +98,7 @@ namespace Game.View
             HexInput input = Source.Poll(_ctx.Current);
 
             bool canAim = _ctx.Current == ControlContext.Player || _ctx.Current == ControlContext.ViewEntry;
-            Hackable aimed = canAim ? Raycast() : null;
-            UpdateHighlight(aimed);
+            Hackable aimed = canAim ? FindAimedHackable() : null;
             UpdateGazeFlags(aimed);
 
             // ── Space 홀드 = 본체 복귀 (빙의 중일 때만). 임계 도달 즉시 발동한다. ──
@@ -200,6 +206,7 @@ namespace Game.View
                 Controlled.captureState = CaptureState.Captured;
                 FreezeControlMapping(Controlled);   // 지금 시점 기준으로 매핑 확정
             }
+            OnControlledChanged?.Invoke(Controlled);   // VR 리센터가 같은 순간을 쓴다
         }
 
         void ReleaseControlled(string why)
@@ -368,48 +375,58 @@ namespace Game.View
             }
         }
 
-        Hackable Raycast()
+        /// <summary>
+        /// 조준 대상 판정 — precog 런지(<c>PlayerCombat.FindLungeTarget</c>/<c>IsLungeable</c>)와 같은 방식.
+        /// 콜라이더에 픽셀 단위로 정확히 맞아야 하는 raycast 대신, 씬의 모든 <see cref="Hackable"/>을
+        /// 조준 레이 기준 <b>perp</b>(레이에서 벗어난 수직거리)·<b>along</b>(레이 앞쪽 거리)으로 평가한다.
+        /// LOS는 대상마다 라캐스트 1번으로 확인(벽 뒤는 걸러짐) — "정확한 가려짐 판정"과 "관대한 조준"을
+        /// 동시에 얻는다. Hackable 수가 적어(씬당 수십 개 이하) 매 프레임 다 돌아도 부담 없다.
+        /// </summary>
+        Hackable FindAimedHackable()
         {
             Camera c = ActiveCam;
             if (c == null) return null;
-            var ray = new Ray(c.transform.position, c.transform.forward);
-            if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+
+            Vector3 eye = c.transform.position;
+            Vector3 dir = c.transform.forward;
+
+            Hackable best = null;
+            float bestPerp = float.MaxValue;
+            float bestAlong = float.MaxValue;
+
+            for (int i = 0; i < Hackable.All.Count; i++)
             {
-                var h = hit.collider.GetComponentInParent<Hackable>();
-                if (h != null && hit.distance <= h.hackRange) return h;
+                Hackable h = Hackable.All[i];
+                if (h == null) continue;
+
+                Collider col = h.gazeCollider != null ? h.gazeCollider : h.GetComponentInChildren<Collider>();
+                if (col == null) continue;
+
+                Vector3 center = col.bounds.center;
+                float radius = col.bounds.extents.magnitude;   // 구 근사 — 정밀도보다 저렴함 우선
+
+                Vector3 v = center - eye;
+                float along = Vector3.Dot(v, dir);
+                if (along < aimMinRange || along > h.hackRange + radius) continue;
+
+                float perp = (v - dir * along).magnitude;
+                if (perp > aimAssistRadius + radius) continue;
+
+                // LOS: 벽 등 다른 것에 먼저 가려지면 제외. 대상 자신의 표면에 먼저 맞는 건 정상(안 가려짐).
+                float len = v.magnitude;
+                if (len > 1e-4f && Physics.Raycast(eye, v / len, out RaycastHit hit, len))
+                {
+                    var hitH = hit.collider.GetComponentInParent<Hackable>();
+                    if (hitH != h) continue;
+                }
+
+                bool better = perp < bestPerp - 1e-5f
+                    || (Mathf.Abs(perp - bestPerp) <= 1e-5f && along < bestAlong);
+                if (!better) continue;
+
+                best = h; bestPerp = perp; bestAlong = along;
             }
-            return null;
-        }
-
-        void UpdateHighlight(Hackable target)
-        {
-            if (_highlighted == target) return;
-            if (_highlighted != null) SetTint(_highlighted, null);
-            _highlighted = target;
-            if (_highlighted != null) SetTint(_highlighted, ColorFor(_highlighted));
-        }
-
-        // 한 번이라도 해킹된 대상은 종류·상태와 무관하게 항상 하늘색(전체 해킹 규칙 — 영구 표시).
-        Color ColorFor(Hackable h)
-        {
-            if (h.everHacked) return HackedColor;
-            if (h.controlType == ControlType.ViewEntry) return ViewEntryColor;
-            if (h.controlType == ControlType.Stun) return StunColor;
-            return ExternalColor;
-        }
-
-        void SetTint(Hackable h, Color? c)
-        {
-            Renderer[] rends = (h.glowRenderers != null && h.glowRenderers.Length > 0)
-                ? h.glowRenderers : h.GetComponentsInChildren<Renderer>();
-            foreach (var r in rends)
-            {
-                if (r == null) continue;
-                r.GetPropertyBlock(_mpb);
-                if (c.HasValue) _mpb.SetColor(_baseColorId, c.Value);
-                else _mpb.Clear();
-                r.SetPropertyBlock(_mpb);
-            }
+            return best;
         }
     }
 }

@@ -58,6 +58,9 @@ namespace Game.View
                 if (cc == null || !cc.enabled || !cc.gameObject.activeInHierarchy) continue;
                 if (!StandingOnMe(cc)) continue;
                 cc.Move(delta);
+                // "내가 걸은 건지 밀린 건지" 구분용 화면 지연 — 레일·피스톤·프레서 등 강제 이동의
+                // 유일한 관문이 여기라, 여기 한 곳만 호출하면 전부에 적용된다(MotionFeel.OnCarried 참조).
+                if (cc.TryGetComponent(out MotionFeel feel)) feel.OnCarried(delta);
             }
         }
 

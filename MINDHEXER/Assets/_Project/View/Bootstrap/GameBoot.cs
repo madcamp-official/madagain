@@ -23,13 +23,64 @@ namespace Game.View
         [Tooltip("PC 모드에서 시작 시 마우스 커서를 잠글지.")]
         public bool lockCursor = true;
 
+        [Header("프레임")]
+        [Tooltip("목표 프레임레이트. ⚠️ Unity는 Android에서 이 값을 지정하지 않으면 배터리 절약을 위해 " +
+                 "30으로 묶는다 — 실기에서 정확히 30.0fps에 고정되는 것으로 확인했다. VR에서 30fps는 " +
+                 "멀미를 유발하므로 반드시 올려야 한다. 0 이하면 건드리지 않는다.")]
+        public int targetFrameRate = 60;
+
         Camera _cam;
 
         void Awake()
         {
+            ApplyFrameRate();
             _cam = EnsureCamera();
             if (VrMode.Enabled) SetupVrRig();
             else                SetupPcRig();
+        }
+
+        /// <summary>
+        /// 머리 포즈를 카메라에 적용한다.
+        ///
+        /// <para><b>왜 필요한가</b> — 구형 VR은 유니티가 메인 카메라에 머리 포즈를 자동 적용했지만,
+        /// 신형 XR SDK는 그러지 않는다. 그래서 <b>스플래시 화면은 회전하는데 게임은 안 도는</b>
+        /// 증상이 나온다(실기 확인) — 트래킹은 살아 있고 카메라가 그 값을 안 받는 것이다.</para>
+        ///
+        /// <para>바인딩 경로는 Cardboard 공식 샘플(HelloCardboard)의 카메라 설정에서 그대로 가져왔다.
+        /// 추측하면 틀린다.</para>
+        /// </summary>
+        void AttachHeadPoseDriver(Camera cam)
+        {
+            if (cam == null) return;
+            if (cam.GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>() != null) return;
+
+            var tpd = cam.gameObject.AddComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>();
+            tpd.trackingType = UnityEngine.InputSystem.XR.TrackedPoseDriver.TrackingType.RotationAndPosition;
+            // Update + BeforeRender — 렌더 직전에 한 번 더 갱신해야 머리 지연이 최소가 된다.
+            tpd.updateType = UnityEngine.InputSystem.XR.TrackedPoseDriver.UpdateType.UpdateAndBeforeRender;
+
+            var pos = new UnityEngine.InputSystem.InputAction(
+                "HMD Position", UnityEngine.InputSystem.InputActionType.Value, "<XRHMD>/centerEyePosition");
+            var rot = new UnityEngine.InputSystem.InputAction(
+                "HMD Rotation", UnityEngine.InputSystem.InputActionType.Value, "<XRHMD>/centerEyeRotation");
+            pos.Enable();
+            rot.Enable();
+
+            tpd.positionInput = new UnityEngine.InputSystem.InputActionProperty(pos);
+            tpd.rotationInput = new UnityEngine.InputSystem.InputActionProperty(rot);
+
+            Debug.Log("[GameBoot] 머리 포즈 드라이버 부착 (<XRHMD>/centerEye*)");
+        }
+
+        /// <summary>
+        /// 프레임 상한 해제. vSync가 켜져 있으면 <c>targetFrameRate</c>가 무시되므로 함께 끈다.
+        /// (Android 기본 품질 레벨은 이미 <c>vSyncCount 0</c>이지만, 레벨이 바뀌어도 안 흔들리게 명시한다.)
+        /// </summary>
+        void ApplyFrameRate()
+        {
+            if (targetFrameRate <= 0) return;
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = targetFrameRate;
         }
 
         Camera EnsureCamera()
@@ -82,6 +133,8 @@ namespace Game.View
             _cam.transform.SetParent(rig, false);
             _cam.transform.localPosition = Vector3.up * eyeHeight;
             _cam.transform.localRotation = Quaternion.identity;   // 로컬 자세는 XR(머리)이 채운다
+
+            AttachHeadPoseDriver(_cam);
 
             // 리그 이동만(WASD=locomotion 자리표시자, 나중에 S10e). 시점 회전은 머리가 소유.
             var mover = rig.gameObject.AddComponent<FreeLookController>();

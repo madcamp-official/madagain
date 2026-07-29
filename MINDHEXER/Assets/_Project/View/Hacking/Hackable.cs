@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.View
@@ -39,6 +40,10 @@ namespace Game.View
         [System.NonSerialized] public bool  IsGazed;                                 // 중앙 레티클 조준 = 격화
         [System.NonSerialized] public CaptureState captureState = CaptureState.None; // 초록→파랑(장악) 전환
 
+        // 한 번이라도 해킹 성공한 적 있는지 — captureState와 달리 조종 해제·재조준으로 리셋되지 않고
+        // 영구히 유지된다. 재해킹 시 패턴 생략(즉시 성공) 판정 + 하늘색 영구 표시의 근거(전체 해킹 규칙).
+        [System.NonSerialized] public bool everHacked;
+
         // 이 인스턴스의 고정 점 패턴 — 처음 해킹 시 1회 생성해 캐시. 재해킹해도 같은 패턴. (§2.4)
         [System.NonSerialized] public DotPattern pattern;
 
@@ -57,5 +62,12 @@ namespace Game.View
             if (glowRenderers == null || glowRenderers.Length == 0)
                 glowRenderers = GetComponentsInChildren<Renderer>();
         }
+
+        /// <summary>씬에 살아 있는 모든 Hackable — <see cref="ClimbLedge.All"/>과 같은 패턴(순회용 등록,
+        /// 동작 로직 아님). 환경 하이라이트(치지직 등)가 매 프레임 이 목록을 훑는다.</summary>
+        public static readonly List<Hackable> All = new List<Hackable>();
+
+        void OnEnable() { All.Add(this); }
+        void OnDisable() { All.Remove(this); }
     }
 }

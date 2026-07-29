@@ -2,6 +2,7 @@
     "name": "Game.View",
     "rootNamespace": "Game.View",
     "references": [
+        "MindHexer.Shared",
         "UnityEngine.UI",
         "Unity.InputSystem",
         "Unity.AI.Navigation",

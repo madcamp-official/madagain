@@ -1,6 +1,6 @@
 namespace Game.View
 {
-    /// <summary>해킹 대상 9종. (기초_설계안 §6.1 로스터 / §11.3 보스 스턴)</summary>
+    /// <summary>해킹 대상 종류. (기초_설계안 §6.1 로스터 / §11.3 보스 스턴 — 원안 9종 + RotationPlatform 추가)</summary>
     public enum HackableKind
     {
         // 외부 조종 (연두)
@@ -15,6 +15,8 @@ namespace Game.View
         RobotArm,
         // 스턴
         Boss,
+        // 외부 조종 (연두) — 기존 프리팹들의 저장된 int(0~8)를 안 건드리려고 끝에 추가.
+        RotationPlatform,
     }
 
     /// <summary>대상 종류에서 기본 속성을 유도한다. 프리팹 Reset/편집 편의용.</summary>
@@ -29,6 +31,7 @@ namespace Game.View
                 case HackableKind.Gantry:
                 case HackableKind.Piston:
                 case HackableKind.HydraulicPress:
+                case HackableKind.RotationPlatform:
                     return ControlType.ExternalControl;
                 case HackableKind.Guard:
                 case HackableKind.Turret:

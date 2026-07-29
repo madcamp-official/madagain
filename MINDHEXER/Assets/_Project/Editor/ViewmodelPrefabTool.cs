@@ -1,22 +1,24 @@
 using System.IO;
 using UnityEngine;
 using UnityEditor;
+using Game.View;
 
 namespace Game.EditorTools
 {
     /// <summary>
-    /// 씬에서 맞춘 뷰모델(그립·IK·손가락·칼 배치)을 Resources 프리팹에 반영한다.
+    /// 씬에서 맞춘 뷰모델(손 타겟·IK·손가락 배치)을 Resources 프리팹에 반영한다.
+    /// (Precog에서 포팅 — 카타나 전용 이름을 일반화)
     ///
-    /// <b>왜 필요한가</b> — SwordView는 씬에 KatanaViewmodel이 없으면
-    /// Resources/KatanaViewmodel 프리팹을 인스턴스화한다.
-    /// 그런데 작업 씬(slash_anim)의 뷰모델은 프리팹에서 <b>언팩된 독립 오브젝트</b>라
-    /// 아무리 튜닝해도 프리팹에 전달되지 않는다. 그래서 그 씬에서만 제대로 보였다.
+    /// <b>왜 필요한가</b> — 뷰모델 부착 로직은 씬에 "Viewmodel"이 없으면
+    /// Resources/Viewmodel 프리팹을 인스턴스화한다.
+    /// 그런데 작업 씬의 뷰모델이 프리팹에서 <b>언팩된 독립 오브젝트</b>라면
+    /// 아무리 튜닝해도 프리팹에 전달되지 않는다. 그래서 그 씬에서만 제대로 보인다.
     ///
     /// 이 툴로 한 번 저장하면 <b>모든 씬에서 동일하게</b> 나온다.
     /// </summary>
     public static class ViewmodelPrefabTool
     {
-        public const string PrefabPath = "Assets/_Project/Prefabs/Resources/KatanaViewmodel.prefab";
+        public const string PrefabPath = "Assets/_Project/Prefabs/Resources/Viewmodel.prefab";
 
         [MenuItem("Tools/뷰모델/③ 현재 씬 뷰모델을 프리팹에 저장 (모든 씬에 적용)", false, 3)]
         public static void SaveToPrefab()
@@ -25,14 +27,14 @@ namespace Game.EditorTools
             if (root == null)
             {
                 EditorUtility.DisplayDialog("실패",
-                    "씬에서 KatanaViewmodel을 찾지 못했습니다.\n" +
-                    "작업 씬(slash_anim 등)을 열고 다시 실행하십시오.", "확인");
+                    $"씬에서 {ViewmodelCamera.ViewmodelRootName}을 찾지 못했습니다.\n" +
+                    "작업 씬을 열고 다시 실행하십시오.", "확인");
                 return;
             }
 
             if (!EditorUtility.DisplayDialog("프리팹 덮어쓰기",
                     $"'{root.name}' 의 현재 상태를\n{PrefabPath}\n에 덮어씁니다.\n\n" +
-                    "그립·IK·손가락·칼 배치가 모든 씬에 적용됩니다.\n계속할까요?", "저장", "취소"))
+                    "손 타겟·IK·손가락 배치가 모든 씬에 적용됩니다.\n계속할까요?", "저장", "취소"))
                 return;
 
             Directory.CreateDirectory(Path.GetDirectoryName(PrefabPath));
@@ -82,10 +84,10 @@ namespace Game.EditorTools
             var cam = Camera.main;
             if (cam != null)
             {
-                var t = cam.transform.Find("KatanaViewmodel");
+                var t = cam.transform.Find(ViewmodelCamera.ViewmodelRootName);
                 if (t != null) return t;
             }
-            var go = GameObject.Find("KatanaViewmodel");
+            var go = GameObject.Find(ViewmodelCamera.ViewmodelRootName);
             return go != null ? go.transform : null;
         }
     }

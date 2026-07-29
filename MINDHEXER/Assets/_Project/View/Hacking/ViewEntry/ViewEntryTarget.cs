@@ -8,7 +8,8 @@ namespace Game.View
     /// <para>대상별 차이는 전부 여기 값으로 표현된다 — 새 종류를 추가할 때 코드가 아니라 값만 정하면 된다:
     /// <list type="bullet">
     ///  <item>CCTV — 좌우 ±45, 상하 ±45, 이동 없음, 시야 밖 차폐 있음</item>
-    ///  <item>터렛 — 좌우만(상하 <see cref="hardClampTilt"/>=true로 잠금), 이동 없음</item>
+    ///  <item>터렛 — 구형 광각 렌즈. 좌우 360(파노라마, 마스크 안 걸림) + 상하 ±<see cref="tiltRange"/>
+    ///        (그 밖은 CCTV와 같은 방식으로 차폐), 이동 없음</item>
     ///  <item>경비병 — 시야 제한 없음, 이동 가능(<see cref="allowsMove"/>), 차폐 없음</item>
     /// </list>
     /// 발사·이동 같은 <b>행동</b>은 이 컴포넌트가 아니라 별도 컴포넌트로 얹는다(관심사 분리).</para>
@@ -23,14 +24,18 @@ namespace Game.View
         [Tooltip("좌우 시야 범위(± 도). 이 밖은 차폐된다.")]
         public float panRange = 45f;
 
-        [Tooltip("상하 시야 범위(± 도). 이 밖은 차폐된다. 터렛은 0 + hardClampTilt로 상하 고정.")]
+        [Tooltip("상하 시야 범위(± 도). 이 밖은 차폐된다. 터렛은 렌즈 시야각(예: ±30)만큼만 — 완전 차단 아님.")]
         public float tiltRange = 45f;
 
         [Tooltip("좌우를 범위에서 실제로 못 넘어가게 막을지. false면 자유 회전(밖은 차폐로 안 보임).")]
         public bool hardClampPan;
 
-        [Tooltip("상하를 범위에서 실제로 못 넘어가게 막을지. 터렛은 true(상하 조준 불가).")]
+        [Tooltip("상하를 범위에서 실제로 못 넘어가게 막을지. false면 마우스는 계속 돌아가되 밖은 차폐만 된다.")]
         public bool hardClampTilt;
+
+        [Tooltip("완전히 실명 상태인 특수 케이스 전용(렌즈가 아예 막혀 아무 방향도 안 보임). 켜면 카메라가 " +
+                 "항상 검정만 낸다 — 부분 시야 제한(대부분의 경우)은 tiltRange만으로 충분하니 이건 거의 안 쓴다.")]
+        public bool eyeBlocked;
 
         [Header("행동")]
         [Tooltip("빙의 중 WASD 이동 가능 여부. 경비병만 true.")]
@@ -70,8 +75,12 @@ namespace Game.View
             switch (h.kind)
             {
                 case HackableKind.Turret:
-                    panRange = 60f; tiltRange = 0f; hardClampTilt = true;
-                    allowsMove = false; useBlocker = true;
+                    // 구형 광각 렌즈: 수평은 파노라마처럼 360도 자유(마스크 안 걸림 — panRange=360).
+                    // 수직은 렌즈 시야각만큼만 보이고 그 밖(위·아래로 조금이라도 벗어나면)은
+                    // ViewConeMask가 가린다 — CCTV와 같은 메커니즘, 범위만 다르다.
+                    panRange = 360f; hardClampPan = false;
+                    tiltRange = 30f; hardClampTilt = false;
+                    allowsMove = false; useBlocker = true; eyeBlocked = false;
                     break;
                 case HackableKind.Guard:
                     panRange = 180f; tiltRange = 85f;

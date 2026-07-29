@@ -81,19 +81,21 @@ namespace Game.EditorTools
             }
         }
 
-        /// <summary>이 뼈가 "팔 계열"인가. 이름 기반(Mixamo 규격: RightForeArm, LeftHandIndex1 …).</summary>
+        /// <summary>이 뼈가 "팔 계열"인가. 이름 기반(우리 리그 규격: R_Upperarm, L_Thumb1 … — "R_"/"L_" 접두사).</summary>
         bool IsArmBone(string rawName)
         {
             if (string.IsNullOrEmpty(rawName)) return false;
             string n = rawName.ToLowerInvariant();
 
-            // 좌우 필터
-            if (side == Side.오른팔만 && !n.Contains("right")) return false;
-            if (side == Side.왼팔만  && !n.Contains("left"))  return false;
+            // 좌우 필터 — "R_"/"L_" 접두사 (Mixamo의 Right.../Left... 부분 문자열이 아니다)
+            bool isRight = n.StartsWith("r_");
+            bool isLeft  = n.StartsWith("l_");
+            if (side == Side.오른팔만 && !isRight) return false;
+            if (side == Side.왼팔만  && !isLeft)  return false;
 
             if (n.Contains("shoulder")) return includeShoulder;
 
-            // "arm"이 ForeArm·Arm을 모두 잡는다. hand는 손가락(HandIndex1 등)까지 포함.
+            // "arm"이 forearm·upperarm을 모두 잡는다. hand는 손가락(thumb1 등)까지 포함.
             return n.Contains("arm")   || n.Contains("hand")
                 || n.Contains("thumb") || n.Contains("index")
                 || n.Contains("middle")|| n.Contains("ring")
