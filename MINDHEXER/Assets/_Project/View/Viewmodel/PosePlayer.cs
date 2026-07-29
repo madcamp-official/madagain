@@ -132,18 +132,7 @@ namespace Game.View
         Transform Root()
         {
             if (root != null) return root;
-            var cam = Camera.main;
-            if (cam != null)
-            {
-                var t0 = cam.transform.Find(ViewmodelCamera.ViewmodelRootName);
-                if (t0 != null) root = t0;
-                else if (cam.transform.childCount > 0) root = cam.transform.GetChild(0);
-            }
-            if (root == null)
-            {
-                var go = GameObject.Find(ViewmodelCamera.ViewmodelRootName);
-                if (go != null) root = go.transform;
-            }
+            root = ViewmodelRoot.Find();   // 판정은 한 곳에서 — 카메라를 집는 폴백은 없앴다
             return root;
         }
 

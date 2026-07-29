@@ -33,6 +33,10 @@ namespace Game.View
         public string viewmodelRootName = ViewmodelCamera.ViewmodelRootName;
 
         Transform vmRoot;
+
+        /// <summary>진단용 — 뷰모델 루트가 카메라를 품고 있는가. <see cref="ViewmodelRoot"/>가
+        /// 막으므로 정상이라면 항상 false다. GameBoot의 감사가 재발을 잡는 데 쓴다.</summary>
+        public bool RootIsCamera => vmRoot != null && vmRoot.GetComponentInChildren<Camera>(true) != null;
         FirstPersonPlayer fpp;
         AutoTraversal auto;
         HackDriver hack;
@@ -105,6 +109,10 @@ namespace Game.View
         public float swayMax = 4f;
         public float swayShift = 0.002f;
         public float swaySpring = 12f;
+        [Tooltip("VR에서의 시선 지연 배율. 기본 0 — VR엔 마우스 개념이 없고, 머리를 돌릴 때마다 팔이 " +
+                 "늦게 따라오면 '내 팔이 내 것 같지 않은' 이질감과 멀미가 난다. " +
+                 "MotionFeel.vrRollScale과 같은 취지의 게이트다.")]
+        [Range(0f, 1f)] public float vrSwayScale = 0f;
         Vector3 swayRot, swayPos;
         float prevYaw, prevPitch;
         bool hasPrevLook;
@@ -131,21 +139,36 @@ namespace Game.View
             cam = GetComponent<Camera>() ?? Camera.main;
         }
 
+        /// <summary>
+        /// 뷰모델 루트 확보. 판정은 <see cref="ViewmodelRoot"/> 하나가 한다.
+        ///
+        /// <para><b>못 찾으면 스스로 꺼진다.</b> 예전엔 <c>transform.GetChild(0)</c>로 아무거나 집었는데,
+        /// 이 컴포넌트는 <c>[PlayerBody]</c>에 붙으므로 그 첫 자식인 <b>Main Camera</b>가 잡혔다.
+        /// 그 뒤로 매 LateUpdate마다 카메라의 위치·회전을 절대값으로 덮어써 PC에선 시점 회전이,
+        /// VR에선 눈높이·위치가 죽었다. 팔이 안 움직이는 것보다 시점이 죽는 게 훨씬 나쁘다.</para>
+        /// </summary>
         bool Acquire()
         {
             if (vmRoot != null) return true;
-            Transform t = transform.Find(viewmodelRootName);
+            if (_gaveUp) return false;
+
+            Transform t = ViewmodelRoot.Find(transform);
             if (t == null)
             {
-                var go = GameObject.Find(viewmodelRootName);
-                if (go != null) t = go.transform;
+                _gaveUp = true;
+                enabled = false;   // 매 프레임 헛도는 것도, 엉뚱한 걸 흔드는 것도 막는다
+                Debug.LogWarning(
+                    $"[뷰모델] '{viewmodelRootName}' 루트를 찾지 못해 절차 모션을 끕니다. " +
+                    $"팔을 쓰려면 Main Camera 아래에 '{viewmodelRootName}' 오브젝트를 두십시오.", this);
+                return false;
             }
-            if (t == null && transform.childCount > 0) t = transform.GetChild(0);
-            if (t == null) return false;
+
             vmRoot = t;
             if (!captured) { basePos = vmRoot.localPosition; baseRot = vmRoot.localRotation; captured = true; }
             return true;
         }
+
+        bool _gaveUp;
 
         /// <summary>현재 위치를 새 기준으로 삼는다(포즈 적용 직후 등). PosePlayer가 부른다.</summary>
         public void RecaptureBase()
@@ -254,14 +277,22 @@ namespace Game.View
             prevGrounded = grounded; prevVelY = fpp.VerticalVelocity;
 
             // ── ⑥ 시선 지연 ──
-            if (enableSway)
+            // 시점 각도는 카메라가 갖는다. 이 컴포넌트가 붙은 [PlayerBody]는 회전하지 않으므로
+            // (FirstPersonPlayer가 rotation=identity로 고정) 자기 트랜스폼을 읽으면 항상 0이라
+            // 스웨이가 영영 안 걸린다 — view(카메라)를 읽어야 한다.
+            //
+            // ★ 로컬이 아니라 <b>월드</b> 각도를 읽는다. 리그가 [Head](yaw/pitch) → 카메라(롤)로
+            //   나뉘어 있어서 카메라 로컬에는 롤밖에 없다 — 로컬을 읽으면 또 0만 나온다.
+            float swayScale = VrMode.Enabled ? vrSwayScale : 1f;
+            Transform look = fpp != null && fpp.view != null ? fpp.view : null;
+            if (enableSway && swayScale > 0f && look != null)
             {
-                Vector3 e = transform.localEulerAngles;
+                Vector3 e = look.eulerAngles;
                 float yaw = e.y, pitch = e.x > 180f ? e.x - 360f : e.x;   // pitch는 -85..85라 랩어라운드만 풀면 됨
                 if (hasPrevLook)
                 {
-                    float dYaw   = Mathf.DeltaAngle(prevYaw, yaw);
-                    float dPitch = pitch - prevPitch;
+                    float dYaw   = Mathf.DeltaAngle(prevYaw, yaw) * swayScale;
+                    float dPitch = (pitch - prevPitch) * swayScale;
                     swayRot.y = Mathf.Clamp(swayRot.y - dYaw   * swayFactor, -swayMax, swayMax);
                     swayRot.x = Mathf.Clamp(swayRot.x + dPitch * swayFactor, -swayMax, swayMax);
                     swayPos.x = Mathf.Clamp(swayPos.x - dYaw   * swayShift, -0.05f, 0.05f);
@@ -318,15 +349,21 @@ namespace Game.View
         }
     }
 
-    /// <summary>Play 시 자동 부착.</summary>
+    /// <summary>
+    /// Play 시 자동 부착 — <b>뷰모델 루트가 실제로 있는 씬에서만</b>.
+    ///
+    /// <para>예전엔 무조건 붙였다. 뷰모델이 없는 씬(HackSandbox 등)에서도 붙어서 흔들 대상을
+    /// 찾다가 카메라를 집었다. 흔들 것이 없으면 컴포넌트 자체가 생기지 않는 게 맞다.</para>
+    /// </summary>
     public static class ViewmodelMotionBoot
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
         {
             var fpp = Object.FindFirstObjectByType<FirstPersonPlayer>();
-            if (fpp != null && fpp.GetComponent<ViewmodelMotion>() == null)
-                fpp.gameObject.AddComponent<ViewmodelMotion>();
+            if (fpp == null || fpp.GetComponent<ViewmodelMotion>() != null) return;
+            if (ViewmodelRoot.Find(fpp.transform) == null) return;   // 흔들 팔이 없으면 붙이지 않는다
+            fpp.gameObject.AddComponent<ViewmodelMotion>();
         }
     }
 }

@@ -40,14 +40,14 @@ namespace Game.EditorTools
                 if (GUILayout.Button("범위를 ±N칸으로"))
                 {
                     Undo.RecordObject(rs, "Rail range by cells");
-                    rs.rangeMax = _cells * rs.railLength;
+                    rs.rangeMax = _cells * rs.cellLength;
                     rs.rangeMin = -rs.rangeMax;
                     EditorUtility.SetDirty(rs);
                 }
             }
 
             float span = rs.rangeMax - rs.rangeMin;
-            float cells = rs.railLength > 1e-4f ? span / rs.railLength : 0f;
+            float cells = rs.cellLength > 1e-4f ? span / rs.cellLength : 0f;
             EditorGUILayout.HelpBox(
                 $"이동 폭 {span:0.###} (레일 {cells:0.##}칸)\n" +
                 $"앵커 기준 {rs.rangeMin:0.###} ~ {rs.rangeMax:0.###}\n" +
@@ -116,9 +116,9 @@ namespace Game.EditorTools
             { Debug.LogWarning("[RailSet] 기준 레일에 Renderer가 없습니다."); return; }
 
             Undo.RecordObject(rs, "Measure rail length");
-            rs.railLength = worldLen / rs.ParentScaleAlongAxis;
+            rs.cellLength = worldLen / rs.ParentScaleAlongAxis;
             EditorUtility.SetDirty(rs);
-            Debug.Log($"[RailSet] 레일 1칸 = {rs.railLength:0.###} (월드 {worldLen:0.###})");
+            Debug.Log($"[RailSet] 레일 1칸 = {rs.cellLength:0.###} (월드 {worldLen:0.###})");
         }
 
         /// <summary>레일 전체가 축 방향으로 차지하는 길이(부모 공간 단위).</summary>
@@ -190,14 +190,14 @@ namespace Game.EditorTools
             Handles.Label(anchor + Vector3.up * hs * 2f, "앵커");
 
             // 칸 눈금 — 플릭이 떨어지는 지점
-            if (rs.railLength > 1e-4f)
+            if (rs.cellLength > 1e-4f)
             {
                 Handles.color = new Color(1f, 1f, 1f, 0.6f);
-                int lo = Mathf.CeilToInt(rs.rangeMin / rs.railLength);
-                int hi = Mathf.FloorToInt(rs.rangeMax / rs.railLength);
+                int lo = Mathf.CeilToInt(rs.rangeMin / rs.cellLength);
+                int hi = Mathf.FloorToInt(rs.rangeMax / rs.cellLength);
                 for (int i = lo; i <= hi; i++)
                 {
-                    Vector3 p = anchor + ax * (i * rs.railLength * scale);
+                    Vector3 p = anchor + ax * (i * rs.cellLength * scale);
                     Handles.SphereHandleCap(0, p, Quaternion.identity, HandleUtility.GetHandleSize(p) * 0.05f, EventType.Repaint);
                 }
             }
@@ -276,7 +276,7 @@ namespace Game.EditorTools
             rs.riderRoot = riders.transform;
             rs.referenceRail = rails.transform.GetChild(0);
             rs.axis = Vector3.right;
-            rs.railLength = cellLen;
+            rs.cellLength = cellLen;
             rs.rangeMax = 2f * cellLen;
             rs.rangeMin = -rs.rangeMax;
 

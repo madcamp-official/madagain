@@ -10,10 +10,10 @@ namespace Game.EditorTools
     /// <summary>
     /// Hackable·TallCity 프리팹을 훑어보고 클릭 한 번으로 씬에 배치하는 팔레트 창.
     ///
-    /// <para>두 카테고리를 명확히 분리한다 — Hackable(해킹 가능한 기믹: 경비병, CCTV, 터렛,
-    /// 레일·피스톤·유압프레스 등 외부조종물)과 TallCity(배경용 사이버펑크 도시 애셋: 벽·바닥·
-    /// 다리·전선 등). 폴더를 실제로 훑어서 목록을 만들기 때문에 새 프리팹을 추가해도 코드를
-    /// 안 건드리고 "새로고침" 버튼만 누르면 바로 뜬다.</para>
+    /// <para>세 카테고리를 명확히 분리한다 — Hackable(해킹 가능한 기믹: 경비병, CCTV, 터렛,
+    /// 레일·피스톤·유압프레스 등 외부조종물), TallCity(배경용 사이버펑크 도시 애셋: 벽·바닥·
+    /// 다리·전선 등), Sci-Fi(Remesh 실내 환경: 콘솔·파이프·플랫폼 등). 폴더를 실제로 훑어서
+    /// 목록을 만들기 때문에 새 프리팹을 추가해도 코드를 안 건드리고 "새로고침"만 누르면 바로 뜬다.</para>
     ///
     /// <para>배치 위치는 씬 뷰가 열려 있으면 그 피벗(카메라가 보고 있는 지점)에, 없으면
     /// 원점에 놓는다. 배치 직후 바로 선택되므로 이동 툴로 이어서 옮기면 된다.</para>
@@ -22,8 +22,9 @@ namespace Game.EditorTools
     {
         const string HackableRoot = "Assets/_Project/Prefabs/Hackables";
         const string TallCityRoot = "Assets/_Project/Prefabs/TallCity";
+        const string SciFiRoot    = "Assets/Remesh Games/Sci-Fi Environment/Prefabs";
 
-        enum Category { Hackable, TallCity }
+        enum Category { Hackable, TallCity, SciFi }
 
         class Entry
         {
@@ -38,6 +39,7 @@ namespace Game.EditorTools
         Vector2 _scroll;
         readonly List<Entry> _hackables = new List<Entry>();
         readonly List<Entry> _tallCity = new List<Entry>();
+        readonly List<Entry> _sciFi = new List<Entry>();
         readonly Dictionary<string, bool> _groupOpen = new Dictionary<string, bool>();
 
         const float ThumbSize = 64f;
@@ -57,8 +59,10 @@ namespace Game.EditorTools
         {
             _hackables.Clear();
             _tallCity.Clear();
+            _sciFi.Clear();
             ScanInto(HackableRoot, _hackables);
             ScanInto(TallCityRoot, _tallCity);
+            ScanInto(SciFiRoot, _sciFi);
         }
 
         static void ScanInto(string root, List<Entry> into)
@@ -93,7 +97,9 @@ namespace Game.EditorTools
             DrawToolbar();
             EditorGUILayout.Space(4f);
 
-            var list = _category == Category.Hackable ? _hackables : _tallCity;
+            var list = _category == Category.Hackable ? _hackables
+                     : _category == Category.TallCity ? _tallCity
+                     : _sciFi;
             var filtered = string.IsNullOrEmpty(_search)
                 ? list
                 : list.Where(e => e.name.IndexOf(_search, System.StringComparison.OrdinalIgnoreCase) >= 0).ToList();
@@ -116,7 +122,7 @@ namespace Game.EditorTools
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
             var newCategory = (Category)GUILayout.Toolbar((int)_category,
-                new[] { "Hackable", "TallCity" }, EditorStyles.toolbarButton, GUILayout.Width(180f));
+                new[] { "Hackable", "TallCity", "Sci-Fi" }, EditorStyles.toolbarButton, GUILayout.Width(270f));
             if (newCategory != _category) { _category = newCategory; _search = ""; GUI.FocusControl(null); }
 
             GUILayout.FlexibleSpace();

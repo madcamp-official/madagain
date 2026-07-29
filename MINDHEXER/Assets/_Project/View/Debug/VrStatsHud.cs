@@ -115,7 +115,18 @@ namespace Game.View
                 : $"{link.PacketRate:F0}/s {link.Latest.Tracking}";
 
             string head = _cam != null ? _cam.transform.eulerAngles.y.ToString("F0") : "-";
-            return $"VR:{(VrMode.Enabled ? "on" : "off")} head:{head}\n{net}\n{_sceneLine}";
+
+            // 시점 소유자 — 이게 없거나 둘이면 "머리는 도는데 눈높이가 죽는" 식으로 증상이
+            // 원인과 안 닮게 나온다. 헤드셋에선 콘솔을 못 보므로 여기 한 글자로 싣는다.
+            string owner = "?";
+            if (_cam != null)
+            {
+                bool tpd = _cam.GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>() != null;
+                bool ml = _cam.GetComponent<MouseLook>() != null;
+                owner = tpd && ml ? "BOTH!" : tpd ? "tpd" : ml ? "mouse" : "NONE!";
+            }
+
+            return $"VR:{(VrMode.Enabled ? "on" : "off")} head:{head} look:{owner}\n{net}\n{_sceneLine}";
         }
 
         // ── 씬 규모 ───────────────────────────────────────────────────────

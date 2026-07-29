@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6027932357177231903}
   - component: {fileID: 3082333943134537626}
   - component: {fileID: 19577015273610772}
+  - component: {fileID: 8811223344556677001}
   m_Layer: 0
   m_Name: Piston
   m_TagString: Untagged
@@ -405,3 +406,19 @@ MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 5194595217377835619, guid: 7ff0348ba1707f04fbfebd0f62cc913a, type: 3}
   m_PrefabInstance: {fileID: 3577604381542304531}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8811223344556677001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5584188272010962687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9075cc96434967549bc3690f75836833, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ActuatorControl
+  holdSpeed: 0.6
+  allowFlick: 1
+  startExtension: 0
+  actuator: {fileID: 0}

@@ -45,6 +45,13 @@ Shader "MINDHEXER/OneBit"
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
 
+            // ★ 포인트·스팟(=additional light)을 받기 위한 키워드. 없으면 손전등이 손·거미에
+            //   전혀 안 걸린다 — 디렉셔널을 지운 순간 통째로 검게 죽는다.
+            //   _CLUSTER_LIGHT_LOOP은 Forward+ 경로. URP 17에서 이름이 _FORWARD_PLUS에서 바뀌었다.
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
@@ -127,7 +134,27 @@ Shader "MINDHEXER/OneBit"
 
                 // 라이트 랩: 어두운 면이 통째로 검게 죽는 것을 막아 형태를 살린다.
                 half ndl = saturate((dot(N, main.direction) + wrap) / (1.0h + wrap));
-                half3 lit = albedo * (SampleSH(N) + main.color * ndl * main.shadowAttenuation);
+                half3 light = main.color * (ndl * main.shadowAttenuation);
+
+                // 추가 광원(포인트·스팟). 손전등 리그가 여기로 들어온다.
+                // 랩을 메인과 <b>똑같이</b> 적용한다 — 다르게 주면 손전등 안팎에서 손의 계조가 튄다.
+                #if defined(_ADDITIONAL_LIGHTS)
+                {
+                    // 클러스터(Forward+) 경로는 LIGHT_LOOP_BEGIN이 inputData를 직접 참조한다.
+                    InputData inputData = (InputData)0;
+                    inputData.positionWS = IN.positionWS;
+                    inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(IN.positionCS);
+
+                    uint count = GetAdditionalLightsCount();
+                    LIGHT_LOOP_BEGIN(count)
+                        Light add = GetAdditionalLight(lightIndex, IN.positionWS, half4(1, 1, 1, 1));
+                        half addNdl = saturate((dot(N, add.direction) + wrap) / (1.0h + wrap));
+                        light += add.color * (addNdl * add.distanceAttenuation * add.shadowAttenuation);
+                    LIGHT_LOOP_END
+                }
+                #endif
+
+                half3 lit = albedo * (SampleSH(N) + light);
 
                 half lum = dot(lit, half3(0.2126h, 0.7152h, 0.0722h));
 

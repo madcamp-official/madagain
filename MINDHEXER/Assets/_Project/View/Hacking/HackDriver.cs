@@ -272,14 +272,18 @@ namespace Game.View
                 if (h > bestH) { bestH = h; best = i; }
             }
 
+            // 피스톤·프레스처럼 축의 두 끝이 대칭이 아닌 물체는 화면 보정을 하면 안 된다 —
+            // "좌클릭 = 신장"이 어느 방향에서 봐도 같아야 조작이 예측 가능하다(IExternalControl 주석).
+            bool screenSign = ctrl.ScreenRelativeSign;
+
             _slotAxis[0] = best;
-            _slotSign[0] = SignAlong(ctrl.AxisWorld(best), right, fwd);
+            _slotSign[0] = screenSign ? SignAlong(ctrl.AxisWorld(best), right, fwd) : 1f;
 
             for (int i = 0; i < n; i++)
             {
                 if (i == best) continue;
                 _slotAxis[1] = i;
-                _slotSign[1] = SignAlong(ctrl.AxisWorld(i), up, fwd);
+                _slotSign[1] = screenSign ? SignAlong(ctrl.AxisWorld(i), up, fwd) : 1f;
                 break;
             }
 

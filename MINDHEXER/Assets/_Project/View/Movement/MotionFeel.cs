@@ -136,8 +136,27 @@ namespace Game.View
         [Tooltip("VR에서 롤에 곱하는 배율. 인위적 롤 = 멀미 1순위라 기본 0.")]
         [Range(0f, 1f)] public float vrRollScale = 0f;
 
-        /// <summary>이번 프레임의 롤(도). FirstPersonPlayer가 시점 회전에 합성한다.</summary>
+        /// <summary>이번 프레임의 롤(도).</summary>
         public float CurrentRoll { get; private set; }
+
+        /// <summary>
+        /// 이 컴포넌트가 <b>자기 트랜스폼의 회전을 직접 소유</b>하는가.
+        ///
+        /// <para><c>[CamRig]</c>(카메라의 부모)에 붙었으면 true — 롤을 자기가 적용한다. 그러면
+        /// PC(<see cref="MouseLook"/>)든 VR(TrackedPoseDriver)든 <b>시점 드라이버를 건드리지 않고</b>
+        /// 롤 연출이 걸린다. 지금까지 VR에서 롤이 아예 안 걸렸던 이유가 이것이다 —
+        /// 롤을 합성해 주던 게 <see cref="MouseLook"/> 하나뿐이었는데 VR엔 그게 없다.</para>
+        ///
+        /// <para><b>기본 false.</b> 자동 판정(예: "카메라가 안 붙어 있으면 리그다")은 위험하다 —
+        /// 손으로 조립한 씬에서는 <see cref="MotionFeel"/>이 <b>몸</b>에 직접 붙어 있어서 그 판정이
+        /// 참이 되고, 그러면 몸을 굴려 버린다(ViewmodelStudio에서 실제로 걸렸다).
+        /// 그래서 <see cref="GameBoot"/>이 <c>[CamRig]</c>에만 명시적으로 켠다.</para>
+        /// </summary>
+        public bool OwnsRotation => ownsRotation;
+
+        [Tooltip("이 트랜스폼의 회전을 직접 소유한다(롤을 여기에 적용). ★ 전용 카메라 리그([CamRig])에만 " +
+                 "켤 것 — 몸이나 카메라에 붙은 경우 켜면 시점 소유자와 싸운다. GameBoot이 자동으로 켠다.")]
+        public bool ownsRotation = false;
 
         struct Fx { public bool active; public float amp, dur, t; }
         Fx _launch, _land, _settle;       // 아래로(침하)
@@ -234,8 +253,21 @@ namespace Game.View
 
         void Awake()
         {
+            // [CamRig]에 붙으면 카메라는 자식에 있다. 손으로 조립한 씬(몸에 직접 부착)도 그대로 동작한다.
             _cam = GetComponent<Camera>();
+            if (_cam == null) _cam = GetComponentInChildren<Camera>();
             if (_cam != null) _baseFov = _cam.fieldOfView;
+
+            // 안전장치 — 시점 드라이버와 <b>같은 오브젝트</b>에서 회전을 소유하면 서로 덮어쓴다.
+            // (카메라에 붙는 것 자체는 정상이다. 시점이 부모 [Head]에 있으면 롤은 이쪽 몫이다.)
+            if (ownsRotation &&
+                (GetComponent<MouseLook>() != null ||
+                 GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>() != null))
+            {
+                ownsRotation = false;
+                Debug.LogWarning("[MotionFeel] 시점 드라이버와 같은 오브젝트에서는 회전을 소유할 수 " +
+                                 "없습니다 — 서로 덮어씁니다. 껐습니다(롤은 CurrentRoll로만 내보냅니다).", this);
+            }
             _carryRoll.frequency = _carryFov.frequency = carryFrequency;
             _carryRoll.damping = _carryFov.damping = carryDamping;
         }
@@ -326,6 +358,10 @@ namespace Game.View
 
             _appliedPos = Vector3.up * ((kick - dip) * posScale) + _posLag * posScale;
             transform.position += _appliedPos;
+
+            // 롤 — [CamRig]에 붙었을 때만 직접 적용한다(이 트랜스폼의 유일한 작성자이므로 대입이 정당).
+            // 카메라에 직접 붙은 구형 배치에서는 시점 소유자와 싸우므로 CurrentRoll만 내보내고 만다.
+            if (OwnsRotation) transform.localRotation = Quaternion.Euler(0f, 0f, CurrentRoll);
         }
 
         static float Tick(ref Fx fx, AnimationCurve curve, float dt)

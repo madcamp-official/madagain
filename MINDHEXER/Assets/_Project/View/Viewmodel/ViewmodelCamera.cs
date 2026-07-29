@@ -23,6 +23,7 @@ namespace Game.View
     /// </summary>
     [DefaultExecutionOrder(1000)]   // CinemachineBrain류가 FOV를 갱신한 뒤에 돌게(있다면)
     [DisallowMultipleComponent]
+    [ExecuteAlways]                 // ★ Play 중에만 설치되면 '자세 잡는 내내' 팔이 잘리고 벽에 파묻힌다
     public class ViewmodelCamera : MonoBehaviour
     {
         public const string DefaultLayer = "Viewmodel";
@@ -103,10 +104,16 @@ namespace Game.View
             catch { return false; }
         }
 
-        void LateUpdate()
+        void LateUpdate() => EnsureInstalled();
+
+        /// <summary>
+        /// 설치·동기화 진입점. 에디터에서는 <see cref="ExecuteAlways"/>의 틱이 씬 뷰 리페인트에
+        /// 의존해 확실하지 않으므로, 에디터 드라이버가 <c>EditorApplication.update</c>에서 이걸 직접 부른다.
+        /// </summary>
+        public void EnsureInstalled()
         {
-            if (vmCam == null) { TryInstall(); return; }
-            Sync();
+            if (vmCam == null) TryInstall();
+            else Sync();
         }
 
         void TryInstall()
@@ -135,13 +142,16 @@ namespace Game.View
             }
 
             SetLayerRecursive(vmRoot, layer);
-            baseCam.cullingMask &= ~(1 << layer);
 
             Transform t = baseCam.transform.Find(CamObjectName);
             GameObject go = t != null ? t.gameObject : new GameObject(CamObjectName);
             go.transform.SetParent(baseCam.transform, false);
             go.transform.localRotation = Quaternion.identity;
             go.transform.localScale = Vector3.one;
+
+            // 씬에 저장하지 않는다 — 에디터에서도 도는 이상, 저장되면 씬마다 유령 카메라가 쌓인다.
+            // 이미 있으면 Find로 다시 잡으므로 재컴파일에도 중복되지 않는다.
+            go.hideFlags = HideFlags.DontSave;
 
             vmCam = go.GetComponent<Camera>();
             if (vmCam == null) vmCam = go.AddComponent<Camera>();
@@ -159,6 +169,10 @@ namespace Game.View
             var baseData = baseCam.GetUniversalAdditionalCameraData();
             if (baseData != null && !baseData.cameraStack.Contains(vmCam))
                 baseData.cameraStack.Add(vmCam);
+
+            // ★ 베이스에서 레이어를 빼는 것은 <b>오버레이가 성립한 뒤에</b> 한다.
+            //   먼저 빼면, 오버레이 생성이 실패했을 때 뷰모델이 어디에도 안 그려져 통째로 사라진다.
+            baseCam.cullingMask &= ~(1 << layer);
 
             fallbackMode = false;
             Sync();
@@ -270,14 +284,9 @@ namespace Game.View
             return true;
         }
 
+        /// <summary>판정은 <see cref="ViewmodelRoot"/>에 위임한다 — 카메라를 뷰모델로 잡는 사고를 막는다.</summary>
         public static Transform FindViewmodel(Camera cam)
-        {
-            var t = cam.transform.Find(ViewmodelRootName);
-            if (t != null) return t;
-            var go = GameObject.Find(ViewmodelRootName);
-            if (go != null) return go.transform;
-            return cam.transform.childCount > 0 ? cam.transform.GetChild(0) : null;
-        }
+            => ViewmodelRoot.Find(cam != null ? cam.transform : null);
 
         public static void SetLayerRecursive(Transform root, int layer)
         {

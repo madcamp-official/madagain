@@ -42,10 +42,35 @@ namespace Game.View
         /// 통합 리그 — PC와 VR이 <b>같은 몸</b>을 쓴다. 차이는 카메라에 붙는 시점 드라이버 하나뿐.
         ///
         /// <code>
-        /// [PlayerBody]  ← CC + 이동·중력·밀림감지 + AutoTraversal + MantleRig. 회전하지 않는다.
-        ///    └ Main Camera ← 시점 소유(PC=MouseLook / VR=TrackedPoseDriver RotationOnly)
-        ///                    + MotionFeel(연출) + HackDriver(조준=정면)
+        /// [PlayerBody]       ← CC + 이동·중력·밀림감지 + AutoTraversal + MantleRig. 회전하지 않는다.
+        ///  └ [Head]          ← 시점 소유(PC=MouseLook / VR=TrackedPoseDriver RotationOnly)
+        ///                      + VR 눈높이(VrTuning)
+        ///     └ Main Camera  ← 연출 소유: MotionFeel(롤·상하 킥·흡수 지연) + HackDriver(조준=정면)
+        ///        └ Viewmodel ← 팔 소유: ViewmodelMotion (있을 때만)
         /// </code>
+        ///
+        /// <para><b>왜 층을 나누나</b> — 연출과 시점이 같은 트랜스폼을 쓰면 둘 중 하나가 절대 대입을
+        /// 하는 순간 다른 쪽이 지워진다. 실제로 <see cref="ViewmodelMotion"/>이 카메라를 뷰모델로
+        /// 오인해 매 LateUpdate마다 덮어썼고, PC에선 시점 회전이 VR에선 눈높이가 죽었다.
+        /// 층을 나누면 그 사고가 <b>구조적으로 불가능</b>해진다.</para>
+        ///
+        /// <para><b>★ 왜 시점이 위, 연출이 아래인가 (순서가 중요하다)</b> — 롤은 <b>시선 축</b>을 돌아야
+        /// 한다. 연출을 시점 <i>위</i>에 두면 롤이 "몸의 앞 축"을 도는 게 되어, 옆을 볼수록 롤이
+        /// 피치로 변질된다(yaw 90°·roll 20°에서 시선이 19° 들림 — 실측). 그래서 연출은 반드시
+        /// 시점 드라이버 <b>아래</b>에 있어야 한다.</para>
+        ///
+        /// <para>부수 효과로 <b>VR에서도 롤 연출이 걸린다</b> — 전에는 롤을 합성해 주는 게
+        /// <see cref="MouseLook"/>뿐이라 VR엔 아예 없었다(멀미 때문에 <c>vrRollScale=0</c> 기본값은
+        /// 유지 — 이제는 '없는 것'이 아니라 '꺼둔 것'이다).</para>
+        ///
+        /// <para><b>트랜스폼 속성별 소유자 (하나씩만)</b>
+        /// <list type="bullet">
+        /// <item>[PlayerBody] 위치 — CharacterController</item>
+        /// <item>[Head] 로컬회전 — MouseLook(PC) / TrackedPoseDriver(VR)</item>
+        /// <item>[Head] 로컬위치 — VrTuning(VR 눈높이). PC는 0 고정.</item>
+        /// <item>Main Camera 위치·로컬회전 — MotionFeel(연출 오프셋·롤)</item>
+        /// <item>Viewmodel — ViewmodelMotion</item>
+        /// </list></para>
         ///
         /// <para>몸 원점 = 눈높이. 기존 이동·등반 코드 전부가 "트랜스폼 위치 = 눈"을 전제하므로
         /// 그 규약을 유지한다(발 위치는 CC의 center −0.7이 만든다). 카메라 로컬은 0 — VR에서
@@ -60,11 +85,17 @@ namespace Game.View
             var body = new GameObject("[PlayerBody]");
             body.transform.position = startPosition + Vector3.up * eyeHeight;
 
-            // 카메라 = 시점 전용 자식. 연출(MotionFeel)은 여기 — 몸 위치를 건드리면 CC와 싸운다.
-            _cam.transform.SetParent(body.transform, false);
+            // 시점 전용 트랜스폼 — 회전 소유자(MouseLook/TrackedPoseDriver)가 여기만 쓴다.
+            // 몸 위치를 건드리면 CC와 싸우므로 시점은 여기까지만 내려온다.
+            var head = new GameObject("[Head]");
+            head.transform.SetParent(body.transform, false);
+
+            // 카메라 = 연출 전용. 시점보다 아래에 있어야 롤이 '시선 축'을 돈다(클래스 주석 ★).
+            _cam.transform.SetParent(head.transform, false);
             _cam.transform.localPosition = Vector3.zero;
             _cam.transform.localRotation = Quaternion.identity;
-            if (_cam.GetComponent<MotionFeel>() == null) _cam.gameObject.AddComponent<MotionFeel>();
+            var feel = _cam.GetComponent<MotionFeel>() ?? _cam.gameObject.AddComponent<MotionFeel>();
+            feel.ownsRotation = true;   // 시점은 부모가 가지므로 이 트랜스폼의 회전은 연출 몫이다
 
             // 몸 — MotionFeel(자식)이 먼저 있어야 Awake 캐시가 잡힌다.
             if (body.GetComponent<MantleRig>() == null) body.AddComponent<MantleRig>();
@@ -75,26 +106,71 @@ namespace Game.View
             // 해킹 — 조준 = 카메라 정면. [RequireComponent(HackContext)]라 HackContext도 함께 붙는다.
             if (_cam.GetComponent<HackDriver>() == null) _cam.gameObject.AddComponent<HackDriver>();
 
+            // 조명 — 카메라에 붙인다([Head]가 아니다). MotionFeel의 킥·롤에 빛이 같이 흔들려야
+            // 손전등을 들고 뛰는 감각이 난다. PC/VR 값은 리그가 모드별로 따로 들고 있다.
+            if (_cam.GetComponent<PlayerLightRig>() == null) _cam.gameObject.AddComponent<PlayerLightRig>();
+
             if (VrMode.Enabled)
             {
-                AttachHeadPoseDriver(_cam);   // RotationOnly — 위치는 몸이 소유
+                AttachHeadPoseDriver(head.transform);   // RotationOnly — 위치는 몸이 소유
 
                 // ScreenSpace HUD → 머리 앞 World-Space 패널(양안 렌더).
                 var hud = new GameObject("[VrHudSpace]").AddComponent<VrHudSpace>();
                 hud.head = _cam.transform;
 
                 // VR 튜닝 — 눈높이·HUD·렌더스케일 JSON 저장/로드.
+                // 눈높이는 [Head]에 건다 — 카메라 로컬위치는 MotionFeel(연출)이 쓰므로 겹치면 안 된다.
                 var tuning = gameObject.AddComponent<VrTuning>();
-                tuning.head = _cam.transform;
+                tuning.head = head.transform;
                 tuning.hud = hud;
-                tuning.eyeBase = eyeHeight;   // 몸 원점이 이미 눈높이 — 카메라 로컬은 차이만 받는다
+                tuning.eyeBase = eyeHeight;   // 몸 원점이 이미 눈높이 — [Head] 로컬은 차이만 받는다
             }
             else
             {
-                _cam.gameObject.AddComponent<MouseLook>();
+                head.AddComponent<MouseLook>();
                 if (body.GetComponent<MoveTuningPanel>() == null) body.AddComponent<MoveTuningPanel>();
                 if (lockCursor) Cursor.lockState = CursorLockMode.Locked;
             }
+
+            AuditCameraOwnership(head.transform);
+        }
+
+        /// <summary>
+        /// 카메라 회전 소유자가 정확히 하나인지 확인하고, 아니면 경고한다.
+        ///
+        /// <para><b>왜 필요한가</b> — 이 규칙이 깨졌을 때의 증상이 원인과 전혀 안 닮았다.
+        /// 실제로 <see cref="ViewmodelMotion"/>이 카메라를 뷰모델로 오인했을 때, PC에선
+        /// "마우스를 움직여도 화면이 안 돎", VR에선 "머리는 도는데 눈높이가 죽음"으로 나타났다.
+        /// 원인을 찾는 데 오래 걸렸으므로, 다음엔 콘솔 첫 줄에서 바로 보이게 한다.</para>
+        ///
+        /// <para>VR 실기에선 콘솔을 못 보므로 <see cref="VrStatsHud"/>에도 같은 사실이 실린다.</para>
+        /// </summary>
+        void AuditCameraOwnership(Transform head)
+        {
+            if (_cam == null || head == null) return;
+
+            string owner = VrMode.Enabled ? "TrackedPoseDriver(VR)" : "MouseLook(PC)";
+            bool ok = VrMode.Enabled
+                ? head.GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>() != null
+                : head.GetComponent<MouseLook>() != null;
+
+            if (!ok)
+                Debug.LogError($"[GameBoot] 시점 소유자({owner})가 [Head]에 없습니다 — 화면이 안 돕니다.", head);
+
+            // 시점과 연출이 같은 트랜스폼에 겹치면 롤이 시선 축을 못 돈다(옆을 볼 때 피치로 변질).
+            if (_cam.GetComponent<MouseLook>() != null ||
+                _cam.GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>() != null)
+                Debug.LogError("[GameBoot] 시점 드라이버가 카메라에 직접 붙었습니다 — 연출(MotionFeel)과 " +
+                               "같은 트랜스폼이라 롤이 어긋납니다. [Head]로 옮기십시오.", _cam);
+
+            // 카메라를 뷰모델로 잡아 회전을 덮어쓰는 사고의 재발 감지.
+            var vm = FindFirstObjectByType<ViewmodelMotion>();
+            if (vm != null && vm.enabled && vm.RootIsCamera)
+                Debug.LogError("[GameBoot] ViewmodelMotion이 카메라를 뷰모델 루트로 잡았습니다 — " +
+                               "시점이 죽습니다. Main Camera 아래 'Viewmodel' 오브젝트를 확인하십시오.", vm);
+
+            Debug.Log($"[GameBoot] 리그 구성 완료 — 시점 소유자={owner}, 연출=[CamRig]/MotionFeel, " +
+                      $"뷰모델={(vm != null ? "있음" : "없음")}");
         }
 
         /// <summary>
@@ -107,12 +183,12 @@ namespace Game.View
         /// <para>바인딩 경로는 Cardboard 공식 샘플(HelloCardboard)의 카메라 설정에서 그대로 가져왔다.
         /// 추측하면 틀린다.</para>
         /// </summary>
-        void AttachHeadPoseDriver(Camera cam)
+        void AttachHeadPoseDriver(Transform head)
         {
-            if (cam == null) return;
-            if (cam.GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>() != null) return;
+            if (head == null) return;
+            if (head.GetComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>() != null) return;
 
-            var tpd = cam.gameObject.AddComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>();
+            var tpd = head.gameObject.AddComponent<UnityEngine.InputSystem.XR.TrackedPoseDriver>();
             // RotationOnly — 위치까지 받으면 Cardboard(3DoF)의 거의-0 위치가 카메라 로컬을 덮어써
             // 눈높이가 지워지고 땅이 꺼져 보인다(실기 확인). 위치는 [PlayerBody]가 소유한다.
             tpd.trackingType = UnityEngine.InputSystem.XR.TrackedPoseDriver.TrackingType.RotationOnly;

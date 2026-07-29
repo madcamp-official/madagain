@@ -20,7 +20,7 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+  m_AmbientSkyColor: {r: 0.04, g: 0.04, b: 0.04, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
@@ -201,7 +201,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 4294967039
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -229,7 +229,8 @@ MonoBehaviour:
   m_RequiresDepthTextureOption: 2
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
-  m_Cameras: []
+  m_Cameras:
+  - {fileID: 0}
   m_RendererIndex: -1
   m_VolumeLayerMask:
     serializedVersion: 2
@@ -266,7 +267,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 120280492}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: '[SpiderPerch]'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -477,7 +478,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 256011650}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: '[LegAnchor_3]'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -508,7 +509,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 341152588}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: '[LegAnchor_1]'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1726,7 +1727,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1149625432}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: '[LegAnchor_2]'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2650,7 +2651,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 10f8b1a089a22ce4ebae28e843f85673, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.465
+      value: 0.402
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 10f8b1a089a22ce4ebae28e843f85673, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4498,6 +4499,7 @@ MonoBehaviour:
   carryPosLagDecay: 12
   vrPositionScale: 0.25
   vrRollScale: 0
+  ownsRotation: 0
 --- !u!114 &1803740284
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4606,7 +4608,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2137981246}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: '[LegAnchor_0]'
   m_TagString: Untagged
   m_Icon: {fileID: 0}

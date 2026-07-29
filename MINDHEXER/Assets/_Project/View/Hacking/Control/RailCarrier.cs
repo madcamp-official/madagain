@@ -29,6 +29,9 @@ namespace Game.View
         public int AxisCount => axes != null ? Mathf.Min(axes.Length, 2) : 0;
         public Vector3 AxisWorld(int slot) => axes[slot].Dir;
 
+        /// <summary>레일은 양 끝이 대칭이라 "보이는 대로" 움직여야 한다 → 화면 기준 부호 보정을 쓴다.</summary>
+        public bool ScreenRelativeSign => true;
+
         /// <summary>시작 위치=0, 양 끝=±1. 범위가 비대칭이어도 각 방향을 따로 정규화한다.</summary>
         public float GetNormalized(int slot)
         {

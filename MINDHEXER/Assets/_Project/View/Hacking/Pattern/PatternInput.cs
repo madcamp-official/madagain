@@ -48,18 +48,65 @@ namespace Game.View
         /// </summary>
         public void SnapCursorToCurrent() => CursorPos = PatternGraph.Pos[CurrentDot];
 
-        /// <summary>매 프레임 마우스 델타로 커서를 옮기고, 새 점에 닿았으면 그 점 인덱스를 반환(없으면 -1).</summary>
+        /// <summary>
+        /// 매 프레임 델타로 커서를 옮기고, 새 점에 닿았으면 그 점 인덱스를 반환(없으면 -1).
+        ///
+        /// <para>★ <b>이동한 '선분'으로 검사한다. 도착한 '점'만 보면 안 된다.</b>
+        /// 컨트롤러가 <b>30Hz</b>로 보내는데 화면은 60fps라, 빠르게 그으면 한 프레임 이동량이
+        /// 히트 반경(<see cref="hitRadius"/> 0.16)보다 쉽게 커진다. 그러면 점을 <b>뚫고 지나가</b>
+        /// 아무 일도 일어나지 않는다(터널링). 격자가 2×2라 점 간격이 넓어 더 잘 난다.</para>
+        ///
+        /// <para>여러 점이 한 프레임에 걸리면 <b>먼저 지난 것</b>을 반환한다 — 그래야 획 순서가
+        /// 실제 손 움직임과 일치한다.</para>
+        /// </summary>
         public int Move(Vector2 mouseDelta)
         {
+            Vector2 from = CursorPos;
             CursorPos += mouseDelta * sensitivity;   // 클램프 없음 — 격자 밖으로 자유롭게
+
+            int best = -1;
+            float bestT = float.MaxValue;
 
             for (int d = 0; d < PatternGraph.DotCount; d++)
             {
                 if (d == CurrentDot) continue;
-                if (Vector2.Distance(CursorPos, PatternGraph.Pos[d]) <= hitRadius)
-                    return d;
+
+                float t;
+                if (!SweepHit(from, CursorPos, PatternGraph.Pos[d], hitRadius, out t)) continue;
+                if (t >= bestT) continue;
+
+                bestT = t;
+                best = d;
             }
-            return -1;
+            return best;
+        }
+
+        /// <summary>
+        /// 선분 <paramref name="a"/>→<paramref name="b"/>가 원(<paramref name="c"/>, <paramref name="r"/>)에
+        /// 처음 들어가는 지점의 매개변수 t(0~1). 안 닿으면 false.
+        /// </summary>
+        static bool SweepHit(Vector2 a, Vector2 b, Vector2 c, float r, out float t)
+        {
+            t = 0f;
+
+            Vector2 ac = a - c;
+            if (ac.sqrMagnitude <= r * r) return true;   // 시작부터 안에 있다
+
+            Vector2 d = b - a;
+            float dd = Vector2.Dot(d, d);
+            if (dd < 1e-12f) return false;               // 안 움직였고, 위에서 밖이라고 판정됐다
+
+            // |a + t·d − c|² = r² 을 t에 대해 푼다.
+            float bq = 2f * Vector2.Dot(ac, d);
+            float cq = Vector2.Dot(ac, ac) - r * r;
+            float disc = bq * bq - 4f * dd * cq;
+            if (disc < 0f) return false;
+
+            float root = (-bq - Mathf.Sqrt(disc)) / (2f * dd);   // 작은 해 = 처음 들어가는 지점
+            if (root < 0f || root > 1f) return false;
+
+            t = root;
+            return true;
         }
 
         /// <summary>

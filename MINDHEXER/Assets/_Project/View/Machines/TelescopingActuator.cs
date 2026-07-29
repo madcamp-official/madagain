@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game.View
 {
@@ -33,6 +34,7 @@ namespace Game.View
     /// <para>구동은 <see cref="PdApproach"/>(스프링-댐퍼) — 기초_설계안 §6.2 "구동 = PD 제어".
     /// 유압프레스는 damping=1(느리고 묵직), 피스톤은 damping&lt;1(철컥) 프리셋을 인스펙터에서 고른다.</para>
     /// </summary>
+    [ExecuteAlways]   // ★ 에디터에서도 startExtension대로 보인다 — 늘어난 채로 배치할 수 있다
     public class TelescopingActuator : MonoBehaviour
     {
         [Header("파츠")]
@@ -57,10 +59,22 @@ namespace Game.View
                  "플레이 모드 중지 상태에서 바꾸고 다시 재생해야 반영된다(측정은 Awake에서 1회).")]
         public bool invertAnchorEnd = false;
 
-        [Header("스트로크")]
-        [Tooltip("완전 신장(t=1) 시 Head가 홈 위치에서 이동하는 거리(m, 월드 기준). 유일한 손튜닝 값 — " +
-                 "Shaft 파츠들이 늘어나는 배율은 이 값과 각 파츠 실측 길이에서 자동으로 계산된다(맞물림 보장).")]
-        public float strokeLength = 1f;
+        [Header("행정(스트로크) — 객체마다 다르게 준다")]
+        [Tooltip("완전 수축(t=0)일 때, 모델 홈 자세에서 이미 뻗어 있는 거리(m, 월드 기준). " +
+                 "0이면 모델 그대로가 최소 길이다. 값을 주면 '조금 뻗은 상태'가 최소가 된다.\n" +
+                 "※ 음수는 넣지 말 것 — 홈보다 더 줄이면 파츠가 서로 파고든다.")]
+        public float strokeMin = 0f;
+
+        [FormerlySerializedAs("strokeLength")]   // 기존 프리팹의 값(7.5 / 1)을 그대로 물려받는다
+        [Tooltip("완전 신장(t=1)일 때 홈 자세에서 뻗는 거리(m, 월드 기준).\n" +
+                 "Shaft 파츠들이 늘어나는 배율은 이 값과 각 파츠 실측 길이에서 자동 계산된다(맞물림 보장).")]
+        public float strokeMax = 1f;
+
+        [Header("시작 상태")]
+        [Tooltip("0=최소 길이, 1=최대 길이.\n" +
+                 "★ 에디터 씬 뷰에서도 이 값대로 보인다 — 늘어난 채로 배치하고 그 상태로 시작할 수 있다. " +
+                 "플레이를 눌렀을 때의 시작값도 같은 값이라 '보이는 대로 시작'한다.")]
+        [Range(0f, 1f)] public float startExtension = 0f;
 
         [Header("구동")]
         [Tooltip("켜면 스프링(PD) 대신 등속 선형으로 움직인다 — 지금 기본. 나중에 감속/철컥 느낌을 " +
@@ -74,8 +88,9 @@ namespace Game.View
         float _linearT;
 
         [Header("미리보기 (플레이 모드 테스트용 — 실제 조작 연결 전)")]
-        [Tooltip("켜면 Space를 누르는 동안 t=1로, 떼면 t=0으로 향한다. 실제 입력 배선이 붙으면 꺼도 된다.")]
-        public bool debugPreview = true;
+        [Tooltip("켜면 Space를 누르는 동안 t=1로, 떼면 t=0으로 향한다. 모델 검증용 — 조종(ActuatorControl)이 " +
+                 "붙으면 끄지 않으면 Space가 조종 입력을 덮어쓴다. 그래서 기본은 꺼짐이다.")]
+        public bool debugPreview = false;
 
         /// <summary>0=완전 수축, 1=완전 신장. 외부(조종 스킴)가 이 값을 밀어넣는다.</summary>
         public float Target { get => drive.Target; set => drive.Target = Mathf.Clamp01(value); }
@@ -83,7 +98,43 @@ namespace Game.View
         /// <summary>지금 신장 비율(0~1). 도착 여부 판단 등에 쓴다.</summary>
         public float Current => useLinearMotion ? _linearT : drive.Value;
 
+        /// <summary>
+        /// <b>신장(t가 커지는) 방향</b>의 월드 벡터(정규화). 조종 쪽(<see cref="ActuatorControl"/>)이
+        /// 축 표시·VR 손 변위 매핑에 쓴다.
+        ///
+        /// <para>기준을 <c>head.parent</c>로 잡는 이유: <see cref="Apply"/>가 Head를 움직이는 좌표계가
+        /// 바로 거기다. shaft 기준으로 재면 shaft에만 회전이 걸린 프리팹에서 실제 이동 방향과 어긋난다.</para>
+        /// </summary>
+        public Vector3 ExtendWorld
+        {
+            get
+            {
+                Vector3 a = axis.sqrMagnitude > 1e-6f ? axis.normalized : Vector3.right;
+                Transform basis = (head != null && head.parent != null) ? head.parent : transform;
+                Vector3 w = basis.TransformDirection(a);
+                return w.sqrMagnitude > 1e-8f ? w.normalized : Vector3.right;
+            }
+        }
+
+        /// <summary>연출 없이 즉시 t로 맞춘다(판 재시작용). 목표도 같이 t로 둔다.</summary>
+        public void SnapTo(float t)
+        {
+            t = Mathf.Clamp01(t);
+            drive.SnapTo(t);
+            _linearT = t;
+            if (_parts != null)
+            {
+                // 스냅은 순간이동이라 위에 탄 플레이어를 같이 끌고 가면 안 된다 → 이번 Apply만 운반을 끈다.
+                RailPlatform saved = _headPlatform;
+                _headPlatform = null;
+                Apply(t);
+                _headPlatform = saved;
+                if (head != null) _lastHeadWorldPos = head.position;
+            }
+        }
+
         /// <summary>Shaft 직계 자식 파츠 하나의 홈 상태 + 스케일 보정에 필요한 실측값.</summary>
+        [System.Serializable]
         struct ShaftPart
         {
             public Transform t;
@@ -93,17 +144,74 @@ namespace Game.View
             public float length0;         // 이 파츠 자신의 원래 길이(로컬)
         }
 
+        // ★ 홈 자세는 <b>직렬화</b>한다.
+        //   에디터에서 늘여 놓으면 그 상태가 씬/프리팹에 저장된다. 다음에 열었을 때 현재 트랜스폼을
+        //   홈으로 다시 재면 "늘어난 자세가 홈"이 되어 매번 조금씩 더 늘어난다(누적 파괴).
+        //   그래서 홈은 처음 한 번만 재고 파일에 남긴다 — 이후 모든 계산이 이 값 기준이다.
+        [SerializeField, HideInInspector] ShaftPart[] _parts;
+        [SerializeField, HideInInspector] Vector3 _headHomePos;
+        [SerializeField, HideInInspector] bool _homeCaptured;
+
         Vector3 _axisN;
-        Vector3 _headHomePos;
         float _worldPerLocal;    // 이 축 방향으로 로컬 1단위 = 월드 몇 미터인지(부모 스케일 반영)
-        ShaftPart[] _parts;
+        float _appliedT = float.NaN;   // 지금 트랜스폼에 반영돼 있는 t(중복 기록 방지)
+
+        RailPlatform _headPlatform;
+        Vector3 _lastHeadWorldPos;
 
         void Awake()
         {
-            if (shaft == null || head == null) { enabled = false; return; }
+            if (!EnsureHome()) { enabled = false; return; }
+
+            // Head 위에 서 있는 플레이어를 같이 실어 나르는 건 레일 세트(RailSet/RailPlatform)와
+            // 완전히 같은 문제라, 새로 만들지 않고 그 컴포넌트를 그대로 재사용한다 — Head가 이번
+            // 프레임 이동한 델타만큼 Carry()를 불러주기만 하면 된다(있으면).
+            _headPlatform = Application.isPlaying ? head.GetComponent<RailPlatform>() : null;
+            _lastHeadWorldPos = head.position;
+
+            SnapTo(startExtension);   // 보이는 대로 시작한다
+        }
+
+        /// <summary>
+        /// 홈 자세 확보. 이미 기록돼 있으면 그걸 쓰고, 없으면 <b>지금 자세를 홈으로</b> 잰다.
+        ///
+        /// <para>단위 환산(<c>_worldPerLocal</c>)은 매번 다시 구한다 — 부모 스케일이 바뀔 수 있고,
+        /// 비용이 거의 없다. 홈 측정과 달리 상태를 오염시키지도 않는다.</para>
+        /// </summary>
+        bool EnsureHome()
+        {
+            if (shaft == null || head == null) return false;
 
             _axisN = axis.sqrMagnitude > 1e-6f ? axis.normalized : Vector3.right;
-            _headHomePos = head.localPosition;
+
+            // 기록이 현재 계층과 안 맞으면(파츠 추가/삭제, 참조 유실) 다시 잰다.
+            bool valid = _homeCaptured && _parts != null && _parts.Length == shaft.childCount;
+            if (valid)
+                for (int i = 0; i < _parts.Length; i++)
+                    if (_parts[i].t == null || _parts[i].t.parent != shaft) { valid = false; break; }
+
+            if (!valid) CaptureHome();
+
+            // strokeMin/Max는 "월드 미터"인데 head.localPosition은 로컬 좌표라 부모 스케일만큼
+            // 단위가 다르다. 여기서 재서 Apply()가 항상 월드 미터 기준으로 돌게 한다 — 안 그러면
+            // 루트 스케일 11배 프리팹에서 11배 과하게 늘어난다(이 프로젝트가 겪은 실제 버그).
+            _worldPerLocal = shaft.TransformVector(_axisN).magnitude;
+            if (_worldPerLocal < 1e-6f) _worldPerLocal = 1f;
+
+            return true;
+        }
+
+        /// <summary>
+        /// 지금 자세를 홈(최소 길이, t=0)으로 기록한다.
+        ///
+        /// <para>⚠️ <b>반드시 신장되지 않은 상태에서 부를 것.</b> 늘어난 상태에서 부르면 그게 홈이 되어
+        /// 이후 모든 신장이 그 위에 얹힌다. 모델을 갈아끼웠을 때만 쓰는 수동 버튼이다.</para>
+        /// </summary>
+        [ContextMenu("홈 자세 다시 캡처 (수축 상태에서만!)")]
+        public void CaptureHome()
+        {
+            if (shaft == null || head == null) return;
+            _axisN = axis.sqrMagnitude > 1e-6f ? axis.normalized : Vector3.right;
 
             int n = shaft.childCount;
             _parts = new ShaftPart[n];
@@ -120,26 +228,10 @@ namespace Game.View
                 };
             }
 
-            // strokeLength는 인스펙터에 "월드 미터"로 설명돼 있는데 head.localPosition은 로컬 좌표라
-            // 부모(프리팹 루트) 스케일만큼 단위가 다르다. 여기서 한 번 재서 Apply()가 항상 월드
-            // 미터 기준으로 동작하게 한다 — 안 그러면 루트 스케일 11배 프리팹에서 실제로 11배
-            // 과하게 늘어난다(이 프로젝트가 겪은 실제 버그). Shaft 자신은 이제 스케일이 안 바뀌므로
-            // 이 배율은 재생 내내 상수다.
-            Transform parent = shaft;   // Head·Shaft파츠 모두 Shaft와 같은 부모 체인 스케일을 공유
-            _worldPerLocal = parent != null ? parent.TransformVector(_axisN).magnitude : 1f;
-            if (_worldPerLocal < 1e-6f) _worldPerLocal = 1f;
-
-            // Head 위에 서 있는 플레이어를 같이 실어 나르는 건 레일 세트(RailSet/RailPlatform)와
-            // 완전히 같은 문제라, 새로 만들지 않고 그 컴포넌트를 그대로 재사용한다 — Head가 이번
-            // 프레임 이동한 델타만큼 Carry()를 불러주기만 하면 된다(있으면).
-            _headPlatform = head.GetComponent<RailPlatform>();
-            _lastHeadWorldPos = head.position;
-
-            drive.SnapTo(0f);
+            _headHomePos = head.localPosition;
+            _homeCaptured = true;
+            _appliedT = 0f;   // 방금 잰 자세가 곧 t=0이다
         }
-
-        RailPlatform _headPlatform;
-        Vector3 _lastHeadWorldPos;
 
         /// <summary>
         /// 파츠 하나의 렌더러 바운즈를 축 방향으로 재서, 그 파츠 자신의 Anchor 쪽 끝 로컬 좌표와
@@ -198,6 +290,15 @@ namespace Game.View
 
         void Update()
         {
+            // ── 에디터(비재생) — 씬 뷰에서 startExtension대로 보여 준다 ──
+            // 값이 바뀌었을 때만 기록한다. 매 틱 같은 값을 써넣으면 씬이 계속 더러워진다.
+            if (!Application.isPlaying)
+            {
+                if (!EnsureHome()) return;
+                if (!Mathf.Approximately(_appliedT, startExtension)) Apply(startExtension);
+                return;
+            }
+
             if (debugPreview)
             {
                 var kb = UnityEngine.InputSystem.Keyboard.current;
@@ -219,8 +320,13 @@ namespace Game.View
 
         void Apply(float t)
         {
-            float localStroke = strokeLength / _worldPerLocal;   // 월드 미터 → 로컬 단위 환산
-            head.localPosition = _headHomePos + _axisN * (localStroke * t);
+            if (_parts == null || head == null) return;
+            _appliedT = t;
+
+            // t=0이 strokeMin, t=1이 strokeMax. 둘 다 홈 자세 기준 '뻗은 거리'(월드 m)다.
+            float worldStroke = Mathf.LerpUnclamped(strokeMin, strokeMax, t);
+            float localStroke = worldStroke / _worldPerLocal;   // 월드 미터 → 로컬 단위 환산
+            head.localPosition = _headHomePos + _axisN * localStroke;
 
             // Head가 이번 프레임 움직인 만큼, 그 위에 서 있는 CharacterController를 같이 실어 나른다.
             if (_headPlatform != null)
@@ -236,9 +342,9 @@ namespace Game.View
                 ShaftPart p = _parts[i];
                 if (p.t == null) continue;
 
-                // s(t) = 1 + strokeLength·t / L0 — 이 파츠의 Anchor 반대쪽 끝이 그만큼 더 뻗어나가게.
-                // 손튜닝 값이 아니라 strokeLength·파츠 실측 길이에서 유도(§클래스 주석).
-                float s = 1f + (localStroke * t) / p.length0;
+                // s(t) = 1 + 뻗은거리 / L0 — 이 파츠의 Anchor 반대쪽 끝이 그만큼 더 뻗어나가게.
+                // 손튜닝 값이 아니라 strokeMin/Max·파츠 실측 길이에서 유도한다(§클래스 주석).
+                float s = 1f + localStroke / p.length0;
                 float finalScaleAxis = p.homeScaleAxis * s;
 
                 Vector3 scale = p.t.localScale;
@@ -262,14 +368,42 @@ namespace Game.View
         static Vector3 Abs(Vector3 v) => new Vector3(Mathf.Abs(v.x), Mathf.Abs(v.y), Mathf.Abs(v.z));
 
 #if UNITY_EDITOR
+        /// <summary>
+        /// 인스펙터에서 값을 바꾸는 즉시 씬 뷰에 반영한다.
+        ///
+        /// <para><see cref="ExecuteAlways"/>의 Update만으로는 부족하다 — 에디터가 씬 뷰를 다시 그릴
+        /// 때만 돌아서, 창이 뒤에 있거나 포커스가 없으면 슬라이더를 움직여도 아무 일이 안 일어난다.</para>
+        ///
+        /// <para>OnValidate 안에서 트랜스폼을 건드리면 Unity가 경고를 뱉으므로 <c>delayCall</c>로 한 틱
+        /// 미룬다(공식 권장 패턴).</para>
+        /// </summary>
+        void OnValidate()
+        {
+            if (Application.isPlaying) return;
+            if (strokeMin < 0f) strokeMin = 0f;   // 홈보다 더 줄이면 파츠가 서로 파고든다
+
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                if (this == null || Application.isPlaying) return;
+                if (!EnsureHome()) return;
+                Apply(startExtension);
+            };
+        }
+
         void OnDrawGizmosSelected()
         {
             if (shaft == null) return;
             Vector3 a = axis.sqrMagnitude > 1e-6f ? axis.normalized : Vector3.right;
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawLine(shaft.position, shaft.position + shaft.TransformDirection(a) * strokeLength);
+            Vector3 dir = shaft.TransformDirection(a).normalized;
+            Vector3 o = shaft.position;
+
+            // 가동 구간을 그대로 보여 준다 — 최소(초록) → 최대(빨강)까지가 이 객체의 행정.
+            Gizmos.color = Color.green;  Gizmos.DrawWireSphere(o + dir * strokeMin, 0.06f);
+            Gizmos.color = Color.red;    Gizmos.DrawWireSphere(o + dir * strokeMax, 0.06f);
+            Gizmos.color = Color.cyan;   Gizmos.DrawLine(o + dir * strokeMin, o + dir * strokeMax);
+
             if (head != null) { Gizmos.color = Color.yellow; Gizmos.DrawWireSphere(head.position, 0.05f); }
-            if (anchor != null) { Gizmos.color = Color.green; Gizmos.DrawWireSphere(anchor.position, 0.05f); }
+            if (anchor != null) { Gizmos.color = new Color(0.4f, 1f, 0.4f); Gizmos.DrawWireCube(anchor.position, Vector3.one * 0.08f); }
         }
 #endif
     }

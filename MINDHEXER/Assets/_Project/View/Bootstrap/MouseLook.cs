@@ -4,8 +4,9 @@ using UnityEngine.InputSystem;
 namespace Game.View
 {
     /// <summary>
-    /// PC 시점 — 카메라에 붙는 <b>시점 회전의 유일한 소유자</b>. 마우스 + 외부(자이로) 델타를
-    /// yaw/pitch로 누적하고 <see cref="MotionFeel.CurrentRoll"/>을 합성해 적용한다.
+    /// PC 시점 — <c>[Head]</c>에 붙는 <b>시점 회전의 유일한 소유자</b>. 마우스 + 외부(자이로) 델타를
+    /// yaw/pitch로 누적해 적용한다. 롤은 아래층(카메라의 <see cref="MotionFeel"/>)이 담당한다 —
+    /// 롤이 시선 축을 돌려면 yaw/pitch보다 <b>아래</b>에 있어야 하기 때문(GameBoot 주석 ★).
     /// <see cref="FirstPersonPlayer"/>(몸)에서 뜯어낸 코드다 — 몸은 이제 회전하지 않는다.
     ///
     /// <para>VR에선 이 컴포넌트를 붙이지 않는다 — TrackedPoseDriver(머리)가 같은 자리를 소유한다.
@@ -33,7 +34,9 @@ namespace Game.View
         void Awake()
         {
             _body = GetComponentInParent<FirstPersonPlayer>();
-            _feel = GetComponent<MotionFeel>();
+            // [Head] 구조에서는 자식(카메라)에 있다. 손으로 조립한 씬에서는 부모(몸)일 수 있다.
+            _feel = GetComponentInChildren<MotionFeel>();
+            if (_feel == null) _feel = GetComponentInParent<MotionFeel>();
 
             Vector3 e = transform.localEulerAngles;
             _yaw = e.y;
@@ -66,8 +69,10 @@ namespace Game.View
             }
             ExternalLook = Vector2.zero;   // 델타는 매 프레임 소비(frozen이어도 쌓이면 안 된다)
 
-            transform.localRotation = Quaternion.Euler(_pitch, _yaw,
-                _feel != null ? _feel.CurrentRoll : 0f);
+            // 롤은 [CamRig](MotionFeel)이 소유하면 거기서 이미 걸린다 — 여기서 또 더하면 두 배가 된다.
+            // 구형 배치(MotionFeel이 카메라에 직접)에서만 여기서 합성한다.
+            float roll = (_feel != null && !_feel.OwnsRotation) ? _feel.CurrentRoll : 0f;
+            transform.localRotation = Quaternion.Euler(_pitch, _yaw, roll);
         }
     }
 }

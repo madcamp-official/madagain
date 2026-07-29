@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game.View
 {
@@ -34,15 +35,21 @@ namespace Game.View
         [Tooltip("함께 실려 가는 것들의 부모. 터렛·벽·발판·중첩 레일 세트.")]
         public Transform riderRoot;
 
-        [Tooltip("레일 1칸 길이를 재는 기준 오브젝트. 툴의 '레일 길이 측정'이 쓴다.")]
+        [Tooltip("툴의 '레일 길이 측정' 버튼이 참고하는 오브젝트. <b>선택 사항</b> — 칸 간격은 아래 " +
+                 "cellLength가 소유하며, 이 필드는 그 값을 '모델에서 재서 채워 주는' 편의 기능일 뿐이다. " +
+                 "비워 두고 cellLength를 직접 넣어도 완전히 정상이다.")]
         public Transform referenceRail;
 
         [Header("트랙 (축은 이 트랜스폼의 로컬 기준)")]
         [Tooltip("트랙 진행 방향(로컬). 정규화는 자동.")]
         public Vector3 axis = Vector3.right;
 
-        [Tooltip("레일 1칸 길이 = 플릭 1회 이동량 = 스냅 단위. 단위는 '부모 공간'(localPosition과 같은 단위).")]
-        public float railLength = 2f;
+        [FormerlySerializedAs("railLength")]   // 기존 씬/프리팹의 값을 그대로 물려받는다
+        [Tooltip("플릭 1회 이동량 = 스냅 격자 간격. 단위는 '부모 공간'(localPosition과 같은 단위).\n" +
+                 "★ <b>레일 모델의 실제 길이와 무관하다.</b> 퍼즐에 맞는 값을 자유롭게 넣으면 된다 — " +
+                 "모델이 2m짜리여도 칸 간격을 3으로 두면 3씩 움직인다(§6.2 '균등 간격이 아니라 퍼즐에 맞는 지점').\n" +
+                 "툴의 '레일 길이 측정'은 모델에서 재서 이 값을 채워 주는 편의 버튼일 뿐, 강제가 아니다.")]
+        public float cellLength = 2f;
 
         [Header("이동 범위 (앵커=배치 위치 기준, 부모 공간 단위)")]
         [Tooltip("앵커에서 음(−) 방향 한계.")]
@@ -77,7 +84,7 @@ namespace Game.View
         public bool AtRest => !_flicking && Mathf.Approximately(_vel, 0f);
 
         /// <summary>현재 위치가 몇 번째 칸인지(앵커=0).</summary>
-        public int CurrentCell => railLength > 1e-4f ? Mathf.RoundToInt(Offset / railLength) : 0;
+        public int CurrentCell => cellLength > 1e-4f ? Mathf.RoundToInt(Offset / cellLength) : 0;
 
         /// <summary>정지 상태에서 칸이 바뀌었을 때. 퍼즐 조건(게이트 개방 등) 배선용.</summary>
         public event Action<int> OnCellArrived;
@@ -112,6 +119,9 @@ namespace Game.View
         public int AxisCount => 1;
 
         public Vector3 AxisWorld(int slot) => transform.TransformDirection(AxisLocal).normalized;
+
+        /// <summary>레일은 양 끝이 대칭이라 "보이는 대로" 움직여야 한다 → 화면 기준 부호 보정을 쓴다.</summary>
+        public bool ScreenRelativeSign => true;
 
         /// <summary>앵커=0, 양 끝=±1. 범위가 비대칭이어도 각 방향을 따로 정규화한다.</summary>
         public float GetNormalized(int slot)
@@ -223,7 +233,7 @@ namespace Game.View
         /// <summary>현재 칸에서 dir방향 한 칸. 범위를 넘으면 범위 끝에 붙인다(무시하지 않는다).</summary>
         float NextCellTarget(int dir)
         {
-            float unit = Mathf.Max(1e-4f, railLength);
+            float unit = Mathf.Max(1e-4f, cellLength);
             int cell = Mathf.RoundToInt(Offset / unit);
             return Mathf.Clamp((cell + Mathf.Clamp(dir, -1, 1)) * unit, rangeMin, rangeMax);
         }
@@ -231,7 +241,7 @@ namespace Game.View
         /// <summary>현재 위치에서 가장 가까운 칸의 앵커 기준 좌표.</summary>
         public float NearestCell(float offset)
         {
-            float unit = Mathf.Max(1e-4f, railLength);
+            float unit = Mathf.Max(1e-4f, cellLength);
             return Mathf.Clamp(Mathf.RoundToInt(offset / unit) * unit, rangeMin, rangeMax);
         }
 

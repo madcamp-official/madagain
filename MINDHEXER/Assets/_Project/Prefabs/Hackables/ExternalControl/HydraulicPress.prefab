@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3017831048186086949}
   - component: {fileID: 7181363119796463416}
   - component: {fileID: 6676188446001988698}
+  - component: {fileID: 8811223344556677002}
   m_Layer: 0
   m_Name: HydraulicPress
   m_TagString: Untagged
@@ -873,3 +874,19 @@ MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 449419268633594650, guid: 4092437b369ea32429d5f49adf0ef83c, type: 3}
   m_PrefabInstance: {fileID: 8760131299417611601}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8811223344556677002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6402718502895393723}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9075cc96434967549bc3690f75836833, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ActuatorControl
+  holdSpeed: 0.35
+  allowFlick: 1
+  startExtension: 0
+  actuator: {fileID: 0}

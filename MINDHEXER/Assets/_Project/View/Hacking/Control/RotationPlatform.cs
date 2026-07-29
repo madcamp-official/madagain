@@ -89,6 +89,9 @@ namespace Game.View
         // ── IExternalControl ──────────────────────────────────────────────
         public int AxisCount => 1;
 
+        /// <summary>회전판은 좌/우가 대칭이라 "보이는 대로" 돌아야 한다 → 화면 기준 부호 보정을 쓴다.</summary>
+        public bool ScreenRelativeSign => true;
+
         /// <summary>
         /// 조종 방향으로 <b>회전축이 아니라 수평 접선</b>을 낸다.
         ///
@@ -232,7 +235,9 @@ namespace Game.View
                 Vector3 delta = newPos - pos;
                 cc.Move(delta);
                 // 회전이든 직선이든 "내가 걸은 건지 밀린 건지" 구분은 여기 한 곳으로 모인다(RailPlatform 참조).
-                if (cc.TryGetComponent(out MotionFeel feel)) feel.OnCarried(delta);
+                // MotionFeel은 카메라 리그에 있으므로 자식까지 뒤져야 한다(RailPlatform 주석 참조).
+                var feel = cc.GetComponentInChildren<MotionFeel>();
+                if (feel != null) feel.OnCarried(delta);
             }
         }
 

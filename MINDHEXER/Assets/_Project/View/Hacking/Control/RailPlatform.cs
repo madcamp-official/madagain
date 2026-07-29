@@ -60,7 +60,10 @@ namespace Game.View
                 cc.Move(delta);
                 // "내가 걸은 건지 밀린 건지" 구분용 화면 지연 — 레일·피스톤·프레서 등 강제 이동의
                 // 유일한 관문이 여기라, 여기 한 곳만 호출하면 전부에 적용된다(MotionFeel.OnCarried 참조).
-                if (cc.TryGetComponent(out MotionFeel feel)) feel.OnCarried(delta);
+                // ⚠️ MotionFeel은 몸이 아니라 카메라 리그([CamRig])에 있다 — TryGetComponent로 찾으면
+                //    영영 못 찾아 스웨이가 조용히 안 걸린다(실제로 그랬다). 자식까지 뒤져야 한다.
+                var feel = cc.GetComponentInChildren<MotionFeel>();
+                if (feel != null) feel.OnCarried(delta);
             }
         }
 
