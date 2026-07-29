@@ -21,17 +21,18 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: tripo_part_21_053_material
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_Shader: {fileID: 4800000, guid: 0582acf8052f5834fbb2c66b7c2fd0bc, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - _INVERT_ON
+  - _USEGLOBAL_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap:
-    RenderType: Opaque
+  stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
   m_LockedProperties: 
@@ -108,12 +109,18 @@ Material:
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
+    - _Dither: 0
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _InBlack: 0
+    - _InWhite: 0.5
+    - _Invert: 1
+    - _Levels: 4
+    - _LightWrap: 0.35
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -127,6 +134,7 @@ Material:
     - _SrcBlendAlpha: 1
     - _Surface: 0
     - _UVSec: 0
+    - _UseGlobal: 1
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
