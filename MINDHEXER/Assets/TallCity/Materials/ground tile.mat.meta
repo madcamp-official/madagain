@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 3678d52ae5d95954aa86b7fd73c1ec1d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 262487
+  packageName: cyberpunk - Tall City (URP)
+  packageVersion: 1.0
+  assetPath: Assets/TallCity/Materials/ground tile.mat
+  uploadId: 609142

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d2ca7d32ad6882443a9e83a8bc3a29cf
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 262487
+  packageName: cyberpunk - Tall City (URP)
+  packageVersion: 1.0
+  assetPath: Assets/TallCity/Materials/boat.mat
+  uploadId: 609142

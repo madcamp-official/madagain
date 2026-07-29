@@ -68,7 +68,16 @@ crashlytics-build.properties
 /MINDHEXER/Assets/TallCity/*
 !/MINDHEXER/Assets/TallCity/Prefab/
 !/MINDHEXER/Assets/TallCity/Prefab.meta
-/MINDHEXER/Assets/TallCity.meta
+# 메시·머티리얼·구름(약 5.7MB)은 추적한다. 거대한 건 Textures/(1.4G) 하나뿐이고,
+# 그것만 빼도 형태·크기·충돌이 전부 정상이라 프리팹 팔레트로 맵 배치를 할 수 있다
+# (텍스처 슬롯이 비어 회색 무지로 보일 뿐 — 흑백 아트라 최종 모습과도 크게 다르지 않다).
+# 에셋스토어에서 팩을 임포트하면 텍스처 GUID가 일치해 자동으로 붙는다.
+!/MINDHEXER/Assets/TallCity/Mesh/
+!/MINDHEXER/Assets/TallCity/Mesh.meta
+!/MINDHEXER/Assets/TallCity/Materials/
+!/MINDHEXER/Assets/TallCity/Materials.meta
+!/MINDHEXER/Assets/TallCity/Clouds/
+!/MINDHEXER/Assets/TallCity/Clouds.meta
 /MINDHEXER/Assets/Remesh Games/
 /MINDHEXER/Assets/Remesh Games.meta
 
