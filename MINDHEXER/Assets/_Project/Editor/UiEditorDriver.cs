@@ -20,6 +20,7 @@ namespace Game.EditorTools
     {
         static readonly List<HackPanel> _panels = new List<HackPanel>();
         static readonly List<VrUiSpace> _spaces = new List<VrUiSpace>();
+        static readonly List<VrUiFollow> _follows = new List<VrUiFollow>();
         static int _tick;
 
         static UiEditorDriver()
@@ -33,13 +34,20 @@ namespace Game.EditorTools
             if (Application.isPlaying) return;
 
             // 매 틱 씬 전수 검색은 낭비다 — 주기적으로만 다시 훑는다.
-            if ((++_tick & 31) == 0 || _panels.Count + _spaces.Count == 0)
+            if ((++_tick & 31) == 0 || _panels.Count + _spaces.Count + _follows.Count == 0)
             {
                 _panels.Clear();
                 _panels.AddRange(Object.FindObjectsByType<HackPanel>(FindObjectsSortMode.None));
                 _spaces.Clear();
                 _spaces.AddRange(Object.FindObjectsByType<VrUiSpace>(FindObjectsSortMode.None));
+                _follows.Clear();
+                _follows.AddRange(Object.FindObjectsByType<VrUiFollow>(FindObjectsSortMode.None));
             }
+
+            // ★ 추종을 패널보다 먼저 돌린다 — 패널이 추종 루트의 위치를 읽어 꼭짓점을 만든다.
+            //   이게 없으면 에디터에서 카메라를 돌려도 패널이 따라오지 않아 '선이 그대로'로 보인다.
+            for (int i = 0; i < _follows.Count; i++)
+                if (_follows[i] != null) _follows[i].TickFollow();
 
             for (int i = 0; i < _spaces.Count; i++)
                 if (_spaces[i] != null) _spaces[i].Refresh();

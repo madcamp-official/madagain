@@ -7,27 +7,30 @@ namespace Game.View
     /// 해킹 패턴 패널 — <b>테두리·연결선·패턴·커서를 메시 하나로</b> 그린다.
     ///
     /// <code>
-    ///   ╲                              ╱      시야 네 꼭짓점에서
+    ///   ╲                              ╱      화면 네 꼭짓점에서
     ///    ╲ ┌──────────────────┐ ╱        패널 네 꼭짓점으로
-    ///      │ ●              ● │              연결선 4개가 상시 유지
-    ///      │                  │
-    ///    ╱ │ ●              ● │ ╲
+    ///      │   ●          ●   │              연결선 4개가 상시 유지
+    ///      │                  │              (점은 사각형 안쪽에 여유를 두고 놓인다)
+    ///    ╱ │   ●          ●   │ ╲
     ///   ╱  └──────────────────┘  ╲
     /// </code>
     ///
     /// <para><b>이 연출의 핵심</b> — 패널은 머리에 완전히 고정되지 않고 관성으로 늦게 따라온다
-    /// (<see cref="VrUiFollow"/>). 그런데 연결선의 바깥 끝은 <b>시야에 고정</b>돼 있다. 그래서 고개를
-    /// 돌리면 선 4개가 눈에 띄게 휘고 늘어난다 — <b>관성이 결함이 아니라 연출로 읽히게 된다.</b>
-    /// 선이 없으면 그냥 "UI가 굼뜨다"로 보인다.</para>
+    /// (<see cref="VrUiFollow"/>). 그런데 연결선의 바깥 끝은 <b>화면에 고정</b>돼 있다. 그래서 고개를
+    /// 돌리면 선 4개가 눈에 띄게 휘고 늘어난다 — <b>관성이 결함이 아니라 연출로 읽히게 된다.</b></para>
     ///
-    /// <para><b>선이 두 좌표계를 잇는다</b>는 것이 구현을 결정했다. 캔버스는 평면이라 서로 다른 두
-    /// 공간의 점을 이을 수 없다. 그래서 캔버스를 쓰지 않고 <see cref="UiMeshBuilder"/>로 직접 그린다
-    /// (성능상으로도 그쪽이 낫다 — 그쪽 주석 참조).</para>
+    /// <para>★ <b>바깥 끝은 카메라 프러스텀에서 직접 구한다</b>(<see cref="useCameraFrustum"/>).
+    /// 각도를 손으로 추정하면 화면 끝에서 떨어진다 — 실제로 추정값 32°가 실측 39.2°와 어긋나
+    /// 선이 화면 안쪽에 떠 있었다. 뷰포트 (0,0)~(1,1)을 쓰면 <b>해상도·종횡비·FOV가 뭐든
+    /// 항상 화면 네 꼭짓점에 정확히 닿는다.</b></para>
     ///
-    /// <para><b>등장/소멸은 페이드가 아니다.</b> 알파는 건드리지 않고 <b>길이와 크기만</b> 움직인다.
-    /// 확대·축소 중에도 연결선은 패널의 <b>현재</b> 꼭짓점을 매 프레임 다시 읽으므로 저절로 따라간다.</para>
+    /// <para>★ <b>모든 요소에 검은 테두리를 두른다</b>(<see cref="drawOutline"/>). 흰 배경 앞에서는
+    /// 흰 UI가 통째로 사라지기 때문이다. 검은 윤곽을 <b>전부 먼저</b> 그린 뒤 흰 본체를 덮는
+    /// 2패스 방식이다 — 요소별로 번갈아 그리면 뒤 요소의 윤곽이 앞 요소를 갉아먹는다.</para>
     ///
-    /// <para><b>배치</b> — 이 오브젝트는 <c>[Head]</c>의 자식이며 <b>로컬 트랜스폼이 항등</b>이어야
+    /// <para><b>등장/소멸은 페이드가 아니다.</b> 알파는 건드리지 않고 <b>길이와 크기만</b> 움직인다.</para>
+    ///
+    /// <para><b>배치</b> — 이 오브젝트는 <c>[Head]</c> 아래에 있고 <b>로컬 트랜스폼이 항등</b>이어야
     /// 한다(눈 = 로컬 원점). <see cref="UiMeshBuilder"/>가 그 전제로 선 두께 방향을 구한다.</para>
     /// </summary>
     [ExecuteAlways]
@@ -44,19 +47,31 @@ namespace Game.View
         [Tooltip("선/점을 그릴 머티리얼(MINDHEXER/UiLine). 비우면 런타임에 만든다.")]
         public Material material;
 
+        [Tooltip("화면 네 꼭짓점을 구할 카메라. 비우면 자동으로 찾는다.")]
+        public Camera viewCamera;
+
         // ── 배치 ──────────────────────────────────────────────────────
-        [Header("배치 (도)")]
+        [Header("배치")]
         [Tooltip("눈에서 UI 평면까지 거리(m).")]
         [Range(0.5f, 4f)] public float distance = 1.8f;
 
-        [Tooltip("'화면 네 꼭짓점'의 가로 반각. 렌즈 FOV 확정 전 추정값 — 실기에서 이 값만 바꾸면 된다.")]
-        [Range(5f, 80f)] public float viewHalfAngleX = 32f;
+        [Tooltip("★ 화면 네 꼭짓점을 카메라 프러스텀에서 구한다. 해상도·종횡비·FOV가 바뀌어도 " +
+                 "항상 화면 끝에 정확히 닿는다. 끄면 아래 각도 추정값을 쓴다(어긋난다).")]
+        public bool useCameraFrustum = true;
 
-        [Tooltip("'화면 네 꼭짓점'의 세로 반각.")]
+        [Tooltip("화면 끝에서 안쪽으로 들이는 양(뷰포트 비율). 0 = 화면 꼭짓점에 정확히 닿는다.")]
+        [Range(0f, 0.2f)] public float viewportMargin = 0f;
+
+        [Tooltip("프러스텀을 못 쓸 때의 가로 반각.")]
+        [Range(5f, 80f)] public float viewHalfAngleX = 39f;
+        [Tooltip("프러스텀을 못 쓸 때의 세로 반각.")]
         [Range(5f, 60f)] public float viewHalfAngleY = 24f;
 
         [Tooltip("중앙 정사각 패널의 각크기.")]
         [Range(4f, 50f)] public float panelAngularSize = 24f;
+
+        [Tooltip("점을 사각형 안쪽으로 들이는 비율. 사각형이 점 네 개를 여유 있게 감싼다.")]
+        [Range(0f, 0.45f)] public float dotInset = 0.16f;
 
         // ── 굵기 ──────────────────────────────────────────────────────
         [Header("굵기 (m, 위 거리 기준)")]
@@ -69,10 +84,25 @@ namespace Game.View
         [Tooltip("가장 오래된 선의 굵기.")]
         public float traceWidthOldest = 0.005f;
 
+        [Tooltip("같은 변을 여러 번 지날 때 갈라지는 부푼 양(m). 최대 3겹까지 구분된다.")]
+        public float fanBulge = 0.035f;
+
         public float dotRadius = 0.012f;
         [Tooltip("닿은 점이 커지는 배율.")]
         public float dotHitScale = 1.7f;
         public float cursorRadius = 0.016f;
+
+        [Tooltip("다음에 이어야 할 점 중앙에 찍히는 작은 점의 반지름.")]
+        public float nextCoreRadius = 0.0035f;
+
+        // ── 검은 테두리 ───────────────────────────────────────────────
+        [Header("검은 테두리 (흰 배경에서 안 보이는 것을 막는다)")]
+        public bool drawOutline = true;
+
+        [Tooltip("본체 바깥으로 더 나가는 두께(m). 선은 양쪽으로 이만큼씩 넓어진다.")]
+        public float outlineWidth = 0.0022f;
+
+        [Range(0f, 1f)] public float outlineLevel = 0f;
 
         // ── 밝기 (색 신호 폐기 — 명도만 쓴다) ─────────────────────────
         [Header("밝기 0~1")]
@@ -83,13 +113,13 @@ namespace Game.View
         [Range(0f, 1f)] public float dotLevel = 0.6f;
         [Range(0f, 1f)] public float dotHitLevel = 1f;
         [Range(0f, 1f)] public float cursorLevel = 1f;
-        [Range(0f, 1f)] public float nextHintLevel = 0.4f;
+        [Range(0f, 1f)] public float nextHintLevel = 0.3f;
+        [Tooltip("다음 목표 점 중앙의 작은 점. 0 = 검정 — 흰 점 위에 뚫린 것처럼 보인다.")]
+        [Range(0f, 1f)] public float nextCoreLevel = 0f;
 
         // ── 타이밍 ────────────────────────────────────────────────────
         [Header("등장 / 소멸 (초)")]
-        [Tooltip("연결선이 시야 모서리에서 패널까지 자라는 시간.")]
         public float lineGrowTime = 0.18f;
-        [Tooltip("선이 도달한 뒤 패널이 톡 뜨는 시간.")]
         public float panelPopTime = 0.22f;
         [Tooltip("등장 시 잠깐 커지는 배율.")]
         public float popOvershoot = 1.12f;
@@ -108,16 +138,24 @@ namespace Game.View
         public float dotGrowTime = 0.096f;
         [Tooltip("점이 작아지는 시간. AOSP는 192ms — 빠르게 반응하고 느리게 이완해야 '닿았다'가 느껴진다.")]
         public float dotShrinkTime = 0.192f;
+        [Tooltip("중앙 작은 점이 나타나는 시간.")]
+        public float coreGrowTime = 0.08f;
+        [Tooltip("★ 지나간 목표의 중앙 점이 부드럽게 줄어들며 사라지는 시간.")]
+        public float coreShrinkTime = 0.24f;
 
         // ── 저작용 미리보기 ───────────────────────────────────────────
-        [Header("미리보기 (저작 전용 — 실제 게임에서는 SetPattern이 덮어쓴다)")]
+        [Header("미리보기 (에디터 전용 — 실행 중에는 무시된다)")]
+        [Tooltip("에디터에서만 쓴다. ★ 실행 시에는 항상 숨긴 상태로 시작한다 — " +
+                 "해킹을 시작하지도 않았는데 UI가 떠 있으면 안 된다.")]
         public bool previewVisible = true;
         [Tooltip("목표 패턴(유령선). 점 인덱스 0=TL 1=TR 2=BL 3=BR.")]
-        public int[] previewTarget = { 0, 1, 3, 2 };
+        public int[] previewTarget = { 0, 1, 3, 2, 0, 3 };
         [Tooltip("플레이어가 지난 점.")]
-        public int[] previewPlayer = { 0, 1 };
+        public int[] previewPlayer = { 0, 1, 3, 2, 0 };
         [Tooltip("커서 위치(정규화 0~1).")]
-        public Vector2 previewCursor = new Vector2(0.75f, 0.6f);
+        public Vector2 previewCursor = new Vector2(0.55f, 0.25f);
+        [Tooltip("다음 목표 점(미리보기용). -1이면 없음.")]
+        public int previewNextDot = 3;
 
         // ── 상태 ──────────────────────────────────────────────────────
         enum Phase { Hidden, Appearing, Shown, Disappearing }
@@ -130,6 +168,8 @@ namespace Game.View
         MeshRenderer _mr;
 
         readonly float[] _dotGrow = new float[PatternGraph.DotCount];
+        readonly float[] _coreScale = new float[PatternGraph.DotCount];
+        readonly int[] _edgeUse = new int[PatternGraph.EdgeCount];
         Vector2 _drawCursor;
         bool _cursorInit;
 
@@ -139,6 +179,7 @@ namespace Game.View
         int _nextDot = -1;
 
         float _lastTime;
+        bool _outlinePass;
 
         readonly Vector3[] _viewCorner = new Vector3[4];
         readonly Vector3[] _panelCorner = new Vector3[4];
@@ -147,7 +188,6 @@ namespace Game.View
 
         // ── 외부 API ──────────────────────────────────────────────────
 
-        /// <summary>패널을 띄운다. 이미 떠 있거나 뜨는 중이면 무시.</summary>
         [ContextMenu("패널 — 등장")]
         public void Show()
         {
@@ -156,7 +196,6 @@ namespace Game.View
             _clock = 0f;
         }
 
-        /// <summary>패널을 접는다.</summary>
         [ContextMenu("패널 — 소멸")]
         public void Hide()
         {
@@ -165,7 +204,23 @@ namespace Game.View
             _clock = 0f;
         }
 
-        /// <summary>패턴 미니게임이 매 틱 호출한다.</summary>
+        /// <summary>해킹 시작 — 기존 <c>PatternUI</c>와 같은 시그니처라 미니게임이 그대로 쓸 수 있다.</summary>
+        public void Show(DotPattern target, PatternInput input, int nextDot)
+        {
+            SetPattern(target != null ? target.dots : null,
+                       input != null ? (IList<int>)input.PlayerDots : null,
+                       input != null ? input.CursorPos : Vector2.zero,
+                       nextDot);
+            Show();
+        }
+
+        /// <summary>매 틱 갱신.</summary>
+        public void Refresh(PatternInput input, int nextDot)
+        {
+            if (input == null) return;
+            SetPattern(_target, input.PlayerDots, input.CursorPos, nextDot);
+        }
+
         public void SetPattern(int[] target, IList<int> playerDots, Vector2 cursor, int nextDot)
         {
             _target = target;
@@ -185,21 +240,28 @@ namespace Game.View
             if (_mesh == null)
             {
                 _mesh = new Mesh { name = "[HackPanel]" };
-                _mesh.MarkDynamic();               // 매 프레임 바뀐다고 알려 둔다
+                _mesh.MarkDynamic();
                 _mesh.hideFlags = HideFlags.DontSave;
             }
             _mf.sharedMesh = _mesh;
 
             EnsureMaterial();
             _lastTime = Time.realtimeSinceStartup;
-            _phase = previewVisible ? Phase.Shown : Phase.Hidden;
+            ResetPhase();
         }
 
         void OnValidate()
         {
-            // 저작 중 체크박스로 등장/소멸을 확인할 수 있게 한다.
-            if (!Application.isPlaying)
-                _phase = previewVisible ? Phase.Shown : Phase.Hidden;
+            if (!Application.isPlaying) ResetPhase();
+        }
+
+        /// <summary>
+        /// ★ 실행 중에는 <b>무조건 숨긴 상태</b>로 시작한다. <see cref="previewVisible"/>은 저작 편의용
+        /// 플래그일 뿐인데, 프리팹에 켠 채로 저장돼 있으면 게임 시작 즉시 UI가 떠 버린다(실제로 그랬다).
+        /// </summary>
+        void ResetPhase()
+        {
+            _phase = (!Application.isPlaying && previewVisible) ? Phase.Shown : Phase.Hidden;
         }
 
         void EnsureMaterial()
@@ -237,12 +299,6 @@ namespace Game.View
 
             Advance(dt);
             Rebuild(dt);
-
-#if UNITY_EDITOR
-            // 에디터에서는 씬 뷰가 다시 그려질 때만 틱이 돈다 — 애니메이션 중에는 직접 돌려 준다.
-            if (!Application.isPlaying && (_phase == Phase.Appearing || _phase == Phase.Disappearing))
-                UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
-#endif
         }
 
         void PullPreview()
@@ -251,7 +307,7 @@ namespace Game.View
             _player.Clear();
             if (previewPlayer != null) for (int i = 0; i < previewPlayer.Length; i++) _player.Add(previewPlayer[i]);
             _cursor = previewCursor;
-            _nextDot = -1;
+            _nextDot = previewNextDot;
         }
 
         void Advance(float dt)
@@ -278,72 +334,129 @@ namespace Game.View
 
             ComputeViewCorners();
             ComputePanelCorners(panelScale);
+            UpdateDrawCursor(dt);
+            UpdateDotGrow(dt);
+            UpdateCoreScale(dt);
 
-            // ① 연결선 — 시야 모서리에서 패널 모서리 쪽으로 lineT 만큼.
+            // 검은 윤곽을 전부 먼저, 그 위에 본체. 요소별로 번갈아 그리면
+            // 뒤에 그려지는 요소의 윤곽이 앞 요소의 본체를 갉아먹는다.
+            if (drawOutline)
+            {
+                _outlinePass = true;
+                BuildContent(lineT, panelScale, dotScale);
+            }
+            _outlinePass = false;
+            BuildContent(lineT, panelScale, dotScale);
+
+            _mb.Apply(_mesh);
+        }
+
+        void BuildContent(float lineT, float panelScale, float dotScale)
+        {
+            // ① 연결선 — 화면 꼭짓점에서 패널 꼭짓점 쪽으로 lineT 만큼.
             //    확대/축소 중에도 _panelCorner가 매 프레임 갱신되므로 저절로 따라간다.
             if (lineT > 0f && connectorLevel > 0f)
                 for (int i = 0; i < 4; i++)
-                    _mb.AddLine(_viewCorner[i], Vector3.Lerp(_viewCorner[i], _panelCorner[i], lineT),
-                                connectorWidth, Grey(connectorLevel));
+                    L(_viewCorner[i], Vector3.Lerp(_viewCorner[i], _panelCorner[i], lineT),
+                      connectorWidth, Grey(connectorLevel));
 
-            if (panelScale <= 0.001f) { _mb.Apply(_mesh); return; }
+            if (panelScale <= 0.001f) return;
 
-            // ② 테두리 — TL-TR-BR-BL
+            // ② 테두리 — 점보다 크게(점은 dotInset 만큼 안쪽에 있다).
             Color border = Grey(borderLevel);
-            _mb.AddLine(_panelCorner[0], _panelCorner[1], borderWidth, border);
-            _mb.AddLine(_panelCorner[1], _panelCorner[3], borderWidth, border);
-            _mb.AddLine(_panelCorner[3], _panelCorner[2], borderWidth, border);
-            _mb.AddLine(_panelCorner[2], _panelCorner[0], borderWidth, border);
+            L(_panelCorner[0], _panelCorner[1], borderWidth, border);
+            L(_panelCorner[1], _panelCorner[3], borderWidth, border);
+            L(_panelCorner[3], _panelCorner[2], borderWidth, border);
+            L(_panelCorner[2], _panelCorner[0], borderWidth, border);
 
-            // ③ 목표 패턴 유령선
+            // ③ 목표 패턴 유령선 (겹치면 부채꼴로 갈라진다)
             if (_target != null && _target.Length > 1 && ghostLevel > 0f)
-                for (int i = 0; i < _target.Length - 1; i++)
-                    _mb.AddLine(DotPoint(_target[i]), DotPoint(_target[i + 1]), ghostWidth, Grey(ghostLevel));
+                DrawSequence(_target, _target.Length - 1, ghostWidth, ghostWidth, Grey(ghostLevel));
 
             // ④ 확정 트레이스 — 최근일수록 굵다(순서를 굵기로 전달).
-            int segs = _player.Count - 1;
-            for (int i = 0; i < segs; i++)
-            {
-                float age = segs > 1 ? i / (float)(segs - 1) : 1f;   // 0=가장 오래됨, 1=가장 최근
-                float w = Mathf.Lerp(traceWidthOldest, traceWidthNewest, age);
-                _mb.AddLine(DotPoint(_player[i]), DotPoint(_player[i + 1]), w, Grey(traceLevel));
-            }
+            DrawSequence(_player, _player.Count - 1, traceWidthOldest, traceWidthNewest, Grey(traceLevel));
 
             // ⑤ 진행 중 선 — 커서까지. 점 바로 옆에서는 짧은 선이 지저분하므로 죽인다.
             //    알파식은 AOSP LockPatternView의 calculateLastSegmentAlpha를 그대로 쓴다.
-            UpdateDrawCursor(dt);
             if (_player.Count > 0)
             {
                 int cur = _player[_player.Count - 1];
                 float frac = Vector2.Distance(_drawCursor, PatternGraph.Pos[cur]);   // 점 간격 = 1.0
                 float a = Mathf.Clamp01((frac - 0.3f) * 4f);
-                if (a > 0f)
-                    _mb.AddLine(DotPoint(cur), Point(_drawCursor), traceWidthNewest,
-                                Grey(traceLevel, a));
+                if (a > 0f) L(DotPoint(cur), Point(_drawCursor), traceWidthNewest, Grey(traceLevel, a));
             }
 
-            // ⑥ 점 — 닿으면 커진다(96ms 커지고 192ms 작아지는 비대칭).
-            UpdateDotGrow(dt);
+            // ⑥ 다음 목표 점 후광 — 점보다 먼저 그린다. 나중에 그리면 점을 덮어 버린다.
+            if (_nextDot >= 0 && nextHintLevel > 0f)
+                C(DotPoint(_nextDot), dotRadius * 2.4f * dotScale, Grey(nextHintLevel));
+
+            // ⑦ 점 — 닿으면 커진다(96ms 커지고 192ms 작아지는 비대칭).
             for (int d = 0; d < PatternGraph.DotCount; d++)
             {
                 float g = _dotGrow[d];
                 float r = dotRadius * Mathf.Lerp(1f, dotHitScale, g) * dotScale;
-                float lv = Mathf.Lerp(dotLevel, dotHitLevel, g);
-                _mb.AddCircle(DotPoint(d), r, Grey(lv));
+                C(DotPoint(d), r, Grey(Mathf.Lerp(dotLevel, dotHitLevel, g)));
             }
 
-            // ⑦ 다음 목표 점 — 색을 못 쓰므로 '더 큰 흐린 원'으로 알린다.
-            if (_nextDot >= 0 && nextHintLevel > 0f)
-                _mb.AddCircle(DotPoint(_nextDot), dotRadius * 2.4f * dotScale, Grey(nextHintLevel));
+            // ⑧ 중앙 작은 점 — 지나간 목표는 부드럽게 줄어들며 사라진다.
+            //    이미 검정이라 윤곽을 두르면 그냥 커지는 셈이므로 윤곽 패스에서는 건너뛴다.
+            if (!_outlinePass)
+                for (int d = 0; d < PatternGraph.DotCount; d++)
+                {
+                    float s = _coreScale[d];
+                    if (s <= 0.001f) continue;
+                    _mb.AddCircle(DotPoint(d), nextCoreRadius * s * dotScale, Grey(nextCoreLevel));
+                }
 
-            // ⑧ 커서
-            if (dotScale > 0f)
-                _mb.AddCircle(Point(_drawCursor), cursorRadius * dotScale, Grey(cursorLevel));
-
-            _mb.Apply(_mesh);
+            // ⑨ 커서
+            if (dotScale > 0f) C(Point(_drawCursor), cursorRadius * dotScale, Grey(cursorLevel));
         }
 
-        /// <summary>단계별 진행값. 등장·소멸의 모든 시간 규칙이 여기 한 곳에 있다.</summary>
+        // ── 윤곽 패스를 흡수하는 그리기 래퍼 ─────────────────────────
+
+        void L(Vector3 a, Vector3 b, float w, Color c)
+        {
+            if (_outlinePass) _mb.AddLine(a, b, w + outlineWidth * 2f, Grey(outlineLevel, c.a));
+            else _mb.AddLine(a, b, w, c);
+        }
+
+        void Cv(Vector3 a, Vector3 b, float bulge, float w, Color c)
+        {
+            if (_outlinePass) _mb.AddCurve(a, b, bulge, w + outlineWidth * 2f, Grey(outlineLevel, c.a));
+            else _mb.AddCurve(a, b, bulge, w, c);
+        }
+
+        void C(Vector3 p, float r, Color c)
+        {
+            if (_outlinePass) _mb.AddCircle(p, r + outlineWidth, Grey(outlineLevel, c.a));
+            else _mb.AddCircle(p, r, c);
+        }
+
+        /// <summary>
+        /// 점 시퀀스를 잇는다. <b>같은 변을 다시 지나면 곡선으로 갈라 놓는다</b> — 완전히 겹치면
+        /// 몇 번 지났는지 보이지 않기 때문. 0겹=직선, 1겹=한쪽, 2겹=반대쪽 (최대 3겹 구분).
+        /// </summary>
+        void DrawSequence(IList<int> dots, int lineCount, float widthFirst, float widthLast, Color color)
+        {
+            if (dots == null || lineCount <= 0) return;
+
+            for (int i = 0; i < _edgeUse.Length; i++) _edgeUse[i] = 0;
+
+            for (int i = 0; i < lineCount; i++)
+            {
+                int a = dots[i], b = dots[i + 1];
+                if (a == b) continue;
+
+                int e = PatternGraph.EdgeBetween(a, b);
+                int k = 0;
+                if (e >= 0 && e < _edgeUse.Length) { k = _edgeUse[e]; _edgeUse[e] = k + 1; }
+
+                float bulge = k == 0 ? 0f : (k == 1 ? fanBulge : -fanBulge);
+                float t = lineCount > 1 ? i / (float)(lineCount - 1) : 1f;
+                Cv(DotPoint(a), DotPoint(b), bulge, Mathf.Lerp(widthFirst, widthLast, t), color);
+            }
+        }
+
         void Timeline(out float lineT, out float panelScale, out float dotScale)
         {
             switch (_phase)
@@ -359,8 +472,7 @@ namespace Game.View
                     float u = panelPopTime > 0f ? Mathf.Clamp01((_clock - lineGrowTime) / panelPopTime) : 1f;
                     panelScale = _clock < lineGrowTime ? 0f : Pop(u, popOvershoot);
 
-                    float dstart = lineGrowTime + dotDelay;
-                    dotScale = Mathf.Clamp01((_clock - dstart) / 0.10f);
+                    dotScale = Mathf.Clamp01((_clock - (lineGrowTime + dotDelay)) / 0.10f);
                     return;
                 }
 
@@ -369,7 +481,6 @@ namespace Game.View
                     lineT = lineRetractTime > 0f ? 1f - EaseIn(Mathf.Clamp01(_clock / lineRetractTime)) : 0f;
 
                     float u = panelOutTime > 0f ? Mathf.Clamp01(_clock / panelOutTime) : 1f;
-                    // 잠깐 커졌다가 0으로 — 페이드가 아니라 크기로만 사라진다.
                     panelScale = u < 0.35f
                         ? Mathf.Lerp(1f, outOvershoot, EaseOut(u / 0.35f))
                         : Mathf.Lerp(outOvershoot, 0f, EaseIn((u - 0.35f) / 0.65f));
@@ -383,7 +494,6 @@ namespace Game.View
             }
         }
 
-        /// <summary>0 → 살짝 넘겼다가 → 1. 오버슛 구간과 정착 구간을 명시적으로 나눈다.</summary>
         static float Pop(float u, float overshoot)
         {
             const float peak = 0.6f;
@@ -412,20 +522,61 @@ namespace Game.View
             {
                 bool on = _player.Contains(d);
                 float span = on ? dotGrowTime : dotShrinkTime;
-                float step = span > 1e-4f ? dt / span : 1f;
-                _dotGrow[d] = Mathf.MoveTowards(_dotGrow[d], on ? 1f : 0f, step);
+                _dotGrow[d] = Mathf.MoveTowards(_dotGrow[d], on ? 1f : 0f, span > 1e-4f ? dt / span : 1f);
+            }
+        }
+
+        /// <summary>중앙 작은 점 — 목표일 때 빠르게 나타나고, 지나가면 <b>부드럽게 줄어들며</b> 사라진다.</summary>
+        void UpdateCoreScale(float dt)
+        {
+            for (int d = 0; d < PatternGraph.DotCount; d++)
+            {
+                bool on = d == _nextDot;
+                float span = on ? coreGrowTime : coreShrinkTime;
+                _coreScale[d] = Mathf.MoveTowards(_coreScale[d], on ? 1f : 0f, span > 1e-4f ? dt / span : 1f);
             }
         }
 
         // ── 좌표 ──────────────────────────────────────────────────────
 
+        /// <summary>
+        /// 화면 네 꼭짓점. 프러스텀에서 구하면 해상도·종횡비·FOV와 무관하게 항상 화면 끝에 닿는다.
+        /// </summary>
         void ComputeViewCorners()
         {
-            // 시야 모서리는 이 오브젝트(=[Head]) 로컬에 고정이다.
-            _viewCorner[0] = VrUiSpace.Direction(-viewHalfAngleX, +viewHalfAngleY) * distance;  // TL
-            _viewCorner[1] = VrUiSpace.Direction(+viewHalfAngleX, +viewHalfAngleY) * distance;  // TR
-            _viewCorner[2] = VrUiSpace.Direction(-viewHalfAngleX, -viewHalfAngleY) * distance;  // BL
-            _viewCorner[3] = VrUiSpace.Direction(+viewHalfAngleX, -viewHalfAngleY) * distance;  // BR
+            Camera cam = useCameraFrustum ? ResolveCamera() : null;
+
+            if (cam != null)
+            {
+                float m = viewportMargin;
+                _viewCorner[0] = FromWorld(cam.ViewportToWorldPoint(new Vector3(m,      1f - m, distance)));  // TL
+                _viewCorner[1] = FromWorld(cam.ViewportToWorldPoint(new Vector3(1f - m, 1f - m, distance)));  // TR
+                _viewCorner[2] = FromWorld(cam.ViewportToWorldPoint(new Vector3(m,      m,      distance)));  // BL
+                _viewCorner[3] = FromWorld(cam.ViewportToWorldPoint(new Vector3(1f - m, m,      distance)));  // BR
+                return;
+            }
+
+            // 폴백 — 카메라가 없을 때만. 각도 추정값이라 화면 끝과 어긋난다.
+            _viewCorner[0] = VrUiSpace.Direction(-viewHalfAngleX, +viewHalfAngleY) * distance;
+            _viewCorner[1] = VrUiSpace.Direction(+viewHalfAngleX, +viewHalfAngleY) * distance;
+            _viewCorner[2] = VrUiSpace.Direction(-viewHalfAngleX, -viewHalfAngleY) * distance;
+            _viewCorner[3] = VrUiSpace.Direction(+viewHalfAngleX, -viewHalfAngleY) * distance;
+        }
+
+        Camera ResolveCamera()
+        {
+            if (viewCamera != null) return viewCamera;
+            if (Camera.main != null) return viewCamera = Camera.main;
+
+            // 리그에서는 카메라가 형제 subtree에 있다([Head] > Main Camera / [UiRig] > 이것).
+            Transform p = transform.parent;
+            while (p != null)
+            {
+                Camera c = p.GetComponentInChildren<Camera>(true);
+                if (c != null) return viewCamera = c;
+                p = p.parent;
+            }
+            return null;
         }
 
         void ComputePanelCorners(float scale)
@@ -442,16 +593,25 @@ namespace Game.View
         Vector3 ToLocal(Vector3 dirInPanelRoot)
         {
             Vector3 p = dirInPanelRoot * distance;
-            if (panelRoot == null) return p;                       // 루트가 없으면 머리에 붙은 것과 같다
+            if (panelRoot == null) return p;
             return transform.InverseTransformPoint(panelRoot.TransformPoint(p));
         }
 
-        /// <summary>정규화 패턴 좌표(0~1, y↑) → 패널 사각형 위의 점. 네 꼭짓점을 겹선형 보간한다.</summary>
+        Vector3 FromWorld(Vector3 world) => transform.InverseTransformPoint(world);
+
+        /// <summary>
+        /// 정규화 패턴 좌표(0~1, y↑) → 패널 사각형 위의 점.
+        /// <see cref="dotInset"/> 만큼 안쪽으로 들여 <b>사각형이 점들을 여유 있게 감싸게</b> 한다.
+        /// </summary>
         Vector3 Point(Vector2 uv)
         {
-            Vector3 top = Vector3.LerpUnclamped(_panelCorner[0], _panelCorner[1], uv.x);
-            Vector3 bot = Vector3.LerpUnclamped(_panelCorner[2], _panelCorner[3], uv.x);
-            return Vector3.LerpUnclamped(bot, top, uv.y);
+            float lo = dotInset, hi = 1f - dotInset;
+            float x = Mathf.LerpUnclamped(lo, hi, uv.x);
+            float y = Mathf.LerpUnclamped(lo, hi, uv.y);
+
+            Vector3 top = Vector3.LerpUnclamped(_panelCorner[0], _panelCorner[1], x);
+            Vector3 bot = Vector3.LerpUnclamped(_panelCorner[2], _panelCorner[3], x);
+            return Vector3.LerpUnclamped(bot, top, y);
         }
 
         Vector3 DotPoint(int dot)

@@ -58,6 +58,41 @@ namespace Game.View
             _tris.Add(v); _tris.Add(v + 2); _tris.Add(v + 3);
         }
 
+        /// <summary>
+        /// 살짝 부푼 곡선(2차 베지에). <paramref name="bulge"/>가 0이면 직선과 같다.
+        ///
+        /// <para><b>왜 필요한가</b> — 같은 두 점 사이를 여러 번 지나면 선이 완전히 겹쳐서
+        /// <b>몇 번 지났는지 보이지 않는다.</b> 부푸는 방향과 크기를 달리해 갈라 놓는다.</para>
+        /// </summary>
+        public void AddCurve(Vector3 a, Vector3 b, float bulge, float width, Color color, int segments = 10)
+        {
+            if (Mathf.Abs(bulge) < 1e-5f) { AddLine(a, b, width, color); return; }
+
+            Vector3 d = b - a;
+            float len = d.magnitude;
+            if (len < 1e-5f) return;
+            d /= len;
+
+            Vector3 mid = (a + b) * 0.5f;
+            Vector3 view = mid.sqrMagnitude > 1e-8f ? mid.normalized : Vector3.forward;
+            Vector3 perp = Vector3.Cross(d, view);
+            if (perp.sqrMagnitude < 1e-8f) perp = Vector3.Cross(d, Vector3.up);
+            perp = perp.normalized;
+
+            // 2차 베지에는 제어점의 '절반'만 지나므로 2배를 준다 → 중간점이 정확히 bulge만큼 부푼다.
+            Vector3 ctrl = mid + perp * (bulge * 2f);
+
+            Vector3 prev = a;
+            for (int i = 1; i <= segments; i++)
+            {
+                float t = i / (float)segments;
+                float u = 1f - t;
+                Vector3 p = u * u * a + 2f * u * t * ctrl + t * t * b;
+                AddLine(prev, p, width, color);
+                prev = p;
+            }
+        }
+
         /// <summary>원(채움). 눈을 향하는 평면에 그린다.</summary>
         public void AddCircle(Vector3 center, float radius, Color color, int segments = 14)
         {

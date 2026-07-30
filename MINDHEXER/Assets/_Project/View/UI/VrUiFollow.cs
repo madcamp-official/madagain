@@ -33,7 +33,14 @@ namespace Game.View
         [Tooltip("데드존 밖에서 따라오는 속도. 클수록 빨리 붙는다.")]
         [Range(0.5f, 20f)] public float damping = 4f;
 
-        void LateUpdate()
+        void LateUpdate() => TickFollow();
+
+        /// <summary>
+        /// 한 프레임 추종. 에디터에서는 <c>UiEditorDriver</c>가 직접 부른다 —
+        /// <see cref="ExecuteAlways"/>의 틱만 믿으면 저작 중에 패널이 따라오지 않아
+        /// <b>연결선이 안 움직이는 것처럼 보인다.</b>
+        /// </summary>
+        public void TickFollow()
         {
             Transform h = ResolveHead();
             if (h == null) return;
