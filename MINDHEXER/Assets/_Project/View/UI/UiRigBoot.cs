@@ -57,6 +57,14 @@ namespace Game.View
             Instance.transform.localRotation = Quaternion.identity;
             Instance.transform.localScale = Vector3.one;
 
+            // ★ 뷰모델과 같은 레이어에 올린다. [ViewmodelCam]은 오버레이 스택이라 자기 depth 버퍼를
+            //   새로 지우고 나중에 그린다 — HackPanel의 ZTest Always는 "같은 카메라 패스 안에서"만
+            //   이기므로, 베이스 카메라에만 있으면 나중에 그려지는 뷰모델(팔·도구)이 그 위를 덮어써
+            //   UI가 가려진다. 뷰모델 레이어에 같이 올리면 그 늦게-그려지는 패스를 같이 타서 다시
+            //   맨 위가 된다.
+            int vmLayer = LayerMask.NameToLayer(ViewmodelCamera.DefaultLayer);
+            if (vmLayer >= 0) ViewmodelCamera.SetLayerRecursive(Instance.transform, vmLayer);
+
             WireUp(h);
 
             Debug.Log($"[UiRigBoot] UI 리그 부착 — 부모={h.name}", this);

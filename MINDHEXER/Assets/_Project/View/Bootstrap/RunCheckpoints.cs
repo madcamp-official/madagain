@@ -84,6 +84,12 @@ namespace Game.View
             var scope = Current.Scope;
             if (scope != null) scope.ResetScope();   // 죽은 스테이지만. 앞 스테이지는 보존된다
 
+            // ★ BossChaseState는 MonoBehaviour가 아니라 정적 상태라 StageScope.ResetScope()의
+            //   IRunResettable 순회에 안 걸린다 — 여기서 손으로 되돌린다. 안 하면 보스 추격 중
+            //   리셋했을 때 체크포인트는 "보스 조우 직전"으로 정확히 돌아가는데 Active는 계속 true로
+            //   남아, 추격 시작을 알리는 이벤트(프레스 전체 상승 등)가 다시는 안 걸린다.
+            BossChaseState.ResetStatics();
+
             MoveTo(Current);
         }
 

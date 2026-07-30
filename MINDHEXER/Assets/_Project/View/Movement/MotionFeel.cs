@@ -60,6 +60,11 @@ namespace Game.View
         public AnimationCurve landCurve = new AnimationCurve(
             new Keyframe(0f, 0f, 0f, 5f), new Keyframe(0.25f, 1f), new Keyframe(0.6f, 0.12f), new Keyframe(1f, 0f));
 
+        [Tooltip("착지 소리. landMinSpeed 미만의 착지는 연출과 마찬가지로 소리도 안 낸다.")]
+        public AudioClip landClip;
+        [Range(0f, 1f)] public float landVolume = 0.7f;
+        AudioSource _sfx;
+
         [Header("착지(업킥) — 충격 뒤 위로 '탁'")]
         [Tooltip("낙하 속도 1m/s당 위로 튀는 양(m). 기본 0 — 롤 킥을 먼저 쓴다.")]
         public float landKickPerSpeed = 0f;
@@ -98,6 +103,13 @@ namespace Game.View
         public float carryFovGain = 0.7f;
         public float carryFovMax = 5f;
 
+        [Tooltip("수직(위/아래)으로 실려가는 동안 카메라가 버티는 침하량 — 속도 1m/s당 m. " +
+                 "롤·FOV와 같은 스프링이라 멈추면 반대로(더 가라앉았다) 넘어갔다 흔들리며 정착한다.\n" +
+                 "★ 좌우앞뒤(carryRoll/carryFov)에는 이 보정이 있는데 위/아래에는 없어서, 수직으로 " +
+                 "실려갈 때만 화면이 _posLag(범용 흡수, 상한 0.15m) 하나로만 버텨 유독 뚝뚝 끊겨 보였다.")]
+        public float carryVertGain = 0.03f;
+        public float carryVertMax = 0.2f;
+
         [Tooltip("실려가기 스프링 반응성(완만한 승차 기준). 클수록 빨리 따라붙는다.")]
         public float carryFrequency = 9f;
 
@@ -124,6 +136,7 @@ namespace Game.View
 
         PdApproach _carryRoll = new PdApproach();
         PdApproach _carryFov = new PdApproach();
+        PdApproach _carryVert = new PdApproach();
         Vector3 _carryAccum;      // 이번 프레임 들어온 실려가기 델타 합(여러 발판 중첩 대비)
         Vector3 _carrySmoothed;   // 스무딩된 실려가기 속도 — 노이즈 낀 물리 충돌 델타 완화용
         Vector3 _posLag;          // 카메라 전용 흡수 지연(실제 게임플레이 위치는 무관 — 순수 시각용)
@@ -247,6 +260,7 @@ namespace Game.View
             Fire(ref _land, Mathf.Min(landDipMax, landDipPerSpeed * impactSpeed), landDuration);
             Fire(ref _landKick, Mathf.Min(landKickMax, landKickPerSpeed * impactSpeed), landKickDuration);
             FireRoll(landRollDeg * s, landRollDuration, landRollCycles);
+            if (landClip != null && _sfx != null) _sfx.PlayOneShot(landClip, landVolume);
         }
 
         void FireRoll(float deg, float dur, float cycles)
@@ -292,6 +306,15 @@ namespace Game.View
             if (_cam == null) _cam = GetComponentInChildren<Camera>();
             if (_cam != null) _baseFov = _cam.fieldOfView;
 
+            // ★ ??는 Unity의 "가짜 null"을 못 걸러낸다(파괴된/미생성 네이티브 객체가 raw 참조로 통과한다) —
+            //   반드시 ==로 비교해야 한다(DangerZoneVisual.cs의 같은 사고 참조).
+            _sfx = GetComponent<AudioSource>();
+            if (_sfx == null) _sfx = gameObject.AddComponent<AudioSource>();
+            _sfx.playOnAwake = false;
+            _sfx.spatialBlend = 0f;
+            // 이 컴포넌트도 GameBoot이 런타임에 붙이는 [CamRig]에 있어 씬에 없다 — 같은 이유로 자동 로드.
+            if (landClip == null) landClip = Resources.Load<AudioClip>("Sfx/PlayerLand");
+
             // 안전장치 — 시점 드라이버와 <b>같은 오브젝트</b>에서 회전을 소유하면 서로 덮어쓴다.
             // (카메라에 붙는 것 자체는 정상이다. 시점이 부모 [Head]에 있으면 롤은 이쪽 몫이다.)
             if (ownsRotation &&
@@ -302,8 +325,8 @@ namespace Game.View
                 Debug.LogWarning("[MotionFeel] 시점 드라이버와 같은 오브젝트에서는 회전을 소유할 수 " +
                                  "없습니다 — 서로 덮어씁니다. 껐습니다(롤은 CurrentRoll로만 내보냅니다).", this);
             }
-            _carryRoll.frequency = _carryFov.frequency = carryFrequency;
-            _carryRoll.damping = _carryFov.damping = carryDamping;
+            _carryRoll.frequency = _carryFov.frequency = _carryVert.frequency = carryFrequency;
+            _carryRoll.damping = _carryFov.damping = _carryVert.damping = carryDamping;
         }
 
         /// <summary>
@@ -365,18 +388,22 @@ namespace Game.View
 
             float lateralSpeed = Vector3.Dot(_carrySmoothed, transform.right);     // +면 오른쪽으로 실려감
             float forwardSpeed = Vector3.Dot(_carrySmoothed, transform.forward);   // +면 전진으로 실려감
+            float verticalSpeed = Vector3.Dot(_carrySmoothed, transform.up);       // +면 위로 실려감
 
             // 갑자기 세게 부딪힌 경우 반응성을 올려 짧게 홀드했다 빨리 정착시킨다(완만한 승차와 구분).
             float impactBlend = Mathf.InverseLerp(carryImpactSpeed * 0.5f, carryImpactSpeed, rawSpeedMag);
             float freq = Mathf.Lerp(carryFrequency, carryImpactFrequency, impactBlend);
-            _carryRoll.frequency = _carryFov.frequency = freq;
-            _carryRoll.damping = _carryFov.damping = carryDamping;
+            _carryRoll.frequency = _carryFov.frequency = _carryVert.frequency = freq;
+            _carryRoll.damping = _carryFov.damping = _carryVert.damping = carryDamping;
 
             // 오른쪽으로 실려가면 화면은 반시계 방향으로 버틴다 — Unity Euler Z 부호 기준 +lateralSpeed.
             _carryRoll.Target = Mathf.Clamp(lateralSpeed * carryRollGain, -carryRollMax, carryRollMax);
             _carryFov.Target = Mathf.Clamp(-forwardSpeed * carryFovGain, -carryFovMax, carryFovMax);
+            // 위로 실려가면 화면이 살짝 가라앉았다(관성) 버틴다 — 롤·FOV와 같은 부호 관례(반대 방향으로 버팀).
+            _carryVert.Target = Mathf.Clamp(-verticalSpeed * carryVertGain, -carryVertMax, carryVertMax);
             _carryRoll.Step(dt);
             _carryFov.Step(dt);
+            _carryVert.Step(dt);
 
             bool vr = VrMode.Enabled;
             float posScale  = (vr ? vrPositionScale : 1f) * masterScale;
@@ -393,7 +420,7 @@ namespace Game.View
 
             // ExternalPosOffset도 _appliedPos에 함께 담는다 — Update의 되돌리기가 같은 값을 빼야
             // 누적되지 않는다. 따로 더하면 되돌리기가 그만큼을 놓쳐 카메라가 계속 밀려난다.
-            _appliedPos = Vector3.up * ((kick - dip) * posScale) + _posLag * posScale
+            _appliedPos = Vector3.up * ((kick - dip + _carryVert.Value) * posScale) + _posLag * posScale
                         + ExternalPosOffset * posScale;
             transform.position += _appliedPos;
 

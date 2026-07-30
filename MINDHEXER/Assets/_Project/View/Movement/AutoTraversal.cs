@@ -65,7 +65,7 @@ namespace Game.View
         public float safeDrop = 0.6f;
 
         [Tooltip("도약 목표가 없을 때 이 낙차까지는 그냥 떨어지게 둔다. 넘거나 바닥이 없으면 가장자리에서 멈춘다.")]
-        public float maxSafeFall = 4.5f;
+        public float maxSafeFall = 5.0f;
 
         [Header("시선 도약")]
         [Tooltip("도약 목표 검색 반경(m).")]
@@ -94,7 +94,7 @@ namespace Game.View
         public float maxDirectUp = 1.1f;
 
         [Tooltip("이 높이(m)까지는 도약+잡고 올라가기로 처리. 이상이면 도달 불가.")]
-        public float maxMantleUp = 4.0f;
+        public float maxMantleUp = 5.0f;
 
         [Tooltip("목표가 발보다 이보다 많이 낮으면 후보에서 제외(그건 추락). 오르기(2m)와 비대칭인 게 정상이지만 과하면 아래가 너무 헐거워진다.")]
         public float maxDropTarget = 6f;
@@ -701,9 +701,11 @@ namespace Game.View
             _t = 0f;
             _state = State.Flight;
 
-            // 등반으로 이어질 도약이면 손 리그에 <b>미리</b> 알린다 — BeginPull에서 Show를 받으면
-            // 이미 몸이 올라가는 시점이라 손이 늦는다. 비행 시간을 손 내리기에 쓴다.
-            if (thenMantle && _rig != null) _rig.Prepare();
+            // ★ 등반 여부와 무관하게 모든 도약에서 손 리그에 미리 알린다(사용자 확정) — 등반으로
+            //   이어지면 BeginPull에서 Show를 받으면 이미 몸이 올라가는 시점이라 손이 늦으므로
+            //   비행 시간을 손 내리기에 쓰고, 등반이 아니면 TickFlight의 직행 착지 분기가
+            //   MantleRig.Hide()로 취소 경로(예고만 받고 등반 아님 → 바로 복귀)를 태운다.
+            if (_rig != null) _rig.Prepare();
 
             _fpp.ExternalMotion = true;
             _fpp.VerticalVelocity = 0f;
@@ -738,6 +740,10 @@ namespace Game.View
             float fall = Mathf.Max(0f, _arc.apexY - _arc.end.y);
             float realImpactSpeed = Mathf.Sqrt(2f * _fpp.gravity * fall);
             if (_feel != null) _feel.OnLand(realImpactSpeed, _feelScale);
+
+            // 등반이 아니었다 — StartFlight에서 미리 내려둔 손을 도로 올린다(MantleRig.Hide()의
+            // "예고만 받고 취소됨" 경로. 앵커가 없어 즉시 Raising으로 간다).
+            if (_rig != null) _rig.Hide();
 
             _fpp.SuppressLand(0.2f);
             FinishToControl(_arc.EndTangent());   // 방향 = 궤적 끝 접선(벽 법선이 아니라)

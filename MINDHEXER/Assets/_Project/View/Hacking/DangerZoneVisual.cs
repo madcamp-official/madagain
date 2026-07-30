@@ -58,10 +58,17 @@ namespace Game.View
         [Tooltip("끄면 표시만 사라진다(판정은 그대로). 레벨 스크린샷 등에 쓴다.")]
         public bool show = true;
 
+        [Tooltip("터렛 모드 전용 — 켜면 위험 노이즈(깜빡임)를 끄고 조준선만 남긴다. " +
+                 "조종 중엔 나를 쏘지 않으니 '위험'이 아니라 '내가 겨눈 방향' 표시로만 보여야 한다.\n" +
+                 "★ 예전엔 조종 중 이 오브젝트 자체를 꺼서 레이저가 통째로 사라졌다 — TurretGun이 이 " +
+                 "플래그만 켜도록 바뀌었다.")]
+        public bool plainBeam = false;
+
         MeshFilter _mf;
         MeshRenderer _mr;
         Mesh _mesh;
         Material _mat;
+        float _defaultFps = -1f, _defaultCoverage = -1f;
 
         // 마지막으로 그린 모양. 값이 안 바뀌면 메시를 다시 만들지 않는다.
         float _lastA, _lastB, _lastC;
@@ -105,8 +112,21 @@ namespace Game.View
             _mr.enabled = active;
             if (!active) return;
 
-            if (fan) BuildFan();
-            else BuildBeam();
+            if (fan)
+            {
+                BuildFan();
+            }
+            else
+            {
+                // plainBeam — 깜빡이는 노이즈를 끄고 정지된 균일한 판으로. 지오메트리(빔 자체)는 그대로라
+                // 조종 중에도 조준선이 남는다 — 사라지는 건 '위험' 신호뿐이다.
+                if (_defaultFps >= 0f)
+                {
+                    _mat.SetFloat("_Fps", plainBeam ? 0f : _defaultFps);
+                    _mat.SetFloat("_Coverage", plainBeam ? 0f : _defaultCoverage);
+                }
+                BuildBeam();
+            }
         }
 
         bool EnsureRenderer()
@@ -149,6 +169,8 @@ namespace Game.View
                 }
                 _mat = new Material(sh) { name = "[DangerNoise]" };
                 _mr.sharedMaterial = _mat;
+                _defaultFps = _mat.GetFloat("_Fps");
+                _defaultCoverage = _mat.GetFloat("_Coverage");
             }
 
             _mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;

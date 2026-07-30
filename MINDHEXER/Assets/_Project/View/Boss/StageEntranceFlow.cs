@@ -110,6 +110,10 @@ namespace Game.View
         [Tooltip("보스 루트(옮겨서 머리를 입구에 물린다). 비우면 chase의 트랜스폼.")]
         public Transform bossRoot;
 
+        [Tooltip("등장 전까지 숨길 보스 오브젝트. 비우면 bossRoot의 게임오브젝트를 쓴다.\n" +
+                 "★ 렌더러가 아니라 게임오브젝트 전체를 끈다 — 콜라이더가 남으면 프레스 조준을 막는다.")]
+        public GameObject bossVisual;
+
         [Tooltip("머리에서 프레스가 닿을 지점 마커. 머리 찌그러짐 자세 목록에 넣어 두면 " +
                  "단계가 오를 때 같이 내려온다 — 회차마다 프레스가 더 깊이 들어간다.")]
         public Transform headContact;
@@ -120,8 +124,21 @@ namespace Game.View
         [Tooltip("보스가 팔로 짚어 출구를 막는 지점.")]
         public Transform sealHandTarget;
 
-        [Tooltip("막는 손. 출구가 보스 기준 어느 쪽인지에 맞춘다.")]
+        [Tooltip("막는 손. 출구가 보스 기준 어느 쪽인지에 맞춘다. (armPoser를 쓰면 무시된다)")]
         public BossArmRig.Side sealHand = BossArmRig.Side.Left;
+
+        [Tooltip("보스 <b>팔 봉쇄 자세</b>를 재생하는 포저(BossArmSealPose 애셋). 넣으면 IK(sealHandTarget) 대신 " +
+                 "이 자세를 쓴다 — 본 로컬 값이라 입구마다 좌표를 안 잡아도 4곳에서 똑같이 나온다.")]
+        public PartsPoser armPoser;
+
+        [Tooltip("봉쇄 자세 이름.")]
+        public string armSealPose = "봉쇄";
+
+        [Tooltip("팔을 되돌릴 홈 자세 이름.")]
+        public string armHomePose = "홈";
+
+        [Tooltip("허리 굽힘. 낑겨 있는 동안은 꺼야 어깨가 움직여 봉쇄한 손이 딸려가지 않는다.")]
+        public BossSpineAim spineAim;
 
         [Header("실패 — 돌진")]
         [Tooltip("플레이어에게 돌진하는 속도(m/s). BossChase.speedFar보다 훨씬 빨라야 '끝났다'가 느껴진다.")]
@@ -168,22 +185,76 @@ namespace Game.View
             // 평상시 상태를 기억해 두고 사이클이 끝나면 정확히 그리로 되돌린다.
             if (pressHackable != null) _pressWasHackable = pressHackable.enabled;
 
-            // ★ PressRaised 모드에서는 잠그지 않는다 — 이 프레스는 플레이어가 열어야 할 <b>문</b>이다.
-            //   잠가 두면 §0.4의 전환점("들어올리는 순간 보스가 온다")이 영영 발동하지 않는다.
-            if (entryMode == Entry.PressRaised) RestorePress();
-            else LockPress();
+            // ★ 두 진입 모드 다 평상시 = 일반 유압프레스로 시작한다. PlayerTrigger 입구를 여기서
+            //   잠그면 추격이 시작되기도 전인 전반부에서 대왕프레스를 아예 못 만지게 된다 —
+            //   "보스가 오기 전까지 잠근다"는 추격이 시작된 뒤(HandleChaseActiveChanged가 이미
+            //   끝까지 올리며 다시 잠근다)에만 의미가 있다.
+            RestorePress();
 
             if (sealWall != null) sealWall.enabled = false;
+
+            // 등장 전까지 보스는 존재하지 않는 것처럼 다뤄야 한다(§보스 숨김).
+            if (!BossChaseState.Active) SetBossHidden(true);
+        }
+
+        // ── 보스 숨김 ─────────────────────────────────────────────────────
+
+        /// <summary>
+        /// 등장 전까지 보스를 <b>통째로 끈다</b>. (렌더러만 끄면 콜라이더가 남는다)
+        ///
+        /// <para><b>왜 게임오브젝트 전체인가</b>: 50배 스케일 보스의 콜라이더가 전환점 프레스를
+        /// 통째로 감싸고 있어(x 474~511 안에 프레스 485.7이 들어간다), 살아 있으면 <b>해킹 조준
+        /// 레이가 프레스에 닿기 전에 보스 몸에 먼저 막힌다.</b> 걷기 클립이 제자리에서 도는 것도
+        /// 같이 멈춘다 — 세 증상이 한 원인이라 한 곳에서 끈다.</para>
+        ///
+        /// <para>입구가 넷이라 <see cref="Awake"/>에서 각자 부르지만, 이미 그 상태면 아무것도 하지
+        /// 않으므로 순서에 상관없다.</para>
+        /// </summary>
+        void SetBossHidden(bool hidden)
+        {
+            GameObject go = bossVisual != null ? bossVisual : (Root != null ? Root.gameObject : null);
+            if (go == null) return;
+            if (go.activeSelf != hidden) return;   // 이미 원하는 상태다
+            go.SetActive(!hidden);
         }
 
         void OnEnable()
         {
             if (wedge != null) wedge.OnTimedOut += HandleTimeout;
+            BossChaseState.OnActiveChanged += HandleChaseActiveChanged;
         }
 
         void OnDisable()
         {
             if (wedge != null) wedge.OnTimedOut -= HandleTimeout;
+            BossChaseState.OnActiveChanged -= HandleChaseActiveChanged;
+        }
+
+        /// <summary>
+        /// 추격이 시작되는 순간, <b>모든 입구의 프레스를 끝까지 올린다.</b>
+        ///
+        /// <para>전환점 자신의 프레스는 이미 <see cref="BeginBurst"/>가 올리는 중이므로(Current가
+        /// Idle을 벗어나 있다) 건드리지 않는다 — 나머지 세 입구만 이 이벤트로 올라간다. 전반부에
+        /// 플레이어가 어디까지 열어 뒀든 상관없이, 추격 중에는 모든 대왕프레스가 열려 있어야
+        /// 낑길 자리가 확보되고 후반부 도주로가 막히지 않는다.</para>
+        /// </summary>
+        void HandleChaseActiveChanged(bool active)
+        {
+            if (!active) return;
+            if (Current != Phase.Idle) return;
+            RaisePressForChase();
+        }
+
+        /// <summary>계속 잠근 채로(플레이어가 다시 내릴 수 없게) 끝까지 올린다 — 자동으로 열린 문이라 손댈 필요가 없다.</summary>
+        void RaisePressForChase()
+        {
+            if (pressHackable != null) pressHackable.enabled = false;
+            if (pressControl != null) pressControl.allowHold = true;
+            if (pressActuator != null)
+            {
+                pressActuator.LimitT = 1f;
+                pressActuator.Flick(0f);   // 플릭 = 끝에서 끝. t=0이 완전히 올라간 상태.
+            }
         }
 
         // ── 프레스 소유권 ──────────────────────────────────────────────────
@@ -192,11 +263,10 @@ namespace Game.View
         void LockPress()
         {
             if (pressHackable != null) pressHackable.enabled = false;
-            if (pressActuator != null)
-            {
-                pressActuator.LimitT = 1f;
-                pressActuator.Target = 0f;   // 홈으로 되돌린다 — 1막에 내려놨어도 여기서 정리된다
-            }
+            // ★ Target을 건드리지 않는다 — 대왕프레스는 내려와 입구를 막고 있는 게 시작 상태다
+            //   (startExtension이 그 값을 소유한다). 여기서 Target=0을 넣으면 t=0(완전 상승)으로
+            //   튀어 오르는데, 그러면 게임 시작하자마자 모든 프레스가 열려 버린다.
+            if (pressActuator != null) pressActuator.LimitT = 1f;
             if (pressControl != null) pressControl.allowHold = true;
         }
 
@@ -300,6 +370,8 @@ namespace Game.View
         {
             Current = Phase.Bursting;
             _phaseT = 0f;
+
+            SetBossHidden(false);   // ★ 첫 등장 — 루트를 옮기기 전에 켜야 그 프레임부터 보인다
             RememberWalkHeight();
 
             // 조종권 박탈 — 지금 이 프레스를 잡고 있었다면 놓게 만든다.
@@ -339,7 +411,8 @@ namespace Game.View
             Current = Phase.Sealing;
             _phaseT = 0f;
 
-            // PlayerTrigger 입구는 Bursting을 안 거치므로 여기서 기억해야 한다.
+            // PlayerTrigger 입구는 Bursting을 안 거치므로 등장·높이 기억을 여기서 해야 한다.
+            SetBossHidden(false);
             if (float.IsNaN(_walkY)) RememberWalkHeight();
 
             // 전환점 입구가 추격을 연다. 이후 다른 입구의 트리거가 살아난다.
@@ -349,9 +422,62 @@ namespace Game.View
             if (geo != null) geo.GoTo(sealedPose);
             if (chase != null) chase.move = false;                   // 자리를 잡았으니 걷기 정지
 
-            // 보스 팔이 출구를 막는다. Relax까지 목표가 유지되므로 한 번만 부르면 된다.
+            SealArms();
+        }
+
+        // ── 팔 봉쇄 — 소유권을 넘겨받는다 ────────────────────────────────
+
+        /// <summary>
+        /// 보스 팔이 출구를 막는다.
+        ///
+        /// <para><b>팔 본을 건드리는 컴포넌트가 셋</b>이라, 자세를 재생하기 전에 <b>전부 꺼서 소유권을
+        /// 가져와야 한다.</b> 안 그러면 <see cref="BossArmRig"/>(order 50)가 매 LateUpdate에 IK로
+        /// 덮어쓰고, <see cref="BossSpineAim"/>(45)이 허리를 굽혀 어깨째 손을 끌고 간다.
+        /// 낑겨 있는 동안 보스는 제자리에 물려 있으므로 셋 다 꺼도 연출상 맞다.</para>
+        ///
+        /// <para>⚠️ <b>끄는 것이 먼저다.</b> <see cref="BossArmRig.OnDisable"/>이 홈 자세로 되돌리므로,
+        /// 순서가 반대면 방금 재생한 봉쇄 자세가 홈으로 지워진다. 지금 순서면 홈에서 출발해
+        /// 봉쇄로 보간되어 오히려 자연스럽다.</para>
+        ///
+        /// <para><see cref="armPoser"/>가 없으면 옛 IK 경로(<see cref="sealHandTarget"/>)로 떨어진다.</para>
+        /// </summary>
+        void SealArms()
+        {
+            if (armPoser != null)
+            {
+                if (chase != null) chase.enabled = false;
+                if (spineAim != null) spineAim.enabled = false;
+                if (arms != null) arms.enabled = false;   // ★ 여기서 홈으로 돌아간다 — 그게 출발점이다
+
+                armPoser.GoTo(armSealPose);
+                return;
+            }
+
+            // 자세 애셋이 없는 구성 — 예전 IK 경로. Relax까지 목표가 유지되므로 한 번만 부르면 된다.
             if (arms != null && sealHandTarget != null)
                 arms.Aim(sealHand, sealHandTarget.position, Vector3.zero);
+        }
+
+        /// <summary>봉쇄를 푼다. 팔을 홈으로 되돌리고 소유권을 원래 컴포넌트들에 돌려준다.</summary>
+        void ReleaseArms()
+        {
+            if (armPoser != null)
+            {
+                armPoser.GoTo(armHomePose);
+                // 리그를 여기서 되살리지 않는다 — 보간이 끝나기 전에 켜면 IK가 도중에 낚아챈다.
+                // 사이클이 끝나는 Finish()에서 한꺼번에 돌려준다.
+                return;
+            }
+            if (arms != null) arms.Relax(sealHand);
+        }
+
+        /// <summary>봉쇄 동안 꺼 뒀던 컴포넌트를 되살린다.</summary>
+        void RestoreArmOwners()
+        {
+            if (armPoser == null) return;
+            if (arms != null) arms.enabled = true;
+            if (spineAim != null) spineAim.enabled = true;
+            if (chase != null) chase.enabled = true;
         }
 
         // ── 상태 진행 ─────────────────────────────────────────────────────
@@ -412,7 +538,7 @@ namespace Game.View
             if (headCrush != null) headCrush.Crush();
 
             // 봉쇄 해제 — 팔을 놓고 벽을 치운다.
-            if (arms != null) arms.Relax(sealHand);
+            ReleaseArms();
             if (sealWall != null) sealWall.enabled = false;
 
             LockPress();   // 다시 잠근다. 남은 사이클 동안 못 건드린다
@@ -460,7 +586,7 @@ namespace Game.View
 
             // 낑긴 곳을 부수고 나온다.
             if (geo != null) geo.GoTo(brokenPose);
-            if (arms != null) arms.Relax(sealHand);
+            ReleaseArms();
             LockPress();
 
             Current = Phase.Failed;
@@ -501,6 +627,7 @@ namespace Game.View
             Current = Phase.Done;
             RestorePress();
             if (sealWall != null) sealWall.enabled = false;
+            RestoreArmOwners();                                  // 팔·허리·추격 소유권 반납
             if (chase != null) chase.move = true;
             OnFinished?.Invoke(crushed);
         }
@@ -509,11 +636,15 @@ namespace Game.View
         public void ResetForRestart()
         {
             if (wedge != null) wedge.End();
+            RestoreArmOwners();                                  // 먼저 되살리고(끈 채로 방치되면 다음 판에 팔이 죽는다)
+            if (armPoser != null) armPoser.ResetToHome();
             if (arms != null) arms.Relax(sealHand);
             if (geo != null) geo.ResetToHome();
             if (sealWall != null) sealWall.enabled = false;
 
-            LockPress();
+            // Awake와 같은 이유 — 추격 중이 아니면 평상시(해킹 가능)로 되돌린다.
+            RestorePress();
+            if (!BossChaseState.Active) SetBossHidden(true);
             Current = Phase.Idle;
             _phaseT = 0f;
         }

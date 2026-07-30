@@ -82,6 +82,15 @@ namespace Game.View
             _vy = vertical;
         }
 
+        [Header("발소리")]
+        [Tooltip("접지 중 이동할 때 재생하는 발소리.")]
+        public AudioClip footstepClip;
+        [Range(0f, 1f)] public float footstepVolume = 0.6f;
+        [Tooltip("한 걸음으로 칠 이동 거리(m). 짧을수록 발소리가 잦다.")]
+        public float stepDistance = 2f;
+        AudioSource _sfx;
+        float _stepDist;
+
         CharacterController _cc;
         MotionFeel _feel;
         float _vy;
@@ -124,6 +133,14 @@ namespace Game.View
             _cc = GetComponent<CharacterController>();
             // 연출은 카메라(자식)에 산다 — 몸 위치를 건드리면 CC와 싸우므로 시각 전용 트랜스폼에 둔다.
             _feel = GetComponentInChildren<MotionFeel>();
+
+            _sfx = GetComponent<AudioSource>();
+            if (_sfx == null) _sfx = gameObject.AddComponent<AudioSource>();
+            _sfx.playOnAwake = false;
+            _sfx.spatialBlend = 0f;
+            // 이 컴포넌트는 GameBoot이 런타임에 붙이므로 씬에 없어 인스펙터로 못 물린다 —
+            // Resources 폴더 관례로 자동 로드한다(인스펙터에 직접 물리면 그 값이 우선).
+            if (footstepClip == null) footstepClip = Resources.Load<AudioClip>("Sfx/PlayerFootstep");
             _cc.height = 1.8f;
             _cc.radius = 0.3f;
             _cc.center = new Vector3(0f, -0.7f, 0f);   // 카메라(눈)=1.6 위 → 발이 지면에
@@ -229,6 +246,22 @@ namespace Game.View
             if (below && !_groundedBelow && prevVy < 0f
                 && Time.time >= _suppressLandUntil && _feel != null)
                 _feel.OnLand(Mathf.Abs(prevVy));
+
+            // 발소리 — 접지 중 이동한 거리를 누적해 일정 간격(stepDistance)마다 한 번씩.
+            if (below)
+            {
+                float dist = h.magnitude * dt;
+                if (dist > 0.0001f)
+                {
+                    _stepDist += dist;
+                    if (_stepDist >= stepDistance)
+                    {
+                        _stepDist -= stepDistance;
+                        if (footstepClip != null && _sfx != null) _sfx.PlayOneShot(footstepClip, footstepVolume);
+                    }
+                }
+                else _stepDist = 0f;   // 멈추면 다음 걸음은 처음부터
+            }
 
             _groundedBelow = below;
             _wasGrounded = below;

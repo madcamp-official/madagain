@@ -113,6 +113,9 @@ namespace Game.View
                     Print("  intro             — 시작 인트로(치지직→기상). 사망 연출의 뒷부분");
                     Print("  wake              — 기상만(암전 없이). 흔들거림·상승·팔만 볼 때");
                     Print("  veil <검정> [치지직] — 덮개 값 직접 지정(0~1). veil 0 으로 걷음");
+                    Print("  far [거리]         — 카메라 far 평면. 인자 없으면 현재값·렌더러 수 표시");
+                    Print("  tp <번호>          — 체크포인트로 순간이동. 0=시작 1~3=스테이지1~3 4=보스 직전");
+                    Print("  tp                — 체크포인트 번호 목록 표시");
                     break;
 
                 case "spawn":
@@ -181,10 +184,69 @@ namespace Game.View
                     break;
                 }
 
+                case "far":
+                {
+                    var cam = Camera.main;
+                    if (cam == null) { Print("  Camera.main이 없습니다"); break; }
+
+                    if (a.Length >= 2)
+                    {
+                        float f;
+                        if (!float.TryParse(a[1], out f) || f <= 0f) { Print("  사용: far <거리>"); break; }
+                        cam.farClipPlane = f;
+                    }
+
+                    // 지금 이 far로 몇 개가 살아남는지 — 컬링 효과를 눈이 아니라 숫자로 본다.
+                    // Renderer.isVisible은 에디터가 백그라운드면 갱신이 멈추므로 거리로 직접 센다.
+                    int total = 0, within = 0;
+                    Vector3 eye = cam.transform.position;
+                    float far2 = cam.farClipPlane * cam.farClipPlane;
+                    foreach (var r in FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+                    {
+                        if (!r.enabled) continue;
+                        total++;
+                        if ((r.bounds.ClosestPoint(eye) - eye).sqrMagnitude <= far2) within++;
+                    }
+                    Print($"  far = {cam.farClipPlane:0.#}m   범위 안 렌더러 {within} / {total}" +
+                          $"  ({(total > 0 ? 100f * within / total : 0f):0.#}%)");
+                    Print("  ★ 실제 부하는 Game 뷰 Stats의 Batches·Tris로 볼 것 — 이건 후보 개수일 뿐이다");
+                    break;
+                }
+
+                case "tp":
+                    if (a.Length < 2) { ListCheckpoints(); break; }
+                    if (!int.TryParse(a[1], out int order)) { Print("  숫자를 넣으십시오 (tp 로 목록 확인)"); break; }
+                    TeleportToCheckpoint(order);
+                    break;
+
                 default:
                     Print("  알 수 없는 명령: " + cmd + " (help)");
                     break;
             }
+        }
+
+        /// <summary>order가 일치하는 체크포인트로 순간이동. 부활 지점(RunCheckpoints.Current)은 안 건드린다 —
+        /// 테스트용 이동일 뿐 저장 지점을 바꾸는 게 아니다.</summary>
+        void TeleportToCheckpoint(int order)
+        {
+            Checkpoint best = null;
+            foreach (var cp in FindObjectsByType<Checkpoint>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (cp.order == order) { best = cp; break; }
+
+            if (best == null) { Print("  order=" + order + " 체크포인트를 찾지 못했습니다."); ListCheckpoints(); return; }
+
+            RunCheckpoints.MoveTo(best);
+            Print("  텔레포트: " + (string.IsNullOrEmpty(best.label) ? best.name : best.label) + " (#" + order + ")");
+        }
+
+        void ListCheckpoints()
+        {
+            var all = FindObjectsByType<Checkpoint>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            System.Array.Sort(all, (x, y) => x.order.CompareTo(y.order));
+            if (all.Length == 0) { Print("  체크포인트가 없습니다."); return; }
+            Print("  체크포인트 목록 (tp <번호>):");
+            foreach (var cp in all)
+                Print("   #" + cp.order + "  " + (string.IsNullOrEmpty(cp.label) ? cp.name : cp.label));
         }
 
         const string GuardPrefabPath = "Assets/_Project/Prefabs/Hackables/ViewEntry/Guard.prefab";

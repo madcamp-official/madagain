@@ -85,6 +85,35 @@ namespace Game.View
                 l.lenLower = Vector3.Distance(l.lower.position, l.tip.position);
                 l.measured = l.lenUpper > 1e-5f && l.lenLower > 1e-5f;
             }
+            CapturePolesFromRest();
+        }
+
+        /// <summary>
+        /// 다리마다 <b>모델링된 자세에서 무릎이 접혀 있던 방향</b>을 재서 폴로 삼는다.
+        ///
+        /// <para><b>왜 필요한가</b> — 기본값은 네 다리가 전부 <c>(0,1,0)</c>이라 무릎이 모두 같은
+        /// 방향(위)으로 접힌다. 그런데 모델의 다리는 바깥으로 벌어져 있어서, IK가 풀리는 순간
+        /// 무릎이 한쪽으로 몰리며 <b>배치해 둔 자세와 다른 모양</b>이 된다(실측: 무릎이 1.4cm 이동).
+        /// 발끝은 앵커에 정확히 맞는데도 실루엣이 달라 보이는 이유가 이것이다.</para>
+        ///
+        /// <para>어깨→발끝 축에서 무릎이 벗어난 성분이 곧 접히는 방향이다. 그걸 그대로 폴로 쓰면
+        /// IK가 모델 자세를 재현한다.</para>
+        /// </summary>
+        [ContextMenu("무릎 방향을 모델 자세에서 캡처")]
+        public void CapturePolesFromRest()
+        {
+            if (legs == null) return;
+            foreach (var l in legs)
+            {
+                if (l == null || l.upper == null || l.lower == null || l.tip == null) continue;
+                Vector3 axis = l.tip.position - l.upper.position;
+                if (axis.sqrMagnitude < 1e-8f) continue;
+                axis.Normalize();
+                Vector3 kneeOff = l.lower.position - l.upper.position;
+                Vector3 poleW = kneeOff - axis * Vector3.Dot(kneeOff, axis);   // 축에 수직인 성분
+                if (poleW.sqrMagnitude < 1e-8f) continue;
+                l.poleLocalDir = transform.InverseTransformDirection(poleW.normalized);
+            }
         }
 
         /// <summary>

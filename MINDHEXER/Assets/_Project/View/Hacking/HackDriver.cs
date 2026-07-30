@@ -183,19 +183,15 @@ namespace Game.View
             }
 
             // 실은 해킹 시도 순간(초록)부터 붙고, 성공하면 조종 대상으로 넘어가며 파랑이 된다(§7·§6.2).
+            // ★ 빙의(몸 이동)가 성공하면 실은 풀린다(사용자 확정) — 예전엔 셸↔빙의 대상을 계속
+            //   이었는데, 그건 여기서 tetherTarget을 Controlled로만 두면 저절로 해소된다:
+            //   빙의는 Controlled를 쓰지 않으므로(ExternalControl 전용) 빙의 중엔 대상이 없어져
+            //   ControlTether가 스스로 회수 애니메이션을 탄다.
             if (tether != null)
             {
                 bool hacking = _ctx.Current == ControlContext.Hacking && _ctx.ActiveTarget != null;
-
-                // 빙의 중이면 실은 <b>남겨진 본체 셸 → 빙의한 대상</b>을 잇는다(§6.3의 "손에서 이어지는 줄").
-                // 리그가 대상 자리로 옮겨갔으므로 카메라를 시작점으로 쓰면 길이가 0이 된다.
-                bool possessing = !hacking && viewEntry != null && viewEntry.Active;
-                Transform from = possessing && viewEntry.Shell != null
-                    ? viewEntry.Shell
-                    : (cam != null ? cam.transform : transform);
-
-                Hackable tetherTarget = hacking ? _ctx.ActiveTarget
-                                      : (possessing ? _ctx.ActiveTarget : Controlled);
+                Transform from = cam != null ? cam.transform : transform;
+                Hackable tetherTarget = hacking ? _ctx.ActiveTarget : Controlled;
 
                 tether.UpdateTether(from,
                                     tetherTarget != null ? tetherTarget.transform : null,

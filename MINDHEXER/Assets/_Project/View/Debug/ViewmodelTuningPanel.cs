@@ -285,8 +285,22 @@ namespace Game.View
                  "  ·  내려간 정도 <b>" + _mantle.DebugAirBlend.ToString("0.00") + "</b>" +
                  "  ·  단계 <b>" + _mantle.Current + "</b>");
             if (_mantle.handIkR != null)
-                Info("실제 IK 가중치 <b>" + _mantle.handIkR.weight.ToString("0.00") + "</b>" +
+            {
+                var ikr = _mantle.handIkR;
+                Info("실제 IK 가중치 <b>" + ikr.weight.ToString("0.00") + "</b>" +
                      " (평상시 " + _mantle.idleWeight.ToString("0.00") + " → 파킹하면 1로 올라갑니다)");
+                bool swOver = ikr.LastSwingDeg > ikr.wristMaxSwing - 1f;
+                bool twOver = ikr.LastTwistDeg > ikr.wristMaxTwist - 1f;
+                Info("손목 요구각 — 스윙 <b>" + ikr.LastSwingDeg.ToString("0") + "°</b>/" + ikr.wristMaxSwing.ToString("0") +
+                     (swOver ? " <b>한계</b>" : "") +
+                     "  ·  트위스트 <b>" + ikr.LastTwistDeg.ToString("0") + "°</b>/" + ikr.wristMaxTwist.ToString("0") +
+                     (twOver ? " <b>한계</b>" : ""));
+                if (swOver || twOver)
+                    Info("<b>손목이 클램프 한계에 붙어 있습니다</b> — 목표 회전이 손 뼈의 쉬는 자세에서 너무 멉니다. " +
+                         "한계를 올리는 게 아니라 <b>손 뼈 축 보정(handEulerR)</b>으로 기준을 맞춰야 합니다. 지금 " +
+                         _mantle.handEulerR.ToString("0") + " 입니다.");
+                _mantle.handEulerR = V3("  R 축 보정", _mantle.handEulerR, -180f, 180f);
+            }
             Info("<b>내려간 정도</b>가 1인데도 손이 안 내려가 보이면 IK 가중치를 보십시오 — " +
                  "가중치가 낮으면 목표를 43cm 내려도 손은 그 비율만큼만 따라갑니다. " +
                  "내려간 정도가 <b>0</b>이면 체공이 기준보다 짧거나, 단계가 <b>평상시가 아닌</b> 것입니다.");

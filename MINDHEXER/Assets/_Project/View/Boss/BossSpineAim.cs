@@ -131,8 +131,30 @@ namespace Game.View
 
         void OnDisable() { RestoreHome(); }
 
+        // 편집 모드에서 미리보기가 꺼져 있는 동안은 <b>아무것도 건드리지 않는다</b>(BossArmRig와 같은 규약).
+        // 안 그러면 씬 뷰의 Camera.main을 향해 계속 허리가 굽어, 이 리그를 기준으로 재는 모든 측정이
+        // 오염된다 — HeadContact가 걷기 자세에서 벗어나 낑김 위치가 12m 넘게 틀리는 것을 실제로 겪었다.
+        [Header("에디터")]
+        [Tooltip("켜면 편집 모드에서도 Camera.main을 향해 굽힌다. 자세를 눈으로 확인할 때만 켤 것.\n" +
+                 "★ 켜 둔 채로 측정하면 값이 오염된다. 확인이 끝나면 반드시 끌 것.")]
+        public bool editorPreview = false;
+
+        bool _prevPreview;
+
         void LateUpdate()
         {
+            if (!Application.isPlaying)
+            {
+                if (!editorPreview)
+                {
+                    // 미리보기가 꺼지는 그 프레임에만 한 번 복원하고, 그 뒤로는 손을 뗀다 —
+                    // 매 프레임 되돌리면 인스펙터에서 본을 손으로 돌려 볼 수가 없다.
+                    if (_prevPreview) { RestoreHome(); _prevPreview = false; }
+                    return;
+                }
+                _prevPreview = true;
+            }
+
             if (target == null && Camera.main != null) target = Camera.main.transform;
             if (target == null || head == null) return;
 

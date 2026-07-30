@@ -23,6 +23,28 @@ namespace Game.View
         [Tooltip("PC 모드에서 시작 시 마우스 커서를 잠글지.")]
         public bool lockCursor = true;
 
+        [Header("렌더 거리 (모바일 VR 부하의 최대 변수)")]
+        [Tooltip("카메라 far 평면(m). 0 이하면 씬 값을 그대로 둔다.\n" +
+                 "★ 스테이지 3개를 한 씬에 이어 붙였기 때문에 far가 크면 <b>지금 있는 스테이지가 아닌 것까지</b> " +
+                 "통째로 그린다. 스테이지 간격이 113.5m라, 100이면 옆 스테이지가 거의 통째로 잘린다.\n" +
+                 "먼 배경이 잘려 보이면 늘리되, 배경만 따로 살리려면 아래 레이어별 거리를 쓸 것.\n" +
+                 "플레이 중에는 콘솔 `far <거리>`로 바꿔 가며 Stats를 비교할 수 있다.")]
+        public float farClip = 40f;
+
+        [System.Serializable]
+        public struct LayerCullRule
+        {
+            [Tooltip("레이어 이름. 없는 이름은 조용히 무시된다.")]
+            public string layerName;
+
+            [Tooltip("이 레이어를 그릴 최대 거리(m). 0이면 farClip을 그대로 쓴다.")]
+            public float distance;
+        }
+
+        [Tooltip("레이어별 컬링 거리. 구조물은 멀리, 잔장식은 가깝게 잘라 부하를 줄인다.\n" +
+                 "비워 두면 전부 farClip을 쓴다.")]
+        public LayerCullRule[] layerCullRules = new LayerCullRule[0];
+
         [Header("프레임")]
         [Tooltip("목표 프레임레이트. ⚠️ Unity는 Android에서 이 값을 지정하지 않으면 배터리 절약을 위해 " +
                  "30으로 묶는다 — 실기에서 정확히 30.0fps에 고정되는 것으로 확인했다. VR에서 30fps는 " +
@@ -80,6 +102,29 @@ namespace Game.View
         /// PC의 원래 동작). 예전 VR 전용 [XR Rig]+FreeLookController 경로는 삭제 — 몸이 없어서
         /// 충돌·중력 없이 벽을 뚫고 다녔고 눈높이도 TPD가 덮어써 땅이 꺼져 보였다.</para>
         /// </summary>
+        /// <summary>
+        /// 카메라 아래에 1인칭 뷰모델을 둔다. 이미 있으면(작업 씬처럼 손으로 배치한 경우) 그대로 쓴다.
+        ///
+        /// <para>프리팹은 <c>Resources/PlayerViewmodel</c>이다 — 이 컴포넌트가 런타임에 리그를
+        /// 만들므로 씬에서 참조를 물릴 수가 없어 이름으로 찾는다. 프리팹 루트의 로컬 TRS
+        /// (위치·180° 회전·스케일 2)가 곧 1인칭 구도라 <c>worldPositionStays: false</c>로 붙여
+        /// 그 값을 살린다.</para>
+        /// </summary>
+        void EnsureViewmodel(Transform camT)
+        {
+            if (camT == null) return;
+            if (camT.Find(ViewmodelCamera.ViewmodelRootName) != null) return;   // 이미 있음
+
+            var pf = Resources.Load<GameObject>("PlayerViewmodel");
+            if (pf == null)
+            {
+                Debug.LogWarning("[GameBoot] Resources/PlayerViewmodel 프리팹이 없어 1인칭 팔·거미가 안 나옵니다.");
+                return;
+            }
+            var go = Instantiate(pf, camT, false);
+            go.name = ViewmodelCamera.ViewmodelRootName;   // ViewmodelCamera·ViewmodelMotion이 이름으로 찾는다
+        }
+
         void SetupRig()
         {
             var body = new GameObject("[PlayerBody]");
@@ -96,6 +141,13 @@ namespace Game.View
             _cam.transform.localRotation = Quaternion.identity;
             var feel = _cam.GetComponent<MotionFeel>() ?? _cam.gameObject.AddComponent<MotionFeel>();
             feel.ownsRotation = true;   // 시점은 부모가 가지므로 이 트랜스폼의 회전은 연출 몫이다
+
+            // ★ 1인칭 뷰모델(팔·손 IK·손가락·펫 거미)을 카메라 아래에 스폰한다.
+            //   여태 이 리그는 ViewmodelStudio 씬에만 손으로 배치돼 있어서, 실제 스테이지에서
+            //   플레이하면 <b>팔도 거미도 없었다</b>. 여기서 만들어야 전 씬에 한 번에 적용된다.
+            //   MantleRig.Resolve()가 자기 하위에서 HandIK/FingerPoser를 찾으므로 배선은 자동이다
+            //   (뷰모델은 [PlayerBody]/[Head]/Main Camera 아래라 하위에 들어온다).
+            EnsureViewmodel(_cam.transform);
 
             // 몸 — MotionFeel(자식)이 먼저 있어야 Awake 캐시가 잡힌다.
             if (body.GetComponent<MantleRig>() == null) body.AddComponent<MantleRig>();
@@ -214,6 +266,32 @@ namespace Game.View
             Application.targetFrameRate = targetFrameRate;
         }
 
+        /// <summary>
+        /// 레이어별 컬링 거리를 적용한다. 이름으로 찾으므로 레이어가 없으면 조용히 건너뛴다 —
+        /// 프로젝트마다 레이어 구성이 달라도 터지지 않는다.
+        ///
+        /// <para><b>왜 레이어별인가</b>: <see cref="farClip"/> 하나로 자르면 "가까이서 보여야 할 장식"과
+        /// "멀리 보여야 할 배경"이 같은 거리에서 잘린다. 장식은 60m면 충분하고 배경은 멀리 보여야 한다.</para>
+        /// </summary>
+        void ApplyLayerCullDistances(Camera c)
+        {
+            if (layerCullRules == null || layerCullRules.Length == 0) return;
+
+            float[] d = c.layerCullDistances;   // 32칸. 0 = farClip 그대로 쓴다는 뜻
+            bool any = false;
+            for (int i = 0; i < layerCullRules.Length; i++)
+            {
+                int layer = LayerMask.NameToLayer(layerCullRules[i].layerName);
+                if (layer < 0) continue;        // 없는 레이어는 무시 — 실수로 터뜨리지 않는다
+                d[layer] = Mathf.Max(0f, layerCullRules[i].distance);
+                any = true;
+            }
+            if (!any) return;
+
+            c.layerCullDistances = d;
+            c.layerCullSpherical = true;        // 평면이 아니라 구 기준 — 옆을 볼 때 갑자기 사라지지 않는다
+        }
+
         Camera EnsureCamera()
         {
             var c = Camera.main;
@@ -224,6 +302,9 @@ namespace Game.View
                 go.AddComponent<AudioListener>();
             }
             c.nearClipPlane = 0.1f;
+            if (farClip > 0f) c.farClipPlane = farClip;
+            ApplyLayerCullDistances(c);
+
             var camData = c.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>()
                        ?? c.gameObject.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
             camData.antialiasing = UnityEngine.Rendering.Universal.AntialiasingMode.SubpixelMorphologicalAntiAliasing;

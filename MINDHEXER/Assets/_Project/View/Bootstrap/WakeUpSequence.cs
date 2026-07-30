@@ -109,13 +109,6 @@ namespace Game.View
         [Tooltip("고개가 들리는 데 걸리는 시간(초). 몸보다 늦게 들려야 무겁다.")]
         public float pitchRecoverTime = 0.4f;
 
-        [Header("팔 — 짚었다 제자리로")]
-        public float armDelay = 0.04f;
-        public float armRiseTime = 0.45f;
-
-        [Tooltip("팔의 시작 오프셋(m, 음수 = 화면 아래).")]
-        public float armDrop = -0.3f;
-
         [Header("길이")]
         [Tooltip("컷 길이(초). 여기서 조작이 풀린다.")]
         public float mainTime = 1f;
@@ -131,9 +124,6 @@ namespace Game.View
         public FirstPersonPlayer body;
         public MotionFeel feel;
 
-        [Tooltip("뷰모델 루트. 비우면 이름 'Viewmodel'로 찾는다.")]
-        public Transform viewmodelRoot;
-
         /// <summary>연출이 진행 중인가(여운 포함).</summary>
         public bool Playing { get; private set; }
 
@@ -145,8 +135,8 @@ namespace Game.View
 
         System.Action _onDone;
         float _t, _seed;
-        float _targetYaw, _armHomeY;
-        bool _armHomeCached, _handedOff;
+        float _targetYaw;
+        bool _handedOff;
 
         /// <summary>②가 끝나 스프링에 넘기는 시각.</summary>
         float HandoffAt => impactTime + holdTime;
@@ -161,19 +151,6 @@ namespace Game.View
             if (look == null) look = FindAnyObjectByType<MouseLook>();
             if (body == null) body = FirstPersonPlayer.Instance;
             if (feel == null) feel = FindAnyObjectByType<MotionFeel>();
-            if (viewmodelRoot == null)
-            {
-                var t = FindByName(ViewmodelCamera.ViewmodelRootName);
-                if (t != null) viewmodelRoot = t;
-            }
-        }
-
-        static Transform FindByName(string n)
-        {
-            var all = FindObjectsByType<Transform>(FindObjectsInactive.Include);
-            for (int i = 0; i < all.Length; i++)
-                if (all[i].name == n) return all[i];
-            return null;
         }
 
         /// <summary>연출 시작. 이미 진행 중이면 무시한다(겹쳐 부르면 오프셋이 두 겹으로 쌓인다).</summary>
@@ -209,7 +186,6 @@ namespace Game.View
                 look.SetLook(_targetYaw, startPitchDown);
             }
 
-            CacheArmHome();
             Apply(0f);
         }
 
@@ -227,27 +203,11 @@ namespace Game.View
             }
             if (veil != null) { veil.eyelidOpen = 1f; veil.eyelidVignette = 0f; }
             if (look != null) { look.SetLook(_targetYaw, 0f); look.SensScale = 1f; }
-            if (viewmodelRoot != null && _armHomeCached)
-            {
-                Vector3 lp = viewmodelRoot.localPosition;
-                lp.y = _armHomeY;
-                viewmodelRoot.localPosition = lp;
-            }
+            // Viewmodel 복원 코드 제거 — 위 Apply()의 팔 블록과 같은 이유(더 이상 이 루트를 안 만진다).
             if (body != null) body.LookFrozen = false;
 
             var cb = _onDone; _onDone = null;
             cb?.Invoke();
-        }
-
-        /// <summary>
-        /// 뷰모델 원래 높이를 최초 1회만 기억한다. 연출 중에 잡으면 내려간 위치가 원래 위치가 된다
-        /// (보스 머리 자세에서 겪은 사고와 같은 종류).
-        /// </summary>
-        void CacheArmHome()
-        {
-            if (_armHomeCached || viewmodelRoot == null) return;
-            _armHomeY = viewmodelRoot.localPosition.y;
-            _armHomeCached = true;
         }
 
         void LateUpdate()
@@ -340,15 +300,13 @@ namespace Game.View
             if (!main && body != null && body.LookFrozen) body.LookFrozen = false;
 
             // ── 팔 ──
-            if (viewmodelRoot == null || !_armHomeCached) return;
-
-            float armT = t - armDelay;
-            float au = armRiseTime > 1e-4f ? Mathf.Clamp01(armT / armRiseTime) : 1f;
-            if (armT < 0f) au = 0f;
-
-            Vector3 vp = viewmodelRoot.localPosition;
-            vp.y = _armHomeY + Mathf.LerpUnclamped(armDrop, 0f, au * au * (3f - 2f * au));
-            viewmodelRoot.localPosition = vp;
+            // ★ 폐기(사용자 확인) — Viewmodel 루트는 ViewmodelMotion이 매 프레임
+            //   `basePos + pos*masterScale`로 이미 소유하고 있는데, 여기서 같은 트랜스폼의
+            //   localPosition.y를 또 덮어써 소유자가 둘이 됐다(설계 §3 위반).
+            //   결정적으로 손의 IK 목표(MantleRig)는 Viewmodel이 아니라 <b>카메라</b>에 매달려
+            //   있어서, 여기서 어깨(Viewmodel)만 아래로 끌어내리면 손 목표는 그대로인 채 어깨만
+            //   내려가 IK가 그 간격을 메우려 팔을 억지로 늘리거나 꺾었다 — 스폰·부활마다 팔이
+            //   이상해 보인 진짜 원인. 카메라 딥·흔들림·롤·FOV만으로도 "착지 순간"은 충분히 표현된다.
         }
 
         /// <summary>

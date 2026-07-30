@@ -401,7 +401,11 @@ namespace Game.View
             Vector3 viewer = cam != null ? cam.transform.position : transform.position;
             Vector3 aim = cam != null ? cam.transform.forward : transform.forward;
 
-            _sites.Pick(stitchCount, viewer, _seed, _picked);
+            // ★ 레일 세트는 한 가닥만 — 콜라이더가 세로로 아주 길어서(가동범위를 덮으려고) 기본
+            //   stitchCount대로 여러 자리를 한꺼번에 뽑으면 실이 여러 가닥 동시에 튀어나온 것처럼
+            //   보인다. 다른 대상(경비병·프레스 등)은 그대로 여러 가닥이 맞다.
+            int count = hk.kind == HackableKind.RailCarrier ? 1 : stitchCount;
+            _sites.Pick(count, viewer, _seed, _picked);
 
             // 첫 발사는 조준점 근처에 꽂혀야 "내가 쏜 것"으로 읽힌다. 나머지 순서는 그대로 둔다.
             _sites.SortAimFirst(_picked, viewer, aim);

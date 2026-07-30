@@ -224,6 +224,11 @@ namespace Game.View
 
             SwingTwist(delta, twistAxis, out Quaternion swing, out Quaternion twist);
 
+            // 진단 — 클램프 <b>전</b>의 요구 각도. 이게 한계를 넘고 있으면 손목이 경계에 붙어
+            // 꺾인 채로 굳는다. 그때는 클램프가 아니라 목표 회전(handEuler 축 보정)이 문제다.
+            LastSwingDeg = Mathf.Abs(Angle(swing));
+            LastTwistDeg = Mathf.Abs(Angle(twist));
+
             swing = ClampAngle(swing, wristMaxSwing);
             twist = ClampAngle(twist, wristMaxTwist);
 
@@ -239,6 +244,18 @@ namespace Game.View
             if (m < 1e-8f) twist = Quaternion.identity;
             else { float inv = 1f / Mathf.Sqrt(m); twist = new Quaternion(twist.x * inv, twist.y * inv, twist.z * inv, twist.w * inv); }
             swing = q * Quaternion.Inverse(twist);
+        }
+
+        /// <summary>클램프 전 손목이 요구한 스윙·트위스트 각도(°). 진단용.</summary>
+        public float LastSwingDeg { get; private set; }
+        public float LastTwistDeg { get; private set; }
+
+        /// <summary>−180~180으로 편 각도. 반구를 고정해 부호가 뒤집히지 않게 한다.</summary>
+        static float Angle(Quaternion q)
+        {
+            if (q.w < 0f) q = new Quaternion(-q.x, -q.y, -q.z, -q.w);
+            q.ToAngleAxis(out float a, out _);
+            return a > 180f ? a - 360f : a;
         }
 
         static Quaternion ClampAngle(Quaternion q, float maxDeg)

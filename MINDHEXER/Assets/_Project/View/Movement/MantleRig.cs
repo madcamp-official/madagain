@@ -53,7 +53,7 @@ namespace Game.View
         [Tooltip("손을 놓고 아래로 사라지는 시간.")]
         public float releaseTime = 0.12f;
         [Tooltip("기본손이 다시 올라오는 시간.")]
-        public float raiseTime = 0.16f;
+        public float raiseTime = 0.107f;   // 0.16 / 1.5 — 자동점프 후 손이 다시 올라오는 속도 ×1.5
 
         [Tooltip("예고(Prepare) 없이 Show가 온 경우의 진입 총 시간(초). 벽 앞 바로 잡기는 여유가 0이라 " +
                  "정상 속도로 재생하면 손이 다 올라오기도 전에 몸이 올라가 버린다. 그 경우에만 압축한다.")]
@@ -387,7 +387,31 @@ namespace Game.View
         /// <summary>등반 손이 조금이라도 관여 중인가. ViewmodelMotion이 참고할 수 있다.</summary>
         public bool Engaged => _phase != Phase.Idle;
 
-        void Awake() { _cam = Camera.main; }
+        // ★ 스폰 직후 몇 프레임은 CharacterController가 아직 첫 물리 스텝을 안 밟아 Grounded가
+        //   일시적으로 false로 보일 수 있다. 그 순간 공중 파킹이 잠깐 켜졌다 꺼지면서 weight가
+        //   튀고(idleWeight 0.10 → 0.58까지 실측), 그 사이 IK가 풀어낸 "중간 자세"가 다음 프레임의
+        //   출발점(upper0)이 되어 자세가 눌러앉는다 — "리스폰마다·시작할 때마다 팔이 이상함"의
+        //   정체다. 리스폰은 씬을 통째로 리로드하므로(Awake부터 다시 돈다) 매번 같은 경로를 탄다.
+        //   스폰 유예 동안은 공중 판정 자체를 안 하는 것으로 막는다.
+        const float SpawnGraceTime = 5f;
+        float _spawnGrace;
+
+        [Header("소리")]
+        [Tooltip("실제로 모서리를 잡고 오르기 시작하는 순간(Show) 재생.")]
+        public AudioClip climbClip;
+        [Range(0f, 1f)] public float climbVolume = 0.7f;
+        AudioSource _sfx;
+
+        void Awake()
+        {
+            _cam = Camera.main; _airTime = 0f; _airBlend = 0f; _spawnGrace = SpawnGraceTime;
+            _sfx = GetComponent<AudioSource>();
+            if (_sfx == null) _sfx = gameObject.AddComponent<AudioSource>();
+            _sfx.playOnAwake = false;
+            _sfx.spatialBlend = 0f;
+            // GameBoot이 씬마다 새로 만드는 컴포넌트라 인스펙터로 못 물린다 — 자동 로드.
+            if (climbClip == null) climbClip = Resources.Load<AudioClip>("Sfx/PlayerClimb");
+        }
 
         void OnDestroy()
         {
@@ -425,6 +449,8 @@ namespace Game.View
         /// <summary>손을 잡는 지점(월드)에 핀 고정하고 등반 표시 시작.</summary>
         public void Show(Vector3 leftHand, Vector3 rightHand)
         {
+            if (climbClip != null && _sfx != null) _sfx.PlayOneShot(climbClip, climbVolume);
+
             _leftHand = leftHand;
             _rightHand = rightHand;
 
@@ -693,6 +719,7 @@ namespace Game.View
             //   높이로 재면 "낮지만 멀리 뛰는 점프"를 놓치고, 수직 속도로 재도 같은 문제가 생긴다.
             //   낮은 단차는 체공이 짧고 멀리 뛰는 점프는 낮아도 체공이 길다 — 둘을 가르는 것은 시간이다.
             bool grounded = _fppRef == null || _fppRef.Grounded;
+            if (_spawnGrace > 0f) { _spawnGrace -= Time.deltaTime; grounded = true; }   // 스폰 유예 — 위 주석 참조
             _airTime = grounded ? 0f : _airTime + Time.deltaTime;
             float want = _airTime > airParkDelay ? airParkAmount * handMotionScale : 0f;
             _airBlend = airParkSmooth > 1e-4f

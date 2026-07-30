@@ -43,6 +43,11 @@ namespace Game.View
             if (Destroyed) return;
             Destroyed = true;
 
+            // 부채꼴은 몸이 사라진 뒤에도 GameObject가 실제로 파괴될 때까지(life초) 계속 떠 있었다 —
+            // DangerZoneVisual이 GuardDetection.Active만 보므로 여기서 즉시 꺼야 죽는 순간 같이 사라진다.
+            var detection = GetComponent<GuardDetection>();
+            if (detection != null) detection.Active = false;
+
             Vector3 center = Center();
 
             // 원본을 먼저 지운다 — 조각과 겹쳐 보이면 순간 두 겹으로 뜬다.

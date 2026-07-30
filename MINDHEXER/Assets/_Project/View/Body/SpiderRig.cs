@@ -81,6 +81,11 @@ namespace Game.View
         public Transform abdomen;
         [Tooltip("실이 나갈 때 엉덩이가 대상 쪽으로 도는 정도. 1이면 정확히 겨눔.")]
         [Range(0f, 1f)] public float aimStrength = 0.8f;
+
+        // ★ 엉덩이가 기준 자세에서 벗어날 수 있는 한계(°). 사용자 확정 ±35°.
+        //   넘겨 돌리면 엉덩이 마디가 몸통에서 비틀려 거미 메시가 찢어진다.
+        [Tooltip("엉덩이가 기준 자세에서 벗어날 수 있는 최대 각도(°). 메시가 찢어지지 않게 하는 한계.")]
+        [Range(0f, 90f)] public float abdomenMaxDeg = 35f;
         [Tooltip("조준 자세로 들어가고 나오는 속도.")]
         public float aimSpeed = 9f;
         [Tooltip("엉덩이의 어느 축이 실 방향인가. 보통 -Z(뒤쪽) 또는 +Y.")]
@@ -166,11 +171,18 @@ namespace Game.View
             _bobTime += Time.deltaTime;
         }
 
-        /// <summary>실이 나가는 중이면 조준 자세로. 아니면 평상 자세로.</summary>
+        /// <summary>
+        /// 줄이 <b>그려지는 동안에는 항상</b> 조준한다 — 발사 직후만이 아니라 해킹 시도 중,
+        /// 장악 후 조종 중까지 전부(사용자 확정).
+        ///
+        /// <para>예전에는 <c>_state != Attached</c> 조건이 붙어 있어, 거미가 대상에 붙은 뒤에는
+        /// 엉덩이가 rest로 돌아갔다. 그러면 줄은 대상을 향해 뻗어 있는데 엉덩이는 딴 곳을 보는
+        /// 상태가 되어 <b>"엉덩이에서 뻗는 느낌"이 깨진다</b>. 줄이 살아 있으면 무조건 겨눈다.</para>
+        /// </summary>
         void UpdateAim()
         {
-            bool firing = _tether != null && _tether.Active && _state != State.Attached;
-            float want = firing ? 1f : 0f;
+            bool aiming = _tether != null && _tether.Active;
+            float want = aiming ? 1f : 0f;
             _aim = Mathf.Lerp(_aim, want, 1f - Mathf.Exp(-aimSpeed * Time.deltaTime));
         }
 
@@ -242,6 +254,10 @@ namespace Game.View
         /// </summary>
         void UpdateTetherOrigin()
         {
+            // ★ hack이 Awake 시점에 못 찾았으면(HackDriver가 아직 씬에 없던 순간이었으면) 계속 null로
+            //   굳어 실이 영원히 originOverride를 못 받고 카메라/손 기준으로 대체된다 — 매 프레임
+            //   다시 찾아 자가 치유한다(ViewmodelMotion.Acquire()와 같은 패턴).
+            if (hack == null) hack = FindFirstObjectByType<HackDriver>();
             if (_tether == null && hack != null) _tether = hack.tether;
             if (_tether == null) return;
 
@@ -361,7 +377,31 @@ namespace Game.View
             Quaternion aimed = delta * abdomen.rotation;
 
             // rest ↔ 조준 사이를 강도만큼 섞는다.
-            abdomen.localRotation = Quaternion.Slerp(_abdomenRest, ToLocal(abdomen, aimed), _aim * aimStrength);
+            Quaternion local = Quaternion.Slerp(_abdomenRest, ToLocal(abdomen, aimed), _aim * aimStrength);
+
+            // ★ rest에서 얼마나 벗어났는지를 재서 한계까지만 허용한다(사용자 확정 ±35°).
+            //   그 이상 돌리면 엉덩이 마디가 몸통에서 비틀려 <b>거미 메시가 찢어진다</b>.
+            //   한계에 걸려도 실은 여전히 방적돌기에서 나가고, 남은 각도는 실이 꺾이는 것으로
+            //   흡수된다 — 줄의 첫 구간(stubLength)이 방적돌기 축을 따라 나가기 때문이다.
+            local = ClampFromRest(_abdomenRest, local, abdomenMaxDeg);
+
+            abdomen.localRotation = local;
+        }
+
+        /// <summary>
+        /// 기준 자세에서 <paramref name="maxDeg"/>도를 넘게 벗어나면 그 지점까지만 허용한다.
+        /// 축은 유지하고 각도만 깎으므로 방향은 그대로이고 크기만 제한된다.
+        /// </summary>
+        static Quaternion ClampFromRest(Quaternion rest, Quaternion want, float maxDeg)
+        {
+            Quaternion d = Quaternion.Inverse(rest) * want;
+            // 부호가 뒤집힌 짝이 들어오면 축까지 뒤집혀 반대로 깎인다 — 반구를 고정한다.
+            if (d.w < 0f) d = new Quaternion(-d.x, -d.y, -d.z, -d.w);
+            d.ToAngleAxis(out float ang, out Vector3 ax);
+            if (float.IsNaN(ax.x) || ax.sqrMagnitude < 1e-8f) return rest;
+            if (ang > 180f) ang -= 360f;
+            if (Mathf.Abs(ang) <= maxDeg) return want;
+            return rest * Quaternion.AngleAxis(Mathf.Clamp(ang, -maxDeg, maxDeg), ax.normalized);
         }
 
         static Quaternion ToLocal(Transform t, Quaternion world) =>

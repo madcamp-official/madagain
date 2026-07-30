@@ -118,6 +118,12 @@ namespace Game.View
         void Update()
         {
             if (!move) return;
+            if (!BossChaseState.Active) return;   // ★ 전환점에서 추격이 시작되기 전엔 걷지 않는다
+
+            // 플레이어는 씬에 배치된 오브젝트가 아니라 런타임에 스폰되는 프리팹이라
+            // 인스펙터에서 미리 연결할 수 없다 — GameOverManager와 같은 방식으로 늦게 잡는다.
+            if (target == null && FirstPersonPlayer.Instance != null)
+                target = FirstPersonPlayer.Instance.transform;
 
             float speed = walkSpeed;
             if (target != null)

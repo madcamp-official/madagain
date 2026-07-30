@@ -29,6 +29,7 @@ namespace Game.View
 
         [Tooltip("본체 셸 프리팹. 비우면 임시 캡슐을 만든다(본체 모델이 생기면 여기에 꽂는다).")]
         public GameObject shellPrefab;
+        static GameObject _shellFallback;   // Resources 조회는 한 번만
 
         ViewEntryTarget _target;
         Camera _cam;            // 고정 시점 전용 카메라
@@ -62,6 +63,8 @@ namespace Game.View
 
         Transform _head;                // [PlayerBody] > [Head] — possessEyeLift를 얹을 곳
         VrTuning _vrTuning;              // VR에서 [Head] 로컬위치의 실소유자. PC엔 없다(0 고정 규약)
+
+        Transform _viewmodel;           // 빙의 중 숨겨 둔 1인칭 손 — 경비병 몸이 된 동안은 내 손이 보이면 안 된다
 
         public bool Active => _target != null;
 
@@ -126,6 +129,11 @@ namespace Game.View
             _head = _rig.Find("[Head]");
             ApplyPossessLift(target.possessEyeLift);
 
+            // ★ 내 1인칭 손을 숨긴다 — 지금부터 눈은 경비병 몸 안에 있다. 리그(+카메라)가 그리로
+            //   텔레포트해도 뷰모델은 그대로 따라와 붙어 있으므로, 여기서 직접 꺼야 한다.
+            _viewmodel = ViewmodelRoot.Find(_view);
+            if (_viewmodel != null) _viewmodel.gameObject.SetActive(false);
+
             // 경비병 본체: 충돌을 끄고(리그 CC가 맡는다) 메시를 숨긴다(눈이 모델 안에 있다).
             _offCols.Clear();
             foreach (var c in target.GetComponentsInChildren<Collider>(true))
@@ -151,6 +159,9 @@ namespace Game.View
 
             ApplyPossessLift(0f);   // [Head] 원복 — 몸을 원래 자리로 되돌리기 전에 할 필요는 없지만 순서 무관
             _head = null;
+
+            if (_viewmodel != null) _viewmodel.gameObject.SetActive(true);
+            _viewmodel = null;
 
             if (_shell != null) Destroy(_shell.gameObject);
             _shell = null;
@@ -189,6 +200,11 @@ namespace Game.View
 
         Transform MakeShell(Vector3 rigPos, float yaw)
         {
+            // ★ 이 컴포넌트는 GameBoot이 런타임에 붙이므로 씬에서 shellPrefab을 물릴 수가 없다.
+            //   그래서 Resources에서 이름으로 찾는 폴백을 둔다 — 스케일 2인 Protag 본체에
+            //   BodyIdleMotion(숨쉬기)만 얹은 프리팹이다.
+            if (shellPrefab == null) shellPrefab = _shellFallback ??= Resources.Load<GameObject>("ProtagShell");
+
             GameObject go;
             if (shellPrefab != null)
             {
@@ -196,7 +212,7 @@ namespace Game.View
             }
             else
             {
-                // 본체 모델이 아직 없어 임시 캡슐. 조준을 가로채지 않게 콜라이더는 제거한다.
+                // 프리팹까지 없으면 임시 캡슐. 조준을 가로채지 않게 콜라이더는 제거한다.
                 go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
                 var col = go.GetComponent<Collider>();
                 if (col != null) Destroy(col);

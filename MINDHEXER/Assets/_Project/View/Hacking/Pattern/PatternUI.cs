@@ -20,8 +20,10 @@ namespace Game.View
         public float dotRadius = 15f;
         public float fanSpacing = 10f;   // 겹친 변 부채꼴 간격
 
+        // 시작 전엔 "첫 점", 진행 중엔 "다음 점"을 같은 강조 표시(_nextHint) 하나가 가리킨다.
+        // 기존 2.4배에 사용자 지시로 1.35배를 추가로 곱해 3.24배로 키웠다.
         [Tooltip("다음 목표 점 강조 표시 크기 배율(점 반지름 기준).")]
-        public float nextHintScale = 2.4f;
+        public float nextHintScale = 2.4f * 1.35f;
 
         [Tooltip("타겟 전체 경로를 유령선으로 깔지. 순서는 '다음 목표 점' 강조가 전달하므로 꺼도 플레이 가능.")]
         public bool showGhostPath = true;

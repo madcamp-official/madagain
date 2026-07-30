@@ -79,6 +79,7 @@ namespace Game.View
         Hackable _hackable;
         float _cooldown;
         Transform _gizmo;
+        DangerZoneVisual _gizmoVisual;
 
         Transform Muzzle => muzzle != null ? muzzle : transform;
 
@@ -123,8 +124,10 @@ namespace Game.View
 
         void Update()
         {
-            // 감지 범위 표시는 조종 중이 아닐 때만 = 나를 위협하는 동안만.
-            if (_gizmo != null) _gizmo.gameObject.SetActive(showRangeGizmo && !BeingDriven);
+            // ★ 조종 중에도 레이저 자체는 남긴다 — 조준선이라 아예 꺼지면 어디를 겨눴는지 안 보인다.
+            //   대신 '위험' 신호(깜빡이는 노이즈)만 끈다(plainBeam) — 조종 중엔 나를 안 쏘니 거짓 경고다.
+            if (_gizmo != null) _gizmo.gameObject.SetActive(showRangeGizmo);
+            if (_gizmoVisual != null) _gizmoVisual.plainBeam = BeingDriven;
 
             if (_cooldown > 0f) { _cooldown -= Time.deltaTime; return; }
 
@@ -240,6 +243,7 @@ namespace Game.View
             vis.guard = null;   // 부모 체인에서 경비병을 잘못 집지 않게 명시적으로 비운다
 
             _gizmo = go.transform;
+            _gizmoVisual = vis;
         }
 
 #if UNITY_EDITOR
