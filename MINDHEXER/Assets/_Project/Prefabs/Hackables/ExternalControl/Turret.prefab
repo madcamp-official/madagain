@@ -31,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.7, y: 1.7, z: 1.7}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4819744768996864995}
@@ -162,6 +162,10 @@ MonoBehaviour:
   flickTime: 0.28
   overshoot: 1.6
   snapAnalog: 0
+  creepStep:
+    stepSize: 5
+    minInterval: 0.0833
+    maxPendingSteps: 2
   carryRiders: 0
   probeDistance: 0.35
 --- !u!1 &3034995794242897228
