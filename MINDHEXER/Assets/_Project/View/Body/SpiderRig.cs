@@ -43,6 +43,14 @@ namespace Game.View
         [Tooltip("회전 추종 반응 속도.")]
         public float rotateSpeed = 10f;
 
+        [Header("응시 (퍼치 중 플레이어를 본다)")]
+        [Tooltip("0이면 안 본다. 1이면 제한 각도까지 최대한 본다.")]
+        [Range(0f, 1f)] public float gazeAmount = 1f;
+
+        [Tooltip("퍼치 자세에서 최대로 비틀 각도(°). 넘으면 거기서 멈춘다 — " +
+                 "다리 끝이 팔에 고정돼 있어 몸통을 다 돌리면 다리가 꼬인다.")]
+        [Range(0f, 120f)] public float gazeMaxDeg = 55f;
+
         [Header("자세 안정화 (독수리)")]
         [Tooltip("켜면 손목이 꺾여도 거미가 수평을 유지한다. 끄면 손목을 그대로 따라간다.")]
         public bool stabilize = true;
@@ -96,6 +104,7 @@ namespace Game.View
         float _aim;                       // 조준 자세 강도 0~1
         Quaternion _abdomenRest;
         bool _abdomenCaptured;
+        Camera _gazeCam;                  // 응시 대상. 매 프레임 Camera.main을 부르면 비싸다
 
         public State Current => _state;
 
@@ -260,6 +269,7 @@ namespace Game.View
                     float pitch = Mathf.Sin(p * bobRate + 0.8f) * bobPitch;
 
                     wantRot = PerchRotation() * Quaternion.Euler(pitch, 0f, 0f);
+                    wantRot = ApplyGaze(wantRot);
                     wantPos = perchAnchor.position + perchAnchor.up * up + perchAnchor.right * side;
                     break;
                 }
@@ -304,6 +314,32 @@ namespace Game.View
             }
 
             ApplyAim();
+        }
+
+        /// <summary>
+        /// 퍼치 중 <b>플레이어 쪽(카메라)</b>을 응시한다.
+        ///
+        /// <para><b>왜 완전 LookAt이 아닌가</b> — 거미는 다리 끝이 팔에 고정돼 있어 몸통을 카메라로
+        /// 완전히 돌리면 다리가 꼬이고, 손목 뒤쪽을 볼 때는 몸이 뒤집힌다. 그래서 안정화된 퍼치
+        /// 자세를 기준으로 <b>제한 각도 안에서만</b> 비튼다. 각도를 넘어서면 거기서 멈춘다 —
+        /// 그 '못 따라오는' 느낌이 오히려 생물처럼 보인다.</para>
+        ///
+        /// <para>가중치(<see cref="gazeAmount"/>) 0이면 이 기능은 완전히 꺼진다.</para>
+        /// </summary>
+        Quaternion ApplyGaze(Quaternion baseRot)
+        {
+            if (gazeAmount <= 0.001f) return baseRot;
+
+            Camera cam = _gazeCam;
+            if (cam == null) { cam = Camera.main; _gazeCam = cam; }
+            if (cam == null) return baseRot;
+
+            Vector3 toCam = cam.transform.position - transform.position;
+            if (toCam.sqrMagnitude < 1e-6f) return baseRot;
+
+            Quaternion want = Quaternion.LookRotation(toCam.normalized, baseRot * Vector3.up);
+            Quaternion limited = Quaternion.RotateTowards(baseRot, want, gazeMaxDeg);
+            return Quaternion.Slerp(baseRot, limited, gazeAmount);
         }
 
         /// <summary>

@@ -118,35 +118,39 @@ namespace Game.View
 
         void DrawRange()
         {
-            if (!Section("거리 기준(hackRange)", ref _secRange)) return;
-            _mgr.fadeDistance = F("hackRange 밖 추가 흐림거리(m)", _mgr.fadeDistance, 0.5f, 40f);
-            _mgr.power = F("바깥 감쇠 지수", _mgr.power, 0.5f, 8f);
-            Info("hackRange 안쪽은 무조건 최대. 밖은 여기부터 fadeDistance만큼 더 가면서 바닥값까지 흐려진다.");
-            _mgr.responseSpeed = F("전환 속도(밀도·알파·모드 공통)", _mgr.responseSpeed, 0.5f, 40f);
+            if (!Section("전환 속도", ref _secRange)) return;
+            _mgr.riseSpeed = F("차오르는 속도", _mgr.riseSpeed, 0.3f, 40f);
+            _mgr.responseSpeed = F("사라지는 속도", _mgr.responseSpeed, 0.3f, 40f);
+            Info("현재값에서 목표로 이동하므로, 사라지는 중에 다시 조준하면 남은 값에서 이어 오른다.");
         }
 
         void DrawDensity()
         {
-            if (!Section("밀도(선 개수)", ref _secDensity)) return;
-            _mgr.densityFloor = F("최소 밀도(Floor)", _mgr.densityFloor, 0f, 1f);
-            _mgr.densityMax = F("최대 밀도(hackRange 안쪽)", _mgr.densityMax, 0f, 1f);
-            Info("셰이더가 이 값을 문턱값으로 써서 켜지는 선의 비율을 바꾼다.");
+            if (!Section("밀도(선 개수) — 상태별", ref _secDensity)) return;
+            _mgr.gazeDensity = F("조준 + 사거리 안", _mgr.gazeDensity, 0f, 1f);
+            _mgr.hackingDensity = F("패턴 푸는 중", _mgr.hackingDensity, 0f, 1f);
+            _mgr.controlDensity = F("조종 중", _mgr.controlDensity, 0f, 1f);
+            _mgr.hackedDensity = F("이미 해킹한 것(흔적)", _mgr.hackedDensity, 0f, 1f);
+            Info("★ 거리 비례는 폐기. 거리는 '사거리 안인가'라는 이진 판정으로만 쓴다 — " +
+                 "조준해도 사거리 밖이면 0이다.");
         }
 
         void DrawAlpha()
         {
-            if (!Section("불투명도(켜진 선의 진하기)", ref _secAlpha)) return;
-            _mgr.alphaFloor = F("최소 불투명도(Floor)", _mgr.alphaFloor, 0f, 1f);
-            _mgr.alphaMax = F("최대 불투명도(hackRange 안쪽)", _mgr.alphaMax, 0f, 1f);
-            Info("밀도보다 덜 떨어지게 Floor를 densityFloor보다 높게 두는 게 기본 설계 의도.");
+            if (!Section("불투명도(켜진 선의 진하기) — 상태별", ref _secAlpha)) return;
+            _mgr.gazeAlpha = F("조준 + 사거리 안", _mgr.gazeAlpha, 0f, 1f);
+            _mgr.hackingAlpha = F("패턴 푸는 중", _mgr.hackingAlpha, 0f, 1f);
+            _mgr.controlAlpha = F("조종 중", _mgr.controlAlpha, 0f, 1f);
+            _mgr.hackedAlpha = F("이미 해킹한 것(흔적)", _mgr.hackedAlpha, 0f, 1f);
+            Info("밀도보다 높게 두는 게 기본 — 선이 줄어드는 건 괜찮아도 남은 선까지 흐려지면 안 보인다.");
         }
 
         void DrawGaze()
         {
-            if (!Section("조준(IsGazed, 3D 모드)", ref _secGaze)) return;
-            _mgr.gazeDensity = F("조준 밀도", _mgr.gazeDensity, 0f, 1f);
-            _mgr.gazeAlpha = F("조준 불투명도", _mgr.gazeAlpha, 0f, 1f);
-            Info("2D 최댓값과 동일하게 맞추는 게 기본. 3D다움은 아래 웨이브 왜곡이 담당.");
+            if (!Section("해킹가능거리 강제(테스트)", ref _secGaze)) return;
+            _mgr.overrideHackRange = GUILayout.Toggle(_mgr.overrideHackRange, " 전역으로 강제 적용");
+            _mgr.hackRangeOverride = F("해킹가능거리(m)", _mgr.hackRangeOverride, 1f, 60f);
+            Info("이 거리 안에서만 조준 치지직이 켜진다. 상태가 겹치면 더 센 쪽이 이긴다(조준 > 흔적).");
         }
 
         void DrawShader()

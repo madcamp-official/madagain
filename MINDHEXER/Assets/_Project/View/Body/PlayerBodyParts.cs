@@ -41,6 +41,29 @@ namespace Game.View
 
         void Reset() { AutoFindBones(); }
 
+        void Awake() { FixSkinnedBounds(); }
+
+        /// <summary>
+        /// 스킨드 메시의 바운드를 <b>매 프레임 실제 정점에서 다시 계산</b>하게 만든다.
+        ///
+        /// <para><b>왜 필요한가</b> — 유니티는 스킨드 메시의 컬링 바운드를 임포트 시점의 자세로
+        /// 한 번 굽고, 뼈가 그 범위를 벗어나도 갱신하지 않는다. 1인칭 뷰모델은 IK가 손을 원래
+        /// 자세에서 <b>수십 cm 바깥으로</b> 끌고 가므로 바운드가 전혀 다른 곳에 남는다.
+        /// 그러면 팔이 화면 정중앙에 있어도 <c>isVisible=false</c>로 <b>통째로 컬링되어 안 보인다.</b></para>
+        ///
+        /// <para>실제로 겪었다: <c>R_Hand</c>는 뷰포트 (0.76, 0.10)에 있어 손목에 앉은 거미는 보이는데,
+        /// 팔 파츠 11개의 바운드는 뷰포트 −54까지 흩어져 전부 컬링됐다. <b>거미만 보이고 팔은 안
+        /// 보이는</b> 기묘한 증상의 원인이 이것이다.</para>
+        ///
+        /// <para>대가는 파츠당 바운드 재계산 비용이다. 뷰모델은 파츠가 10여 개뿐이라 무시할 만하고,
+        /// 안 보이는 것보다 낫다.</para>
+        /// </summary>
+        public void FixSkinnedBounds()
+        {
+            foreach (var r in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                r.updateWhenOffscreen = true;
+        }
+
         /// <summary>손 뼈를 이름으로 찾는다. 우리 리그는 R_/L_ 접두사를 쓴다.</summary>
         public void AutoFindBones()
         {

@@ -59,6 +59,26 @@ namespace Game.View
                  "정상 속도로 재생하면 손이 다 올라오기도 전에 몸이 올라가 버린다. 그 경우에만 압축한다.")]
         public float fastEntryTime = 0.12f;
 
+        [Header("1인칭 기본 자세 (카메라 기준 — 매사냥 장갑 자세)")]
+        [Tooltip("켜면 Idle에서도 IK로 손을 이 지점에 둔다. 끄면 모델의 쉬는 자세(T포즈)가 그대로 나온다.")]
+        public bool driveIdlePose = true;
+        // ★ 어깨가 카메라 로컬 (0.23, −0.11, 0.03), 팔 도달거리 0.67m(루트 스케일 2)에서 잡은 값.
+        //   목표가 도달거리를 넘으면 IK가 클램프되어 팔이 뻗친 채로 굳으므로 80% 안쪽에 둔다.
+        //   GameBoot이 MantleRig을 씬마다 새로 만들므로, 씬 값이 아니라 여기가 기준이 된다.
+        //   자세는 <b>오른쪽 아래에서 손이 들어와 손등이 보이는</b> 형태다(가로로 눕히지 않는다).
+        [Tooltip("오른손 위치. 화면 아래쪽 중앙보다 살짝 왼쪽 — 팔은 오른쪽 아래에서 들어온다.")]
+        public Vector3 idleLocalR = new Vector3(0.02f, -0.30f, 0.48f);
+        [Tooltip("왼손 위치. 평소엔 화면 밖에 둔다 — 등반할 때만 들어온다.")]
+        public Vector3 idleLocalL = new Vector3(-0.47f, -0.55f, 0.18f);
+        [Tooltip("오른손 회전. 손등이 보이도록(손바닥이 아래) 맞춘다.")]
+        public Vector3 idleEulerR = new Vector3(10f, -30f, 0f);
+        public Vector3 idleEulerL = new Vector3(20f, 30f, 0f);
+        [Tooltip("기본 자세에서의 IK 가중치. 1이면 완전히 이 자세, 0이면 모델 쉬는 자세.")]
+        [Range(0f, 1f)] public float idleWeight = 1f;
+        [Tooltip("기본 자세 손가락. 거미를 받치므로 꽉 쥐지 않고 살짝만 만다.")]
+        [Range(0f, 1f)] public float idleGripR = 0.25f;
+        [Range(0f, 1f)] public float idleGripL = 0.15f;
+
         [Header("대기 위치 park (카메라 기준 — 화면 아래)")]
         [Tooltip("오른손 대기 지점. 화면 밖으로 나가야 교대가 안 보인다.")]
         public Vector3 parkLocalR = new Vector3(0.24f, -0.62f, 0.32f);
@@ -78,6 +98,16 @@ namespace Game.View
         public Vector3 handEulerR = Vector3.zero;
         [Tooltip("왼손. 오른손과 대칭이 아닐 수 있어 따로 둔다.")]
         public Vector3 handEulerL = Vector3.zero;
+
+        [Header("등반 손 절차 동작")]
+        [Tooltip("엄지는 반대편에서 물리므로 덜 감긴다.")]
+        [Range(0f, 1f)] public float thumbCurlScale = 0.7f;
+        [Tooltip("편 손일 때 손가락이 벌어지는 정도. 쥘수록 0으로 모인다.")]
+        [Range(-1f, 1f)] public float fingerSpreadOpen = 0.35f;
+        [Tooltip("잡는 순간 손목이 꺾이는 각도(°). 모서리를 누르는 반작용.")]
+        [Range(0f, 40f)] public float climbWristFlexDeg = 12f;
+        [Tooltip("잡는 순간 손목이 비틀리는 각도(°).")]
+        [Range(0f, 40f)] public float climbWristRollDeg = 8f;
 
         [Header("손가락")]
         [Tooltip("모서리를 쥐는 세기(0=편 손, 1=꽉 쥠). 블렌드 속도는 FingerPoser.sustainSpeed가 맡는다.")]
@@ -110,6 +140,7 @@ namespace Game.View
         float _baseWeightR, _baseWeightL;  // 등반 전 IK 가중치(원복용)
         bool  _resolved, _usingIk;
         bool  _hasAnchors;                 // Show가 와서 앵커·기저가 유효한가
+        Transform _idleAnchorR, _idleAnchorL;   // 기본 자세 IK 타깃(카메라 자식, 저장 안 함)
         float _entryScale = 1f;            // 진입 압축 배율(1 = 정상 속도)
 
         // 압축이 적용된 실제 재생 시간
@@ -259,7 +290,7 @@ namespace Game.View
 
         void LateUpdate()
         {
-            if (_phase == Phase.Idle) return;
+            if (_phase == Phase.Idle) { ApplyIdlePose(); return; }
 
             if (!_usingIk) { PlaceCapsules(); return; }
 
@@ -318,12 +349,16 @@ namespace Game.View
                 }
             }
 
-            if (handIkR != null && handIkR.target != null) handIkR.target.SetPositionAndRotation(posR, rotR);
-            if (handIkL != null && handIkL.target != null) handIkL.target.SetPositionAndRotation(posL, rotL);
+            // 손목 꺾임은 목표 회전에 얹는다 — 뼈를 직접 만지면 HandIK와 소유권이 겹친다(§3).
+            if (handIkR != null && handIkR.target != null) handIkR.target.SetPositionAndRotation(posR, rotR * WristFlex(grip, true));
+            if (handIkL != null && handIkL.target != null) handIkL.target.SetPositionAndRotation(posL, rotL * WristFlex(grip, false));
 
             // 손가락은 목표값과 시점만 준다 — 스무딩은 FingerPoser.sustainSpeed가 단독 소유한다(§3 규칙2).
             if (fingerR != null) fingerR.SetSustain(grip);
             if (fingerL != null) fingerL.SetSustain(grip);
+
+            // 다섯 손가락이 동시에 같은 양으로 감기면 집게처럼 보인다 — 시차를 준다.
+            ApplyClimbHands(grip);
         }
 
         void ApplyWeights(float wR, float wL)
@@ -358,6 +393,100 @@ namespace Game.View
             posL = t.TransformPoint(parkLocalL);
             rotR = t.rotation * Quaternion.Euler(parkEulerR);
             rotL = t.rotation * Quaternion.Euler(parkEulerL);
+        }
+
+        /// <summary>
+        /// 1인칭 기본 자세(카메라 기준). 오른 전완을 가로로 눕혀 <b>매사냥 장갑</b>처럼 두고,
+        /// 그 손목 아래에 펫 거미가 얹힌다. 왼손은 화면 밖에서 대기한다.
+        ///
+        /// <para><b>왜 park 기구를 그대로 쓰나</b> — 등반 상태 기계가 이미 "카메라 로컬 좌표 →
+        /// HandIK 타깃 + weight" 경로를 갖고 있다. 같은 기구를 재사용하면 <b>기본↔등반 전환이
+        /// 그냥 두 지점 사이 보간</b>이 되어 팝이 생기지 않는다. 전완 뼈를 직접 대입하는 방식은
+        /// <see cref="HandIK"/>와 소유권이 겹쳐(설계 §3) 서로 덮어쓴다.</para>
+        ///
+        /// <para>모델의 쉬는 자세(T포즈)는 1인칭에서 쓸 수 없으므로 <see cref="driveIdlePose"/>가
+        /// 켜져 있으면 IK를 상시 1로 두고 이 지점을 푼다.</para>
+        /// </summary>
+        void ApplyIdlePose()
+        {
+            if (!driveIdlePose) return;
+            if (!_usingIk) { Resolve(); if (!_usingIk) return; }
+
+            Transform t = _cam != null ? _cam.transform : transform;
+
+            // 등반 단계와 <b>같은 방식</b>으로 기존 타깃을 옮긴다(§338행). 타깃이 비어 있을 때만
+            // 앵커를 만든다 — 씬에서 지정해 둔 타깃을 덮어쓰면 다른 시스템이 같이 망가진다.
+            if (handIkR != null)
+            {
+                if (handIkR.target == null) { EnsureIdleAnchor(ref _idleAnchorR, "[IdleHandR]", t); handIkR.target = _idleAnchorR; }
+                handIkR.target.SetPositionAndRotation(t.TransformPoint(idleLocalR),
+                                                      t.rotation * Quaternion.Euler(idleEulerR));
+                handIkR.weight = idleWeight;
+            }
+            if (handIkL != null)
+            {
+                if (handIkL.target == null) { EnsureIdleAnchor(ref _idleAnchorL, "[IdleHandL]", t); handIkL.target = _idleAnchorL; }
+                handIkL.target.SetPositionAndRotation(t.TransformPoint(idleLocalL),
+                                                      t.rotation * Quaternion.Euler(idleEulerL));
+                handIkL.weight = idleWeight;
+            }
+
+            // 손가락 — 거미를 받치는 살짝 편 손. 등반의 꽉 쥠과 달라야 한다.
+            if (fingerR != null) fingerR.SetSustain(idleGripR);
+            if (fingerL != null) fingerL.SetSustain(idleGripL);
+        }
+
+        /// <summary>
+        /// 등반 중 손가락·손목 절차 동작.
+        ///
+        /// <para><b>왜 필요한가</b> — 다섯 손가락이 <b>동시에 같은 양</b>으로 감기면 집게처럼 보인다.
+        /// 실제로 무언가를 잡을 때는 검지부터 새끼 쪽으로 <b>차례로</b> 닿고, 엄지는 늦게 반대편에서
+        /// 물린다. 그 시차만 넣어도 '쥐는 동작'으로 읽힌다.</para>
+        ///
+        /// <para>손목은 잡는 순간 살짝 꺾인다 — 모서리를 누르는 반작용이다. IK가 손목을 목표 회전에
+        /// 맞추므로, 여기서는 <b>목표 회전에 얹는 오프셋</b>으로만 준다(뼈를 직접 만지면 HandIK와
+        /// 소유권이 겹친다 — 설계 §3).</para>
+        /// </summary>
+        void ApplyClimbHands(float grip)
+        {
+            ApplyClimbFingers(fingerR, grip);
+            ApplyClimbFingers(fingerL, grip);
+        }
+
+        void ApplyClimbFingers(FingerPoser f, float grip)
+        {
+            if (f == null) return;
+
+            // 검지 → 중지 → 약지 → 새끼 순으로 늦게 감긴다. 엄지는 가장 늦고 덜 감긴다.
+            f.index  = Stagger(grip, 0.00f);
+            f.middle = Stagger(grip, 0.06f);
+            f.ring   = Stagger(grip, 0.12f);
+            f.pinky  = Stagger(grip, 0.18f);
+            f.thumb  = Stagger(grip, 0.26f) * thumbCurlScale;
+
+            // 손가락이 감길수록 벌림이 줄어든다 — 편 손은 벌어지고 쥔 손은 모인다.
+            f.spread = Mathf.Lerp(fingerSpreadOpen, 0f, grip);
+        }
+
+        /// <summary>시차 감기. <paramref name="delay"/>만큼 늦게 시작해 같은 지점에서 끝난다.</summary>
+        static float Stagger(float grip, float delay)
+        {
+            float span = 1f - delay;
+            if (span <= 0.001f) return grip;
+            return Mathf.Clamp01((grip - delay) / span);
+        }
+
+        /// <summary>잡는 순간 손목이 살짝 꺾이는 양(도). 목표 회전에 얹는다.</summary>
+        Quaternion WristFlex(float grip, bool right) =>
+            Quaternion.Euler((right ? 1f : 1f) * climbWristFlexDeg * grip, 0f, (right ? -1f : 1f) * climbWristRollDeg * grip);
+
+        /// <summary>앵커는 씬에 저장하지 않는다 — 저장되면 씬마다 유령 앵커가 쌓인다.</summary>
+        static void EnsureIdleAnchor(ref Transform anchor, string name, Transform parent)
+        {
+            if (anchor != null) return;
+            var go = new GameObject(name) { hideFlags = HideFlags.DontSave };
+            go.transform.SetParent(parent, false);
+            anchor = go.transform;
         }
 
         /// <summary>모서리에 손바닥이 얹히는 자세. 앵커는 월드 고정이라 고개를 돌려도 안 움직인다.</summary>

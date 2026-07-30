@@ -26,7 +26,7 @@ namespace Game.View
 
         bool _open;
         Vector2 _scroll;
-        bool _secEnv = true, _secLight = true, _secGrade, _secMat;
+        bool _secRig = true, _secEnv = true, _secLight = true, _secGrade, _secMat;
 
         CursorLockMode _prevLock;
         FirstPersonPlayer _fpp;
@@ -148,6 +148,7 @@ namespace Game.View
 
             _scroll = GUILayout.BeginScrollView(_scroll);
 
+            DrawRig();
             DrawPresets();
             DrawEnv();
             DrawLights();
@@ -157,6 +158,65 @@ namespace Game.View
             GUILayout.EndScrollView();
             GUILayout.Label($"<size=10>{FilePath}</size>", Rich());
             GUILayout.EndArea();
+        }
+
+        // ── 플레이어 조명 리그 ──────────────────────────────────────────
+        /// <summary>
+        /// <see cref="PlayerLightRig"/> 조절. 리그는 <b>Play 중에만</b> 존재하므로, 여기서 맞춘 값은
+        /// 반드시 '저장'을 눌러야 남는다(PC/VR 파일이 따로다 — <see cref="PlayerLightRig.SavePath"/>).
+        /// </summary>
+        void DrawRig()
+        {
+            if (!Section("플레이어 조명 리그 (손전등)", ref _secRig)) return;
+
+            var rig = PlayerLightRig.Instance;
+            if (rig == null) rig = UnityEngine.Object.FindFirstObjectByType<PlayerLightRig>();
+            if (rig == null)
+            {
+                Info("PlayerLightRig가 없다 — GameBoot이 Main Camera에 붙인다. 씬에 [GameBoot]이 있는지 확인.");
+                return;
+            }
+
+            Info(rig.Status);
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("저장")) rig.Save();
+            if (GUILayout.Button("불러오기")) rig.LoadFromDisk();
+            if (GUILayout.Button("PC 기본")) rig.ApplyDefaults(false);
+            if (GUILayout.Button("VR 기본")) rig.ApplyDefaults(true);
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(4f);
+            rig.flashlightOn = GUILayout.Toggle(rig.flashlightOn, " 손전등 켜기");
+            rig.spotIntensity  = F("  손전등 세기",  rig.spotIntensity,  0f, 30f);
+            rig.spotRange      = F("  사거리(m)",    rig.spotRange,      1f, 80f);
+            rig.spotOuterAngle = F("  바깥 각도(°)", rig.spotOuterAngle, 5f, 170f);
+            rig.spotInnerAngle = F("  안쪽 각도(°)", rig.spotInnerAngle, 0f, 170f);
+            rig.spotShadows    = GUILayout.Toggle(rig.spotShadows, " 손전등 그림자");
+
+            // ★ 0으로 두면 빛과 눈이 같은 위치라 그림자가 물체 뒤에 완전히 숨어 평평해 보인다.
+            rig.spotOffset = new Vector3(
+                F("  눈에서 비킴 X", rig.spotOffset.x, -0.5f, 0.5f),
+                F("  눈에서 비킴 Y", rig.spotOffset.y, -0.5f, 0.5f),
+                F("  눈에서 비킴 Z", rig.spotOffset.z, -0.5f, 0.5f));
+
+            GUILayout.Space(4f);
+            GUILayout.Label("<b>필 (원뿔 바깥)</b>", Rich());
+            rig.fillIntensity = F("  필 세기",   rig.fillIntensity, 0f, 5f);
+            rig.fillRange     = F("  필 범위(m)", rig.fillRange,     0.5f, 20f);
+
+            GUILayout.Space(4f);
+            GUILayout.Label("<b>뷰모델 전용 (손·거미)</b>", Rich());
+            rig.vmIntensity = F("  세기",   rig.vmIntensity, 0f, 10f);
+            rig.vmRange     = F("  범위(m)", rig.vmRange,     0.2f, 10f);
+            rig.vmOffset = new Vector3(
+                F("  위치 X", rig.vmOffset.x, -1f, 1f),
+                F("  위치 Y", rig.vmOffset.y, -1f, 1f),
+                F("  위치 Z", rig.vmOffset.z, -1f, 1f));
+
+            Info("리그는 <b>Play 중에만</b> 존재한다 — 맞춘 값은 반드시 <b>저장</b>을 눌러야 남는다(PC/VR 파일 별도).");
+            Info("<b>VR에선 손전등 그림자가 안 나온다</b> — Mobile_RPAsset이 Additional Light Shadows를 꺼 뒀다.");
+            Info($"<size=10>{PlayerLightRig.SavePath}</size>");
         }
 
         // ── 프리셋 ──────────────────────────────────────────────────────

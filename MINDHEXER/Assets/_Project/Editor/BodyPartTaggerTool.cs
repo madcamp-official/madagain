@@ -22,6 +22,7 @@ namespace Game.EditorTools
     {
         PlayerBodyParts target;
         float armThreshold = 0.5f;
+        bool  forearmOnly = true;
         bool  includeShoulder = true;
         bool  includeClavicle;
         Vector2 scroll;
@@ -65,10 +66,24 @@ namespace Game.EditorTools
             armThreshold = EditorGUILayout.Slider(
                 new GUIContent("팔 판정 임계값", "파츠의 팔 뼈 가중치 비율이 이 값 이상이면 팔로 본다"),
                 armThreshold, 0.05f, 0.95f);
-            includeShoulder = EditorGUILayout.Toggle(
-                new GUIContent("어깨 포함", "끄면 위팔부터. 켜두는 걸 권장 — 어깨를 빼면 단면이 보인다"), includeShoulder);
-            includeClavicle = EditorGUILayout.Toggle(
-                new GUIContent("쇄골 포함", "켜면 가슴 위쪽까지 딸려올 수 있다"), includeClavicle);
+            forearmOnly = EditorGUILayout.Toggle(
+                new GUIContent("팔꿈치 아래만", "전완·손·손가락만 남긴다. 위팔·어깨·쇄골은 전부 끈다.\n" +
+                                              "어깨가 없으면 카메라 뒤 지오메트리가 없어져 근평면·벽 관통 문제가 함께 사라진다."),
+                forearmOnly);
+
+            using (new EditorGUI.DisabledScope(forearmOnly))
+            {
+                includeShoulder = EditorGUILayout.Toggle(
+                    new GUIContent("어깨 포함", "끄면 위팔부터. '팔꿈치 아래만'이 켜져 있으면 무의미하다"), includeShoulder);
+                includeClavicle = EditorGUILayout.Toggle(
+                    new GUIContent("쇄골 포함", "켜면 가슴 위쪽까지 딸려올 수 있다"), includeClavicle);
+            }
+
+            if (forearmOnly)
+                EditorGUILayout.HelpBox(
+                    "팔꿈치 단면이 보이면 임계값을 올려 전완 위쪽 파츠를 더 떨어내십시오.\n" +
+                    "근평면(0.01)은 이제 아무것도 잘라 주지 않습니다 — 손가락을 살리려 낮춘 값입니다.",
+                    MessageType.None);
 
             EditorGUILayout.Space();
             if (GUILayout.Button("분류 미리보기", GUILayout.Height(28f))) Analyze();
@@ -121,15 +136,26 @@ namespace Game.EditorTools
             if (string.IsNullOrEmpty(raw)) return false;
             string n = raw.ToLowerInvariant();
 
+            if (IsHandBone(n)) return true;
+
+            // ★ 팔꿈치 아래만 — 전완(forearm)과 그 트위스트, 손·손가락만 남긴다.
+            //   'upperarm'도 "arm"을 포함하므로 문자열만 보면 못 가른다. forearm을 먼저 걸러야 한다.
+            if (n.Contains("forearm")) return true;
+            if (forearmOnly) return false;
+
             if (n.Contains("clavicle")) return includeClavicle;
             if (n.Contains("shoulder")) return includeShoulder;
 
-            // upperarm·forearm·twist 전부 "arm"으로 잡힌다. hand 아래로 손가락까지.
-            return n.Contains("arm")   || n.Contains("hand")
-                || n.Contains("thumb") || n.Contains("index")
-                || n.Contains("middle")|| n.Contains("ring")
-                || n.Contains("pinky");
+            // upperarm·twist 전부 "arm"으로 잡힌다.
+            return n.Contains("arm");
         }
+
+        /// <summary>손목 이하(손·손가락). '팔꿈치 아래만' 모드에서도 항상 남는다.</summary>
+        static bool IsHandBone(string n) =>
+               n.Contains("hand")
+            || n.Contains("thumb") || n.Contains("index")
+            || n.Contains("middle")|| n.Contains("ring")
+            || n.Contains("pinky");
 
         void Analyze()
         {
