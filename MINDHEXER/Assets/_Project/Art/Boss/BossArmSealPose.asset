@@ -1,0 +1,131 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6086ee2c722c264f9cd5881c0293f33, type: 3}
+  m_Name: BossArmSealPose
+  m_EditorClassIdentifier: Game.View::Game.View.PartsPose
+  snapshots:
+  - name: "\uD648"
+    parts:
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm
+      pos: {x: -0.0002248184, y: 0.19325131, z: -0.00015244838}
+      rot: {x: -0.6445315, y: 0.27826443, z: 0.3884991, w: 0.5968388}
+      scale: {x: 0.9999996, y: 0.99999964, z: 0.9999997}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm/L_Forearm
+      pos: {x: -0.00028693303, y: 0.2694733, z: 0.00007595008}
+      rot: {x: -0.40925077, y: 0.84975415, z: -0.045510195, w: -0.32918158}
+      scale: {x: 1.0000001, y: 0.9999998, z: 1.0000001}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm/L_Forearm/L_Hand
+      pos: {x: 0.008003585, y: 0.38725662, z: 0.010627413}
+      rot: {x: 0.17326371, y: -0.56559557, z: 0.011436072, w: 0.80619514}
+      scale: {x: 0.9999999, y: 1, z: 0.99999976}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm/L_Forearm/L_ForearmTwist01
+      pos: {x: -0.000000022351742, y: -0.00019768625, z: -0.0000000019263524}
+      rot: {x: 0.00000025834856, y: 0.0000005665119, z: -0.000000018626451, w: 1}
+      scale: {x: 0.9999999, y: 1.0000001, z: 0.9999999}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm/L_Forearm/L_ForearmTwist01/L_ForearmTwist02
+      pos: {x: -0, y: 0.19772066, z: 0.000000011522957}
+      rot: {x: -0.0000002166922, y: -0.00000018784417, z: -0.000000005587935, w: 1}
+      scale: {x: 1, y: 1.0000001, z: 1.0000002}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm/L_UpperarmTwist01
+      pos: {x: -0.000000114087015, y: -0.0001349044, z: 0.00000003889394}
+      rot: {x: 0.000000060097804, y: 0.00000005988879, z: -0.00000020116562, w: 1}
+      scale: {x: 1.0000002, y: 1.0000004, z: 1.0000002}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm/L_UpperarmTwist01/L_UpperarmTwist02
+      pos: {x: -0.000000029802322, y: 0.13474068, z: 0.000000018350562}
+      rot: {x: -0.00000011477829, y: 0.0000000688764, z: 0.000000016298149, w: 1}
+      scale: {x: 0.99999976, y: 0.9999999, z: 1}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm
+      pos: {x: 0.00019027563, y: 0.18862748, z: -0.0000955711}
+      rot: {x: -0.44494882, y: -0.26660612, z: -0.4160577, w: 0.74688536}
+      scale: {x: 1.0000002, y: 0.99999994, z: 0.99999994}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm/R_Forearm
+      pos: {x: 0.018618077, y: 0.23264755, z: 0.0077503584}
+      rot: {x: 0.1751134, y: 0.0931961, z: -0.38644907, w: 0.9007258}
+      scale: {x: 0.99999976, y: 1, z: 0.99999994}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm/R_Forearm/R_Hand
+      pos: {x: 0.03392958, y: 0.4048165, z: 0.04868984}
+      rot: {x: 0.12853642, y: 0.9183552, z: 0.01154483, w: 0.37412405}
+      scale: {x: 0.9999997, y: 0.9999998, z: 0.9999999}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm/R_Forearm/R_ForearmTwist01
+      pos: {x: 0.000000044703484, y: -0.00020256452, z: -0.00000014901161}
+      rot: {x: 0.00000025518239, y: 0.00000025890765, z: -0.00000043585894, w: 1}
+      scale: {x: 1.0000001, y: 1, z: 1.0000001}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm/R_Forearm/R_ForearmTwist01/R_ForearmTwist02
+      pos: {x: 0.000000022351742, y: 0.20232758, z: -0.000000011175871}
+      rot: {x: 0.09538534, y: 0.058333762, z: -0.034254875, w: 0.9931392}
+      scale: {x: 0.99999994, y: 0.9999998, z: 0.99999976}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm/R_UpperarmTwist01
+      pos: {x: 0.000000048428774, y: -0.000111255795, z: -0.00000002155005}
+      rot: {x: 0.00000015431877, y: 0.00000038676734, z: 0.00000021699817, w: 1}
+      scale: {x: 0.99999994, y: 1, z: 0.99999994}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm/R_UpperarmTwist01/R_UpperarmTwist02
+      pos: {x: 0.000000029802322, y: 0.11122468, z: 0.000000003634753}
+      rot: {x: -0.00000018445104, y: -0.00000021900968, z: -0.0000002952292, w: 1}
+      scale: {x: 1.0000002, y: 1.0000001, z: 1.0000001}
+  - name: "\uBD09\uC1C4"
+    parts:
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm
+      pos: {x: -0.0002248184, y: 0.19325131, z: -0.00015244838}
+      rot: {x: 0.5110299, y: 0.042233884, z: 0.03393385, w: 0.85785395}
+      scale: {x: 0.9999996, y: 0.99999964, z: 0.9999997}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm/L_Forearm
+      pos: {x: -0.0007351929, y: 0.6906612, z: 0.00019449003}
+      rot: {x: 0.6084957, y: -0.3482407, z: -0.5246508, w: 0.48291093}
+      scale: {x: 1.0000001, y: 0.9999998, z: 1.0000001}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm/L_Forearm/L_Hand
+      pos: {x: 0.008003585, y: 0.38725662, z: 0.010627413}
+      rot: {x: 0.17326371, y: -0.56559557, z: 0.011436072, w: 0.80619514}
+      scale: {x: 0.9999999, y: 1, z: 0.99999976}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm/L_Forearm/L_ForearmTwist01
+      pos: {x: -0.000000022351742, y: -0.00019768625, z: -0.0000000019263524}
+      rot: {x: 0.00000025834856, y: 0.0000005665119, z: -0.000000018626451, w: 1}
+      scale: {x: 0.9999999, y: 1.0000001, z: 0.9999999}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm/L_Forearm/L_ForearmTwist01/L_ForearmTwist02
+      pos: {x: -0, y: 0.19772066, z: 0.000000011522957}
+      rot: {x: -0.0000002166922, y: -0.00000018784417, z: -0.000000005587935, w: 1}
+      scale: {x: 1, y: 1.0000001, z: 1.0000002}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm/L_UpperarmTwist01
+      pos: {x: -0.000000114087015, y: -0.0001349044, z: 0.00000003889394}
+      rot: {x: 0.000000060097804, y: 0.00000005988879, z: -0.00000020116562, w: 1}
+      scale: {x: 1.0000002, y: 1.0000004, z: 1.0000002}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/L_Clavicle/L_Upperarm/L_UpperarmTwist01/L_UpperarmTwist02
+      pos: {x: -0.000000029802322, y: 0.13474068, z: 0.000000018350562}
+      rot: {x: -0.00000011477829, y: 0.0000000688764, z: 0.000000016298149, w: 1}
+      scale: {x: 0.99999976, y: 0.9999999, z: 1}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm
+      pos: {x: 0.00019027563, y: 0.18862748, z: -0.0000955711}
+      rot: {x: 0.48934877, y: -0.52900153, z: -0.3506417, w: 0.5981185}
+      scale: {x: 1.0000002, y: 0.99999994, z: 0.99999994}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm/R_Forearm
+      pos: {x: 0.06081944, y: 0.75998473, z: 0.025317255}
+      rot: {x: -0.75455683, y: -0.41782442, z: 0.32390925, w: -0.38877976}
+      scale: {x: 0.99999976, y: 1, z: 0.99999994}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm/R_Forearm/R_Hand
+      pos: {x: 0.03392958, y: 0.4048165, z: 0.04868984}
+      rot: {x: 0.12853642, y: 0.9183552, z: 0.01154483, w: 0.37412405}
+      scale: {x: 0.9999997, y: 0.9999998, z: 0.9999999}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm/R_Forearm/R_ForearmTwist01
+      pos: {x: 0.000000044703484, y: -0.00020256452, z: -0.00000014901161}
+      rot: {x: 0.00000025518239, y: 0.00000025890765, z: -0.00000043585894, w: 1}
+      scale: {x: 1.0000001, y: 1, z: 1.0000001}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm/R_Forearm/R_ForearmTwist01/R_ForearmTwist02
+      pos: {x: 0.000000022351742, y: 0.20232758, z: -0.000000011175871}
+      rot: {x: 0.09538534, y: 0.058333762, z: -0.034254875, w: 0.9931392}
+      scale: {x: 0.99999994, y: 0.9999998, z: 0.99999976}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm/R_UpperarmTwist01
+      pos: {x: 0.000000048428774, y: -0.000111255795, z: -0.00000002155005}
+      rot: {x: 0.00000015431877, y: 0.00000038676734, z: 0.00000021699817, w: 1}
+      scale: {x: 0.99999994, y: 1, z: 0.99999994}
+    - path: nupjuk_rigged/Armature/Root/Hip/Waist/Spine01/Spine02/R_Clavicle/R_Upperarm/R_UpperarmTwist01/R_UpperarmTwist02
+      pos: {x: 0.000000029802322, y: 0.11122468, z: 0.000000003634753}
+      rot: {x: -0.00000018445104, y: -0.00000021900968, z: -0.0000002952292, w: 1}
+      scale: {x: 1.0000002, y: 1.0000001, z: 1.0000001}
