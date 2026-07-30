@@ -32,7 +32,11 @@ namespace Game.View
         public MoveIntegrator move = new MoveIntegrator();
 
         [Header("수직")]
-        public float gravity = 20f;
+        [Tooltip("중력(m/s²). 20 → 39.2.\n" +
+                 "★ 배율이 1.4가 아니라 <b>1.4² = 1.96</b>인 이유: 낙하 시간은 t = √(2h/g)라 g에 " +
+                 "제곱근으로 붙는다. 낙하 시간을 1/1.4로 줄이려면 g를 1.4배가 아니라 1.96배로 올려야 한다.\n" +
+                 "  (이동속도·체공시간을 전부 1.4배 빠르게 맞추면서 같이 조정한 값이다.)")]
+        public float gravity = 39.2f;
 
         /// <summary>해킹 중 시점만 멈출 때 true(이동은 계속). HackDriver가 세팅.</summary>
         public bool LookFrozen;

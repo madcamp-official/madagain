@@ -30,11 +30,48 @@ namespace Game.View
     [DefaultExecutionOrder(30)]   // BossSpineAim(45)·BossArmRig(50)보다 먼저 — 루트를 먼저 놓고 그 위에 자세가 얹힌다
     public class StageEntranceFlow : MonoBehaviour, IRunResettable
     {
-        public enum Phase { Idle, Sealing, Wedged, Crushed, Failed, Done }
+        public enum Phase { Idle, Bursting, Sealing, Wedged, Crushed, Failed, Done }
+
+        /// <summary>
+        /// 이 입구의 사이클이 <b>무엇으로 시작하는가</b>. (기초_설계안 §0.4)
+        ///
+        /// <list type="bullet">
+        /// <item><b>PressRaised</b> — 전환점 딱 한 곳. 플레이어가 막힌 프레스를 <b>살짝 들어올리는 순간</b>
+        ///   보스가 틈으로 머리를 박는다. 이 모드에서는 프레스를 잠그지 않는다 — 플레이어가 열어야 할
+        ///   <b>문</b>이기 때문이다.</item>
+        /// <item><b>PlayerTrigger</b> — 후반부 도주 구간. 플레이어가 입구에 도달하면 보스가 앞질러 막는다.
+        ///   프레스는 보스가 오기 전까지 잠긴다(미리 내려놔서 낑길 자리를 막는 버그 방지).</item>
+        /// </list>
+        /// </summary>
+        public enum Entry { PlayerTrigger, PressRaised }
 
         [Header("회차")]
         [Tooltip("몇 번째 입구인가(0부터). 회차별 상승(설계 §7)에 쓴다 — 뒤로 갈수록 낑김 시간이 짧다.")]
         public int index;
+
+        [Header("진입")]
+        [Tooltip("이 입구가 무엇으로 시작하는가. 전환점 한 곳만 PressRaised, 나머지는 PlayerTrigger.")]
+        public Entry entryMode = Entry.PlayerTrigger;
+
+        [Tooltip("PressRaised 전용 — 프레스가 이 t 이하로 <b>살짝만</b> 올라가면 발동한다.\n" +
+                 "프레스는 축이 아래(−Y)라 t=1이 내려온 상태(막힘), t=0이 완전히 올라간 상태다.\n" +
+                 "0.85면 15%만 들어올려도 보스가 온다 — '살짝 여는 순간'이라 크게 잡는다.")]
+        [Range(0f, 1f)] public float raisedThreshold = 0.85f;
+
+        [Tooltip("PressRaised 전용 — 보스가 머리를 박으며 프레스를 밀어올리는 시간(초).\n" +
+                 "이 시간 동안 플레이어는 프레스를 못 만진다. 머리 진입과 같은 타이머를 쓴다.")]
+        public float burstTime = 0.25f;
+
+        [Tooltip("낑김이 끝난 뒤 보스가 돌아갈 <b>걷기 높이</b>(루트 월드 y). 비워 두면(NaN) 사이클 시작 시 " +
+                 "현재 y를 기억해 그리로 되돌린다.\n" +
+                 "★ 걷기와 낑김은 높이가 크게 다르다 — 걸을 땐 머리가 천장 아래(루트 ≈ −8), 낑길 땐 머리가 " +
+                 "입구 높이(루트 ≈ −37)로 40m 넘게 내려간다. 되돌리지 않으면 <b>다음 추격에서 보스가 " +
+                 "땅속을 걸어온다.</b>")]
+        public float walkRootY = float.NaN;
+
+        [Tooltip("이 입구가 추격을 <b>시작시키는가</b>. 전환점 한 곳만 켠다 — 켜져 있으면 사이클이 시작될 때 " +
+                 "BossChaseState.Begin()을 부른다. 나머지 입구는 추격 중일 때만 발동한다.")]
+        public bool startsChase = false;
 
         [Tooltip("회차마다 낑김 시간에 곱할 비율. 0.85면 회차마다 15% 짧아진다. 1이면 상승 없음.")]
         public float wedgeSecondsPerIndex = 0.85f;
@@ -130,7 +167,12 @@ namespace Game.View
         {
             // 평상시 상태를 기억해 두고 사이클이 끝나면 정확히 그리로 되돌린다.
             if (pressHackable != null) _pressWasHackable = pressHackable.enabled;
-            LockPress();
+
+            // ★ PressRaised 모드에서는 잠그지 않는다 — 이 프레스는 플레이어가 열어야 할 <b>문</b>이다.
+            //   잠가 두면 §0.4의 전환점("들어올리는 순간 보스가 온다")이 영영 발동하지 않는다.
+            if (entryMode == Entry.PressRaised) RestorePress();
+            else LockPress();
+
             if (sealWall != null) sealWall.enabled = false;
         }
 
@@ -183,10 +225,17 @@ namespace Game.View
 
         // ── 진입 ──────────────────────────────────────────────────────────
 
-        /// <summary>플레이어가 입구를 지났다. 트리거에서 부르거나 직접 불러도 된다.</summary>
+        /// <summary>
+        /// 플레이어가 입구를 지났다. 트리거에서 부르거나 직접 불러도 된다.
+        ///
+        /// <para><b>추격 중이 아니면 무시한다</b>(전환점 입구는 예외). 플레이어는 <b>같은 입구를 두 번
+        /// 지나므로</b>(전반부 1→2→3, 후반부 3→2→1) 이 게이트가 없으면 전반부에 보스가 튀어나온다.</para>
+        /// </summary>
         public void PlayerPassed()
         {
             if (Current != Phase.Idle) return;
+            if (entryMode != Entry.PlayerTrigger) return;            // PressRaised 입구는 트리거로 안 열린다
+            if (!startsChase && !BossChaseState.Active) return;      // 전반부 통과 — 아무 일도 없다
             Begin();
         }
 
@@ -197,10 +246,104 @@ namespace Game.View
             PlayerPassed();
         }
 
+        /// <summary>
+        /// PressRaised 모드 — 프레스가 살짝이라도 올라갔는지 본다.
+        ///
+        /// <para>폴링으로 충분하다. 액추에이터에 도달 이벤트가 없고, 이 판정은 <see cref="Phase.Idle"/>
+        /// 동안 한 입구에서만 도는 값 하나 비교라 비용이 없다.</para>
+        /// </summary>
+        void TickIdle()
+        {
+            if (entryMode != Entry.PressRaised) return;
+            if (pressActuator == null) return;
+            if (pressActuator.Current > raisedThreshold) return;     // 아직 안 올렸다
+
+            Debug.Log($"[입구{index}] 프레스가 열리기 시작 — 보스가 머리를 박는다 " +
+                      $"(t={pressActuator.Current:F2} ≤ {raisedThreshold:F2})");
+            BeginBurst();
+        }
+
+        /// <summary>
+        /// 보스가 <b>머리로 프레스를 밀어올리며</b> 틈으로 들어온다. (§0.4 전환점)
+        ///
+        /// <para><b>조종권을 먼저 뺏는다.</b> 플레이어가 올리던 중이므로, 안 뺏으면 플레이어 입력과
+        /// 강제 상승이 같은 값을 두고 싸운다 — 소유자가 하나여야 한다는 규칙이 여기에도 적용된다.</para>
+        ///
+        /// <para>프레스 상승과 머리 진입은 <b>같은 타이머</b>(<see cref="burstTime"/>)를 쓴다.
+        /// 따로 돌리면 머리가 프레스를 뚫고 지나가거나 늦게 들어온다.</para>
+        /// </summary>
+        /// <summary>
+        /// 이번 사이클이 끝나고 보스가 돌아갈 걷기 높이(루트 월드 y).
+        ///
+        /// <para>인스펙터에 값이 있으면 그걸 쓰고, 없으면 <b>사이클에 들어가기 직전의 높이</b>를 쓴다.
+        /// 손으로 안 채워도 동작하고, 채우면 확정값으로 고정된다.</para>
+        /// </summary>
+        float _walkY = float.NaN;
+
+        void RememberWalkHeight()
+        {
+            _walkY = float.IsNaN(walkRootY)
+                   ? (Root != null ? Root.position.y : float.NaN)
+                   : walkRootY;
+        }
+
+        /// <summary>걷기 높이로 되돌린다. 안 하면 다음 추격에서 보스가 땅속을 걷는다.</summary>
+        void RestoreWalkHeight()
+        {
+            if (Root == null || float.IsNaN(_walkY)) return;
+            Vector3 p = Root.position;
+            p.y = _walkY;
+            Root.position = p;
+        }
+
+        void BeginBurst()
+        {
+            Current = Phase.Bursting;
+            _phaseT = 0f;
+            RememberWalkHeight();
+
+            // 조종권 박탈 — 지금 이 프레스를 잡고 있었다면 놓게 만든다.
+            if (pressHackable != null) pressHackable.enabled = false;
+            if (pressControl != null) pressControl.allowHold = true;
+
+            // 머리가 밀어올리는 것이므로 스크립트가 끝까지 올린다. Flick 경로라 빠르다("쭉").
+            if (pressActuator != null)
+            {
+                pressActuator.LimitT = 1f;
+                pressActuator.Flick(0f);
+            }
+
+            if (chase != null) chase.move = false;
+
+            _burstFrom = Root != null ? Root.position : Vector3.zero;
+            _burstTo = _burstFrom;
+            if (Root != null && wedge != null && Anchor != null)
+                _burstTo = _burstFrom + (wedge.Stop.position - Anchor.position);
+        }
+
+        void TickBursting()
+        {
+            float u = burstTime > 1e-3f ? Mathf.Clamp01(_phaseT / burstTime) : 1f;
+
+            // 머리를 들이받는 느낌 — 뒤로 갈수록 빨라지는 곡선(가속 충돌).
+            if (Root != null) Root.position = Vector3.LerpUnclamped(_burstFrom, _burstTo, u * u);
+
+            if (u < 1f) return;
+            Begin();
+        }
+
+        Vector3 _burstFrom, _burstTo;
+
         void Begin()
         {
             Current = Phase.Sealing;
             _phaseT = 0f;
+
+            // PlayerTrigger 입구는 Bursting을 안 거치므로 여기서 기억해야 한다.
+            if (float.IsNaN(_walkY)) RememberWalkHeight();
+
+            // 전환점 입구가 추격을 연다. 이후 다른 입구의 트리거가 살아난다.
+            if (startsChase) BossChaseState.Begin();
 
             if (sealWall != null) sealWall.enabled = true;
             if (geo != null) geo.GoTo(sealedPose);
@@ -219,6 +362,8 @@ namespace Game.View
 
             switch (Current)
             {
+                case Phase.Idle: TickIdle(); break;
+                case Phase.Bursting: TickBursting(); break;
                 case Phase.Sealing: TickSealing(); break;
                 case Phase.Wedged: TickWedged(); break;
                 case Phase.Crushed: TickCrushed(); break;
@@ -262,6 +407,7 @@ namespace Game.View
 
         void Succeed()
         {
+            BossChaseState.CountCrush();
             if (wedge != null) wedge.End();
             if (headCrush != null) headCrush.Crush();
 
@@ -300,6 +446,11 @@ namespace Game.View
             if (_phaseT < Mathf.Max(pullOutTime, staggerTime)) return;
 
             if (r != null) r.rotation = _staggerBase;   // 진동 잔여를 남기지 않는다
+
+            // ★ 걷기 높이로 복귀. 낑길 때 머리를 입구에 맞추려고 루트를 40m 넘게 내렸으므로,
+            //   여기서 안 되돌리면 다음 입구까지 <b>땅속을 걸어온다</b>.
+            RestoreWalkHeight();
+
             Finish(true);
         }
 

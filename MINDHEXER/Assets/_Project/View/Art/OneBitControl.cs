@@ -61,6 +61,24 @@ namespace Game.View
         // 삭제하지 않고 무력화만 해 둔다 — 필요해지면 이 한 줄만 지우면 되돌아간다.
         const bool ForceAmbientOff = true;
 
+        [Header("고정 키 조명 (재질의 '고정 키 조명' 토글을 켠 것에만 적용 — 손·거미)")]
+        // 손은 스테이지마다 환경광이 달라(스튜디오 0.212 vs 스테이지 0.04) 같은 손이 5배 차이로
+        // 보였고, 밝은 쪽에서는 흰색으로 날아가며 AI 생성 메시의 결함이 드러났다.
+        // 씬 조명을 아예 안 읽고 이 키 하나로만 음영을 만들면 어디서든 똑같이 보인다.
+        // 이 값들은 <b>채널과 무관한 전역 하나</b>다 — 고정 조명을 쓰는 것은 플레이어 몸뿐이다.
+        [Tooltip("키 방향(카메라 기준). 기본은 좌상단 앞에서 비추는 것 — 손등에 그늘이 지도록.")]
+        public Vector3 keyDirView = new Vector3(-0.4f, 0.7f, -0.6f);
+
+        [Tooltip("키 세기. 밝기 전체를 올린다.")]
+        [Range(0f, 4f)] public float keyIntensity = 1.2f;
+
+        [Tooltip("키를 등진 면의 최소 밝기. 0이면 반대편이 완전히 죽어 실루엣만 남는다.")]
+        [Range(0f, 1f)] public float keyFloor = 0.12f;
+
+        static readonly int IdKeyDir   = Shader.PropertyToID("_OneBitKeyDirVS");
+        static readonly int IdKeyInt   = Shader.PropertyToID("_OneBitKeyIntensity");
+        static readonly int IdKeyFloor = Shader.PropertyToID("_OneBitKeyFloor");
+
         // 채널별 프로퍼티 ID — 이름 조합을 매 프레임 하지 않도록 캐시한다.
         int _idLevels, _idInBlack, _idInWhite, _idInvert, _idDither, _idWrap, _idAmbient;
         OneBitChannel _cachedFor = (OneBitChannel)(-1);
@@ -93,6 +111,13 @@ namespace Game.View
             Shader.SetGlobalFloat(_idDither,  dither);
             Shader.SetGlobalFloat(_idWrap,    lightWrap);
             Shader.SetGlobalFloat(_idAmbient, ForceAmbientOff ? 0f : ambientFloor);
+
+            // 고정 키는 플레이어 세트가 소유한다 — 해킹 대상 컨트롤이 덮어쓰면 서로 싸운다.
+            if (channel != OneBitChannel.Player) return;
+            Vector3 d = keyDirView.sqrMagnitude < 1e-6f ? new Vector3(0f, 0f, -1f) : keyDirView.normalized;
+            Shader.SetGlobalVector(IdKeyDir, d);
+            Shader.SetGlobalFloat(IdKeyInt, keyIntensity);
+            Shader.SetGlobalFloat(IdKeyFloor, keyFloor);
         }
     }
 
@@ -115,6 +140,11 @@ namespace Game.View
             // 붙는 순간 그쪽이 다시 덮어쓰므로, 여긴 컨트롤이 없는 짧은 순간의 폴백일 뿐이다.
             Push("_OneBit",  8f, 0f, 0.5f, 1f, 1f,    0f);
             Push("_OneBitH", 8f, 0f, 0.6f, 1f, 1f,    0f);
+
+            // 고정 키도 안전값을 깔아 둔다. 0으로 두면 고정 조명 재질이 통째로 검게 나온다.
+            Shader.SetGlobalVector("_OneBitKeyDirVS", new Vector3(-0.4f, 0.7f, -0.6f).normalized);
+            Shader.SetGlobalFloat("_OneBitKeyIntensity", 1.2f);
+            Shader.SetGlobalFloat("_OneBitKeyFloor", 0.12f);
 
             if (Object.FindFirstObjectByType<OneBitControl>() == null)
                 Debug.LogWarning("[OneBit] 씬에 OneBitControl이 없어 기본값으로 돕니다. " +

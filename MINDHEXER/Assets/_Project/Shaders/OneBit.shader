@@ -26,6 +26,13 @@ Shader "MINDHEXER/OneBit"
         //   플레이어 팔은 거의 검은 재질이고 해킹 대상은 밝은 금속이라, 한 세트로 맞추면 한쪽이 죽는다.
         [Toggle] _HackSet ("해킹 대상 세트 사용(끄면 플레이어 세트)", Float) = 0
 
+        // ★ 고정 키 조명 — 손·거미 전용. 켜면 <b>씬 조명과 환경광을 전혀 읽지 않고</b>
+        //   카메라 기준으로 고정된 키 방향 하나만으로 음영을 만든다.
+        //   왜: 손은 스테이지마다 환경광이 달라(스튜디오 0.212 vs 스테이지 0.04, 5배) 같은 손이
+        //   전혀 다르게 보였다. 밝은 쪽에서는 흰색으로 날아가며 AI 생성 메시의 결함이 드러난다.
+        //   키를 뷰 공간에 고정하면 고개를 돌려도 스테이지가 바뀌어도 음영이 변하지 않는다.
+        [Toggle] _FixedLight ("고정 키 조명(씬 조명 무시)", Float) = 0
+
         _Levels     ("계단 수(2=완전 흑백)", Range(2,8)) = 4
         _InBlack    ("입력 검정점",          Range(0,1)) = 0
         _InWhite    ("입력 흰색점",          Range(0,1)) = 0.5
@@ -87,6 +94,7 @@ Shader "MINDHEXER/OneBit"
                 half   _LightWrap;
                 half   _AmbientFloor;
                 half   _SpecWeight;
+                half   _FixedLight;
             CBUFFER_END
 
             TEXTURE2D(_BaseMap);
@@ -104,6 +112,12 @@ Shader "MINDHEXER/OneBit"
             half _OneBitDither;
             half _OneBitLightWrap;
             half _OneBitAmbient;
+
+            // 고정 키 조명(플레이어 세트 전용). 방향은 <b>뷰 공간</b>이다 — 월드로 두면 고개를 돌릴 때
+            // 손의 음영이 돌아 "일정하게 보인다"가 깨진다.
+            half3 _OneBitKeyDirVS;
+            half  _OneBitKeyIntensity;
+            half  _OneBitKeyFloor;      // 키를 등진 면의 최소 밝기. 0이면 반대편이 완전히 죽는다.
 
             half _OneBitHLevels;
             half _OneBitHInBlack;
@@ -181,6 +195,21 @@ Shader "MINDHEXER/OneBit"
                 albedo = max(albedo, spec);
                 float3 N = normalize(IN.normalWS);
 
+                // ★ 고정 키 조명 — 씬 조명·환경광을 <b>전혀 읽지 않는다</b>.
+                //   키 방향이 뷰 공간이라 카메라를 돌려도 음영이 따라 돌지 않는다. 스테이지가 바뀌어도,
+                //   손전등을 켜도, PC든 VR이든 손은 항상 같은 밝기로 보인다.
+                //   (손전등은 원래도 cullingMask로 뷰모델을 제외하고 있어 잃는 것이 없다.)
+                half3 lit;
+                if (_FixedLight > 0.5h)
+                {
+                    // 뷰 공간 키 → 월드. UNITY_MATRIX_I_V의 회전부만 쓴다.
+                    float3 keyW = normalize(mul((float3x3)UNITY_MATRIX_I_V, normalize(_OneBitKeyDirVS)));
+                    half   k    = saturate((dot(N, keyW) + wrap) / (1.0h + wrap));
+                    lit = albedo * (_OneBitKeyFloor + k * _OneBitKeyIntensity);
+                }
+                else
+                {
+
                 // 조명 — 형태를 남기기 위한 것이지 색을 위한 게 아니다.
                 float4 shadowCoord = TransformWorldToShadowCoord(IN.positionWS);
                 Light main = GetMainLight(shadowCoord);
@@ -211,7 +240,9 @@ Shader "MINDHEXER/OneBit"
                 //   휘도로 올라오므로 형태가 보인다. 이게 없으면 환경광(예: 0.04)만 남아 휘도가 0.02
                 //   근처에 깔리고, inWhite를 아무리 내려도 통째로 검정이 된다(실제로 겪음).
                 //   조명은 '형태를 더하는' 역할이 되고, 보일지 말지는 이 값이 보장한다.
-                half3 lit = albedo * (SampleSH(N) + ambient + light);
+                lit = albedo * (SampleSH(N) + ambient + light);
+
+                }   // else — 씬 조명 경로 끝
 
                 half lum = dot(lit, half3(0.2126h, 0.7152h, 0.0722h));
 

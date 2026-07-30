@@ -139,7 +139,10 @@ namespace Game.View
                     //  · 아니면(허공/조종 중인 대상) → 조종 해제
                     if (tap)
                     {
-                        if (aimed != null && aimed != Controlled)
+                        // 실이 아직 풀려 돌아오는 중이면 새 해킹을 받지 않는다 —
+                        // 회수 도중에 또 나가면 거미가 실을 두 개 문 꼴이 된다.
+                        if (tether != null && tether.Busy) { /* 회수 중 — 무시 */ }
+                        else if (aimed != null && aimed != Controlled)
                         {
                             _ctx.BeginHacking(aimed);
                             aimed.captureState = CaptureState.Hacking;
@@ -312,7 +315,7 @@ namespace Game.View
             {
                 _gazed.IsGazed = true;
                 _gazed.DistanceToPlayer = Vector3.Distance(transform.position, _gazed.transform.position);
-                _gazed.InRange = _gazed.DistanceToPlayer <= _gazed.hackRange;
+                _gazed.InRange = _gazed.WithinHackRange(_gazed.DistanceToPlayer);
             }
         }
 
@@ -445,7 +448,12 @@ namespace Game.View
             if (hit.distance < aimMinRange) return null;
 
             // 자식 콜라이더에 맞아도 부모의 Hackable을 찾아 올라간다.
-            return hit.collider.GetComponentInParent<Hackable>();
+            // ★ enabled를 확인한다: GetComponentInParent는 <b>비활성 컴포넌트도 돌려준다.</b>
+            //   Hackable은 OnEnable/OnDisable로 All 목록에 등록되므로 끄면 하이라이트는 사라지는데,
+            //   이 확인이 없으면 조준·해킹은 그대로 됐다 — 보이지도 않는 걸 해킹하게 된다.
+            //   덕분에 enabled 하나가 일관된 잠금 스위치가 된다(예: 보스가 낑기기 전 대왕프레스).
+            var h = hit.collider.GetComponentInParent<Hackable>();
+            return (h != null && h.enabled) ? h : null;
         }
     }
 }

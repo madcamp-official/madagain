@@ -1,0 +1,106 @@
+﻿{
+    "idleLocalR": {
+        "x": 0.029999995604157449,
+        "y": -0.19090908765792848,
+        "z": 0.41999998688697817
+    },
+    "idleLocalL": {
+        "x": -0.4636363685131073,
+        "y": -0.4363636374473572,
+        "z": 0.0181818138808012
+    },
+    "idleEulerR": {
+        "x": -36.81818389892578,
+        "y": -6.136367321014404,
+        "z": 63.409088134765628
+    },
+    "idleEulerL": {
+        "x": 20.0,
+        "y": 30.0,
+        "z": 0.0
+    },
+    "idleWeight": 0.10227272659540177,
+    "idleGripR": 0.1306818276643753,
+    "idleGripL": 0.0,
+    "idleFingerR": {
+        "thumb": 0.0,
+        "index": 0.005681818351149559,
+        "middle": 0.0,
+        "ring": 0.0,
+        "pinky": 0.0,
+        "spread": 0.0
+    },
+    "idleFingerL": {
+        "thumb": 0.0,
+        "index": 0.0,
+        "middle": 0.0,
+        "ring": 0.0,
+        "pinky": 0.0,
+        "spread": 0.0
+    },
+    "idleElbowR": {
+        "x": 0.4386363625526428,
+        "y": -0.1409091204404831,
+        "z": -0.0181818138808012
+    },
+    "idleElbowL": {
+        "x": -0.44999998807907107,
+        "y": -0.550000011920929,
+        "z": 0.05000000074505806
+    },
+    "gripAmount": 0.6000000238418579,
+    "thumbCurlScale": 0.699999988079071,
+    "fingerSpreadOpen": 0.3499999940395355,
+    "climbWristFlexDeg": 12.0,
+    "climbWristRollDeg": 8.0,
+    "climbDrivesFingers": false,
+    "maxCurlDeg": 70.0,
+    "jointWeights": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 0.8500000238418579
+    },
+    "keyDirView": {
+        "x": -0.4000000059604645,
+        "y": 0.699999988079071,
+        "z": -0.6000000238418579
+    },
+    "keyIntensity": 1.2000000476837159,
+    "keyFloor": 0.11999999731779099,
+    "obLevels": 8.0,
+    "obInBlack": 0.0,
+    "obInWhite": 0.5,
+    "obDither": 1.0,
+    "obWrap": 1.0,
+    "feelMaster": 0.0,
+    "fJitterAmp": 0.019999999552965165,
+    "fJitterHz": 0.550000011920929,
+    "fBreathAmp": 0.014999999664723874,
+    "fBreathHz": 0.05000000074505806,
+    "fFwdCurl": 0.029999999329447748,
+    "fFwdSmooth": 0.25,
+    "handMotionScale": 1.0,
+    "vmMotionScale": 0.2954545319080353,
+    "swayX": 0.019999999552965165,
+    "swayY": 0.012000000104308129,
+    "swayHz": 1.100000023841858,
+    "swayRoll": 1.2000000476837159,
+    "swaySmooth": 0.18000000715255738,
+    "handEulerR": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "handEulerL": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "gazeAmount": 0.0,
+    "gazeMaxDeg": 0.0,
+    "anchorRadius": 0.0,
+    "anchorSpread": 0.0,
+    "nearClip": 0.009999999776482582,
+    "vrNearClip": 0.029999999329447748,
+    "captured": true
+}

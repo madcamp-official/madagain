@@ -54,7 +54,8 @@ namespace Game.View
         public bool enableAir     = true;
         public bool enableLand    = true;
         public bool enableSway    = true;
-        public bool enableFingers = true;
+        // 기본 꺼짐 — 손가락 sustain의 소유자는 MantleRig 하나다(설계 §3 규칙2). 아래 ⑦ 주석 참조.
+        public bool enableFingers;
 
         // ── ① 숨쉬기 ──
         [Header("숨쉬기")]
@@ -167,6 +168,18 @@ namespace Game.View
             if (!captured) { basePos = vmRoot.localPosition; baseRot = vmRoot.localRotation; captured = true; }
             return true;
         }
+
+        /// <summary>
+        /// 절차 모션 전체 세기. 여섯 레이어의 합에 마지막으로 곱한다. 0 = 완전히 고정, 1 = 원래대로.
+        ///
+        /// <para><b>이게 걷기 흔들림의 손잡이다.</b> 이 컴포넌트는 씬에 없고 런타임에
+        /// <c>[PlayerBody]</c>에 붙으므로 인스펙터로 찾기 어렵다 — F6에서 조절한다.</para>
+        ///
+        /// <para>참고: 뷰모델 <b>루트</b>를 흔드는 방식이라 어깨가 움직이고 팔 전체가 따라온다.
+        /// <see cref="MotionFeel"/>의 같은 이름 값은 <b>카메라</b> 쪽이라 서로 무관하다.</para>
+        /// </summary>
+        [Header("전체 세기")]
+        [Range(0f, 1f)] public float masterScale = 1f;
 
         bool _gaveUp;
 
@@ -311,6 +324,11 @@ namespace Game.View
             pos += kickPos;
 
             // ── ⑦ 손가락 — 해킹 조준/상호작용 ──
+            // ★ 기본은 꺼짐. 손가락 sustain의 소유자는 <see cref="MantleRig"/> 하나여야 한다(설계 §3 규칙2).
+            //   여기서도 매 프레임 SetSustain을 부르면 두 주체가 같은 채널에 쓰게 되고, 실행 순서
+            //   (ViewmodelMotion −50 → MantleRig −40)에 따라 한쪽이 조용히 이긴다. 조준 중에는
+            //   MantleRig의 평상시 말림이 매 프레임 이걸 덮어써서 실제로는 동작하지도 않았다.
+            //   해킹 조준 손가락이 필요해지면 MantleRig 쪽에 넣어야 한다.
             if (enableFingers)
             {
                 var fp = FingerPoser.Instance;
@@ -323,8 +341,11 @@ namespace Game.View
                 }
             }
 
-            vmRoot.localPosition = basePos + pos;
-            vmRoot.localRotation = baseRot * Quaternion.Euler(rot);
+            // ★ 여섯 레이어(호흡·bob·스트레이프·공중·착지·스웨이)가 전부 여기 한 곳으로 모인다.
+            //   튜너블이 서른 개가 넘어 "조금만 줄이고 싶다"를 개별 값으로 하는 것은 현실적이지 않다.
+            //   비율 하나를 마지막에 곱한다 — 0이면 뷰모델이 완전히 고정된다.
+            vmRoot.localPosition = basePos + pos * masterScale;
+            vmRoot.localRotation = baseRot * Quaternion.Euler(rot * masterScale);
         }
 
         /// <summary>
@@ -338,7 +359,7 @@ namespace Game.View
             var ray = new Ray(c.transform.position, c.transform.forward);
             if (!Physics.Raycast(ray, out RaycastHit hitInfo, aimRayDistance, aimMask)) return false;
             var hb = hitInfo.collider.GetComponentInParent<Hackable>();
-            return hb != null && hitInfo.distance <= hb.hackRange;
+            return hb != null && hb.WithinHackRange(hitInfo.distance);
         }
 
         static void Spring(ref Vector3 x, ref Vector3 v, float stiff, float damp, float dt)

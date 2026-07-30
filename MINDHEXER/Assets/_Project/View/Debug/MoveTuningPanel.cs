@@ -149,7 +149,8 @@ namespace Game.View
                  "축은 <b>이동 방향 하나</b> — 시선은 관여 안 함(뒤·옆 낙하 보호가 뚫려서)");
             _auto.jumpSearchRadius = F("검색 반경(m)", _auto.jumpSearchRadius, 2f, 20f);
             _auto.maxDirectUp = F("직행 도약 최대 높이(m)", _auto.maxDirectUp, 0.3f, 2f);
-            _auto.maxMantleUp = F("잡고 오르기 최대 높이(m)", _auto.maxMantleUp, 0.5f, 3.5f);
+            // 상한 3.5는 낮았다 — 4m 턱을 요구하는 설계가 나오면서 패널에서 아예 지정할 수 없었다.
+            _auto.maxMantleUp = F("잡고 오르기 최대 높이(m)", _auto.maxMantleUp, 0.5f, 8f);
             _auto.maxDropTarget = F("허용 최대 낙차(m)", _auto.maxDropTarget, 1f, 20f);
 
             Info("<b>궤적</b>");
@@ -203,6 +204,11 @@ namespace Game.View
             _auto.minHeight = F("최소 등반 높이(m)", _auto.minHeight, 0.1f, 1f);
             _auto.walkUpConeAngle = F("전방 판정 반각(도)", _auto.walkUpConeAngle, 20f, 120f);
             _auto.lowStepHeight = F("낮은 단차 기준(m)", _auto.lowStepHeight, 0f, 1.5f);
+            _auto.highStepNeedsLook = GUILayout.Toggle(_auto.highStepNeedsLook, "높은 단차는 보고 있어야 오름");
+            if (_auto.highStepNeedsLook)
+                _auto.highStepLookCone = F("시점 원뿔 반각(도)", _auto.highStepLookCone, 10f, 90f);
+            Info($"≤{_auto.lowStepHeight:0.0}m 판정 없음 · 그 위는 이동방향 {_auto.walkUpConeAngle:0}° " +
+                 (_auto.highStepNeedsLook ? $"AND 시점 {_auto.highStepLookCone:0}°" : "만"));
             Info("이 높이 이하는 방향 판정 없이 넘어간다(쳐다보지 않아도, 옆·뒤로도)");
             Info("stepOffset 0.3m — 최소 등반 높이는 그보다 커야 낮은 턱에서 안 뛴다");
 

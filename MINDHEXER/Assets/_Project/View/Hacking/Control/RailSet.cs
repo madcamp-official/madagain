@@ -84,9 +84,9 @@ namespace Game.View
         public bool snapAnalog = false;
 
         [Header("마일스톤 (홀드 전용 — 6DoF 떨림·튐 차단, §6.2)")]
-        [Tooltip("홀드 이동을 딸깍 단위로 양자화한다. 스텝 ÷ 간격 = 최대 속도이므로 " +
-                 "moveSpeed(2)와 간격(0.0833)에서 유도한 0.17이 기본이다.")]
-        public MilestoneStepper creepStep = new MilestoneStepper(0.17f);
+        [Tooltip("홀드 이동에서 컨트롤러 노이즈만 걸러낸다. 스텝은 moveSpeed에서 자동 유도되므로 " +
+                 "손으로 넣지 말 것 — 최고 속도에서는 완전히 부드럽고, 떨림만 걸러진다.")]
+        public MilestoneStepper creepStep = new MilestoneStepper();
 
         /// <summary>앵커 기준 현재 이동량(부모 공간 단위).</summary>
         public float Offset { get; private set; }
@@ -180,8 +180,77 @@ namespace Game.View
             _anchorLocal = transform.localPosition;
             _axisParent = AxisParent;
             _lastCell = 0;
+            creepStep.SyncTo(moveSpeed);   // 스텝 = 최고속도 × 1프레임 (§MilestoneStepper)
             CachePlatforms();
         }
+
+#if UNITY_EDITOR
+        /// <summary>
+        /// <see cref="riderRoot"/> 밑에 넣은 것에 <see cref="RailPlatform"/>을 <b>자동으로 붙인다</b>(편집 중에만).
+        ///
+        /// <para><b>왜 필요한가</b>: 발판을 <c>Riders/</c>로 끌어다 넣으면 트랜스폼 계층 덕에 <b>오브젝트는</b>
+        /// 같이 움직인다. 그런데 <b>그 위에 선 플레이어</b>는 CharacterController라 계층으로 안 따라온다 —
+        /// <see cref="RailPlatform"/>이 있어야 <see cref="RailPlatform.Carry"/>로 밀어 준다.
+        /// 이걸 손으로 붙이는 걸 잊으면 <b>발판만 미끄러져 나가고 사람은 허공에 남는다</b>. 증상이
+        /// "레일이 고장났다"로 보여 원인을 찾기 어렵다 — 그래서 잊을 수 없게 자동화한다.</para>
+        ///
+        /// <para>직계 자식에만 붙인다. 발판 안쪽 부품마다 붙으면 같은 사람을 여러 번 밀어 두 배로 간다.</para>
+        /// </summary>
+        void OnValidate()
+        {
+            creepStep.SyncTo(moveSpeed);   // 속도를 바꾸면 스텝이 따라온다
+            if (riderRoot == null || Application.isPlaying) return;
+
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                if (this == null || riderRoot == null || Application.isPlaying) return;
+                foreach (Transform child in riderRoot)
+                {
+                    if (child == null) continue;
+                    // 중첩 세트는 그쪽이 알아서 나른다 — 여기서 또 붙이면 이중 이송이 된다.
+                    if (child.GetComponent<RailSet>() != null) continue;
+
+                    if (child.GetComponent<RailPlatform>() == null)
+                    {
+                        UnityEditor.Undo.AddComponent<RailPlatform>(child.gameObject);
+                        Debug.Log($"[레일세트] '{child.name}'에 RailPlatform 자동 부착 — " +
+                                  $"이게 있어야 발판 위의 플레이어가 같이 실려 간다.", child);
+                    }
+
+                    ClearBatchingStatic(child);
+                }
+                CachePlatforms();
+            };
+        }
+        /// <summary>
+        /// 발판과 그 자식들의 <b>Batching Static</b>을 끈다.
+        ///
+        /// <para><b>왜 필요한가</b> — 정적 배칭은 Play 진입 시 메시를 <b>월드 좌표로 구워</b> 한 버퍼에
+        /// 합친다. 그 뒤로는 트랜스폼을 아무리 움직여도 구워진 정점이 그대로 쓰인다. 결과가 아주 헷갈린다:
+        /// <b>콜라이더는 트랜스폼을 읽으므로 움직이는데, 렌더러는 제자리에 남는다.</b>
+        /// 즉 <b>밟고 올라가지는데 발판은 안 따라오는</b> 것처럼 보인다(실제로 겪었다).</para>
+        ///
+        /// <para>레벨 지오메트리에서 발판을 가져오면 그쪽에서 켜 둔 static이 그대로 딸려 온다. 부모만
+        /// 꺼져 있고 <b>자식 렌더러에 켜져 있는</b> 경우가 많아 인스펙터로는 눈에 안 띈다 —
+        /// 그래서 자식까지 훑는다.</para>
+        ///
+        /// <para>성능 손해는 없다. 움직이는 물체는 애초에 정적 배칭 대상이 아니다.</para>
+        /// </summary>
+        static void ClearBatchingStatic(Transform root)
+        {
+            foreach (var t in root.GetComponentsInChildren<Transform>(true))
+            {
+                var flags = UnityEditor.GameObjectUtility.GetStaticEditorFlags(t.gameObject);
+                if ((flags & UnityEditor.StaticEditorFlags.BatchingStatic) == 0) continue;
+
+                UnityEditor.Undo.RecordObject(t.gameObject, "Batching Static 해제");
+                UnityEditor.GameObjectUtility.SetStaticEditorFlags(
+                    t.gameObject, flags & ~UnityEditor.StaticEditorFlags.BatchingStatic);
+                Debug.Log($"[레일세트] '{t.name}'의 Batching Static 해제 — " +
+                          $"켜져 있으면 움직여도 화면에서 제자리에 남는다.", t);
+            }
+        }
+#endif
 
         /// <summary>이 세트가 직접 나르는 발판들. 중첩 세트 소유분은 그쪽이 나르므로 제외한다(이중 이송 방지).</summary>
         public void CachePlatforms()

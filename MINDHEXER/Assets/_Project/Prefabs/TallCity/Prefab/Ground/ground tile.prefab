@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 4304718205020966194}
   - component: {fileID: 869957734028640919}
   - component: {fileID: 3167792757761734237}
-  - component: {fileID: 8893243155416398904}
+  - component: {fileID: 4449172553366008162}
+  - component: {fileID: 3122883664689088252}
   m_Layer: 0
   m_Name: ground tile
   m_TagString: Untagged
@@ -92,8 +93,8 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &8893243155416398904
-MeshCollider:
+--- !u!65 &4449172553366008162
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -110,7 +111,24 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 693216367243038319, guid: 93824fec06b58964e8b5dda9cde1fa4d, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 4, y: 1.000001, z: 4}
+  m_Center: {x: 0, y: -0.5000001, z: 0}
+--- !u!114 &3122883664689088252
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3528217137025832840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5abb777edc057040a9a14750a34510d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ClimbLedge
+  climbableFaces: 15
+  useColliderTop: 1
+  customHeight: 1
+  landingInset: 0.45
+  grabRegions: []
+  gizmoMaxClimbHeight: 2

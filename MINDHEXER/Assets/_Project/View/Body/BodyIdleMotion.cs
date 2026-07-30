@@ -148,9 +148,27 @@ namespace Game.View
             return null;
         }
 
+        /// <summary>
+        /// 1인칭인가 — <b>파츠가 카메라 아래에 매달려 있으면</b> 1인칭이다.
+        ///
+        /// <para>이 컴포넌트는 3인칭 전신 전용인데 <c>R_Upperarm</c>·<c>R_Clavicle</c>을
+        /// <c>armAmp 0.9</c>로 돌린다. 1인칭에서 같이 돌면 <b>팔이 통째로 돌아간다</b>.</para>
+        ///
+        /// <para><see cref="PlayerBodyModeController"/>가 모드 전환 때 꺼 주도록 되어 있지만,
+        /// 그쪽은 씬에 없거나 참조가 비어 있을 수 있다(실제로 <c>bodyIdleMotion</c>이 null인 경우가 있다).
+        /// 남의 배선에 기대지 않고 <b>스스로 판정</b>한다 — 3인칭에서는 파츠가 월드 앵커로 옮겨지므로
+        /// 이 검사가 자동으로 뒤집힌다.</para>
+        /// </summary>
+        bool IsFirstPerson()
+        {
+            var cam = Camera.main;
+            return cam != null && transform.IsChildOf(cam.transform);
+        }
+
         void LateUpdate()
         {
             if (!_ready || masterScale <= 0f) return;
+            if (IsFirstPerson()) return;
 
             _time += Time.deltaTime;
             float p = (_time + phaseOffset) * Mathf.PI * 2f;

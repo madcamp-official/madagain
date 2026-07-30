@@ -263,6 +263,27 @@ namespace Game.View
             if (pc != null) pc.enabled = true;
         }
 
+        /// <summary>
+        /// 빙의 중인 경비병이 (압사 등으로) 죽었을 때 호출한다. 경비병을 파괴하고 플레이어는
+        /// 즉시 본체로 돌아간다 — 사망이라 페이드 연출 없이 강제로 끊는다.
+        ///
+        /// <para><b>본체 자체가 죽는 것과는 다르다</b> — 이건 게임오버가 아니다(§경비병은
+        /// 소모품, 본체가 진짜 목숨). 본체 사망은 <see cref="GameOverManager"/> 몫이다.</para>
+        ///
+        /// <para><b>순서가 중요하다</b>: <see cref="GuardDestruction"/> 참조를 먼저 잡아두고
+        /// <see cref="Exit"/>를 <b>먼저</b> 불러 정상 복귀 절차(메시·콜라이더 원복, 리그 텔레포트)를
+        /// 태운 다음 <see cref="GuardDestruction.Destruct"/>를 부른다. 반대 순서로 하면 <see cref="Exit"/>가
+        /// <c>SetOwnMeshVisible(true)</c>·콜라이더 복구로 방금 죽으며 꺼둔 것들을 되살려버린다.</para>
+        /// </summary>
+        public void KillPossessedTarget()
+        {
+            if (!_bodyMode || _target == null) return;
+
+            var d = _target.GetComponent<GuardDestruction>();
+            Exit(null);
+            if (d != null && !d.Destroyed) d.Destruct(Vector3.zero);
+        }
+
         /// <summary>매 프레임(빙의 중).</summary>
         public void Tick()
         {

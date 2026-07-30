@@ -69,9 +69,9 @@ namespace Game.View
         public bool snapAnalog = false;
 
         [Header("마일스톤 (홀드 전용 — 6DoF 떨림·튐 차단, §6.2)")]
-        [Tooltip("홀드 회전을 딸깍 단위로 양자화한다. 스텝 ÷ 간격 = 최대 각속도이므로 " +
-                 "rotateSpeedDeg(60)와 간격(0.0833)에서 유도하면 정확히 5도가 나온다.")]
-        public MilestoneStepper creepStep = new MilestoneStepper(5f);
+        [Tooltip("홀드 회전에서 컨트롤러 노이즈만 걸러낸다. 스텝은 rotateSpeedDeg에서 자동 유도된다 — " +
+                 "손으로 넣지 말 것.")]
+        public MilestoneStepper creepStep = new MilestoneStepper();
 
         [Header("라이더 감지")]
         [Tooltip("회전면 위에 선 것을 같이 돌릴지. ★ 터렛처럼 <b>아무도 올라타지 않는</b> 회전체는 꺼야 한다 — " +
@@ -152,10 +152,15 @@ namespace Game.View
 
         void Awake()
         {
+            creepStep.SyncTo(rotateSpeedDeg);   // 스텝 = 최고 각속도 × 1프레임 (§MilestoneStepper)
             if (riderRoot == null) { enabled = false; Debug.LogWarning("[RotationPlatform] riderRoot가 비어 있습니다.", this); return; }
             _baseLocalRotation = riderRoot.localRotation;
             _prevWorldRotation = riderRoot.rotation;
         }
+
+#if UNITY_EDITOR
+        void OnValidate() => creepStep.SyncTo(rotateSpeedDeg);
+#endif
 
         void LateUpdate()
         {

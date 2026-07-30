@@ -23,11 +23,22 @@ namespace Game.View
     public class ControlTether : MonoBehaviour
     {
         [Header("색")]
-        [Tooltip("해킹 시도 중(패턴 그리는 중) 실 색 — 초록(§7).")]
-        public Color hackingColor = new Color(0.4f, 1f, 0.3f, 1f);
+        // ★ §7의 초록(가능)/파랑(장악) 색 구분은 이 게임에서 성립하지 않는다.
+        //   전역 ColorAdjustments가 채도 −100으로 씬을 흑백으로 강제하므로(흑백 아트 방침),
+        //   어떤 색을 넣어도 회색으로 나온다. 남은 채널은 <b>밝기</b>뿐이라 상태 구분을
+        //   아래 발광 세기로 옮겼다.
+        [Tooltip("해킹 시도 중 실 색. 흑백 씬이라 사실상 밝기만 의미가 있다.")]
+        public Color hackingColor = Color.white;
 
-        [Tooltip("조종 중(장악 성공) 실 색 — 파랑(§7 내 것).")]
-        public Color controlColor = new Color(0.3f, 0.8f, 1f, 1f);
+        [Tooltip("조종 중(장악 성공) 실 색.")]
+        public Color controlColor = Color.white;
+
+        [Header("발광 (Bloom 임계값 1.05를 넘겨야 빛난다)")]
+        [Tooltip("해킹 시도 중 밝기. 임계값(1.05)을 갓 넘겨 아주 옅게만 번지게 한다.")]
+        public float looseGlow = 1.08f;
+
+        [Tooltip("장악해서 팽팽할 때 밝기. 조일수록 밝아져 '걸렸다'가 읽힌다.")]
+        public float tightGlow = 1.3f;
 
         [Header("시작점")]
         [Tooltip("실이 시작하는 지점의 카메라 기준 오프셋(오른손 위 펫 거미 자리, §2.6).\n" +
@@ -44,26 +55,46 @@ namespace Game.View
         public Vector3 spinneretAxisLocal = new Vector3(0f, 0f, -1f);
 
         [Header("땀")]
-        [Tooltip("한 번의 해킹에 찌르는 땀 개수. 패턴 선 개수와 맞춘다(전 대상 5선으로 통일됨).")]
-        [Range(1, 12)] public int stitchCount = 5;
+        [Tooltip("한 번의 해킹에 찌르는 땀 개수. 패턴 획 하나당 (이 값 ÷ 선 개수)만큼 박힌다.\n" +
+                 "선 5개에 40이면 획 한 번에 8땀씩.")]
+        [Range(1, 80)] public int stitchCount = 40;
 
         [Header("타이밍")]
-        [Tooltip("획 하나를 이었을 때 그 땀이 박히는 시간(초). 짧을수록 '탁' 하고 박힌다.\n" +
-                 "0이면 순간이동이라 딱딱하고, 길면 늘어진다.")]
-        public float stitchSnapTime = 0.08f;
+        // 전체 그림: 발사 0.5초 + 획 5개 × 0.5초 = <b>아무리 빨라도 매듭에 3초</b>.
+        // 실이 날아가는 것도, 한 땀씩 박히는 것도 눈에 보여야 하므로 입력에 즉시 붙지 않는다.
+        [Tooltip("실이 방적돌기에서 대상까지 날아가는 시간(초). 이게 끝나야 꿰기 시작한다.\n" +
+                 "발사는 순간적이어야 한다 — 길면 굼떠 보인다.")]
+        public float launchTime = 0.2f;
 
-        [Tooltip("이미 해킹했던 것을 다시 잡을 때 5땀을 전부 박는 데 걸리는 시간(초). 쓰윽.")]
-        public float fastStitchTime = 0.35f;
+        [Tooltip("패턴 획 하나 분량의 땀이 박히는 시간(초). 획 5개면 총 2.5초.\n" +
+                 "★ 개수가 아니라 '획 하나 분량'을 기준으로 잡는다 — 땀 개수를 바꿔도\n" +
+                 "  체감 속도가 변하지 않는다.")]
+        public float strokeStitchTime = 0.5f;
 
-        [Tooltip("해제할 때 땀이 역순으로 전부 빠지는 시간(초).")]
-        public float retractTime = 0.5f;
+        [Tooltip("이미 해킹했던 것을 다시 잡을 때 전부 박는 데 걸리는 시간(초). 쓰윽.")]
+        public float fastStitchTime = 0.9f;
+
+        [Tooltip("해제 — 전부 풀려 회수되기까지의 시간(초). 개수와 무관하게 <b>항상 이만큼</b>.\n" +
+                 "★ 이 동안은 해킹이 막힌다(Busy). 1초는 대상을 갈아탈 때 답답해서 0.3으로 줄였다 — " +
+                 "회수는 연출이지 대기 시간이 아니다.")]
+        public float retractTime = 0.3f;
 
         [Header("조임")]
         [Tooltip("해킹 시도 중 팽팽함. 낮게 둬야 처짐이 보이고, 장악 순간의 대비가 산다.")]
         [Range(0f, 1f)] public float looseTension = 0.15f;
 
+        [Tooltip("장악은 했지만 <b>조작을 쉬고 있을 때</b> 팽팽함.\n" +
+                 "낮아야 두꺼운 실도 땀도 중력에 축 늘어진 게 보인다. 조작하면 1로 올라가 당겨진다.")]
+        [Range(0f, 1f)] public float idleTension = 0.25f;
+
+        [Tooltip("조작이 멈춘 뒤 이만큼 지나야 풀리기 시작한다(초). 0이면 조작 사이사이에 떨린다.")]
+        public float slackDelay = 0.15f;
+
+        [Tooltip("대상이 이 속도(m/s) 넘게 움직이면 '조작 중'으로 본다.")]
+        public float driveSpeedEpsilon = 0.02f;
+
         [Tooltip("조임이 바뀌는 데 걸리는 시간(초).")]
-        public float tensionTime = 0.25f;
+        public float tensionTime = 0.06f;
 
         [Header("참조 (비우면 찾는다)")]
         public TetherThread thread;
@@ -98,6 +129,13 @@ namespace Game.View
         /// <summary>0~1. 1이면 팽팽하다.</summary>
         public float Tension => _tension;
 
+        /// <summary>
+        /// ★ 실이 <b>아직 회수 중</b>인가. 이 동안은 새 해킹을 받으면 안 된다 —
+        /// 실이 풀려 돌아오는 도중에 또 나가면 거미가 실을 두 개 문 꼴이 된다.
+        /// <c>HackDriver</c>가 해킹 시작 전에 이 값을 본다.
+        /// </summary>
+        public bool Busy => _retracting;
+
         // ── 내부 ─────────────────────────────────────────────────────────────
 
         readonly List<int> _picked = new List<int>(8);
@@ -111,6 +149,11 @@ namespace Game.View
         bool _warnedNotBaked;
         Vector3 _lastTargetPos;         // 대상이 사라진 뒤에도 회수 연출을 그리려면 필요하다
         Color _lastColor;               // 패턴 취소(초록)와 조종 해제(파랑)의 회수 색이 달라야 한다
+        Vector3 _prevAnchor;            // 조작 중인지 판정하려고 첫 땀 자리의 이동을 본다
+        bool _hasAnchor;
+        float _driveHold;
+        float _launch;                  // 0~1. 실이 대상까지 날아간 정도
+        bool _retracting;
 
         void Awake()
         {
@@ -134,42 +177,71 @@ namespace Game.View
             {
                 _boundTarget = hk;
                 _progress = 0f;
+                _launch = 0f;       // 대상이 바뀌면 발사부터 다시 보여준다
+                _tension = 1f;      // 발사 순간부터 빳빳해야 한다 — 서서히 올라오면 힘이 없다
                 _fastTimer = -1f;
                 BindSites(hk);
             }
 
             if (from == null || target == null)
             {
-                // 회수 — 마지막에 찌른 땀부터 역순으로 빠진 뒤에 감춘다.
-                _progressTarget = 0f;
-                Step(dt, retract: true);
-                if (_progress <= 0.001f)
+                if (_launch <= 0.001f && _progress <= 0.001f)
                 {
+                    // 이미 다 회수됐다 — 아무것도 안 한다.
                     Active = false;
+                    _retracting = false;
                     AimDirection = Vector3.zero;
                     if (thread != null) thread.Hide();
                     _wasHacking = false;
                     _boundTarget = null;
                     _sites = null;
                     _picked.Clear();
+                    _hasAnchor = false;
+                    _driveHold = 0f;
                     return;
                 }
+
+                // ★ 회수는 개수와 무관하게 <b>항상 retractTime</b>이다.
+                //   앞 70%에 땀이 역순으로 빠지고, 남은 30%에 실이 거미에게 돌아온다.
+                //   이 동안 Busy가 서서 새 해킹이 막힌다.
+                _retracting = true;
+                _progressTarget = 0f;
+                _tensionTarget = 1f;   // 당겨서 뽑는 것이므로 팽팽하다
+
+                float t = Mathf.Max(0.05f, retractTime);
+                _progress = Mathf.MoveTowards(_progress, 0f, dt / (t * 0.7f));
+                if (_progress <= 0.001f)
+                    _launch = Mathf.MoveTowards(_launch, 0f, dt / (t * 0.3f));
+
+                _tension = Mathf.Lerp(_tension, _tensionTarget, 1f - Mathf.Exp(-dt / tensionTime));
                 DrawRetract(from);
                 return;
             }
 
+            _retracting = false;
             _lastTargetPos = target.position;
 
+            // ── 발사 — 실이 날아가는 게 보여야 한다 ─────────────────────────
+            _launch = Mathf.MoveTowards(_launch, 1f, dt / Mathf.Max(0.01f, launchTime));
+
             bool hacking = !captured;
+            bool arrived = _launch >= 0.999f;   // 실이 도착해야 꿰기 시작한다
 
             // ── 진행도를 무엇이 미는가 ───────────────────────────────────────
+            // ★ 분모는 <b>패턴 선 개수</b>이지 땀 개수가 아니다. 둘이 우연히 같을 때는
+            //   구분이 안 되지만, 땀을 늘리는 순간 진행도가 끝까지 안 차게 된다.
+            int strokes = 0, lines = 0;
+            var mg = ResolveMinigame();
+            if (mg != null)
+            {
+                if (mg.Input != null) strokes = mg.Input.StrokeCount;
+                if (mg.Target != null) lines = mg.Target.LineCount;
+            }
+            if (lines <= 0) lines = 5;   // 전 대상 5선으로 통일됨
+
             if (hacking)
             {
-                // 패턴 획이 진행도를 민다. StrokeCount는 정수라 폴링이 안전하다.
-                int strokes = 0;
-                var mg = ResolveMinigame();
-                if (mg != null && mg.Input != null) strokes = mg.Input.StrokeCount;
-                _progressTarget = stitchCount > 0 ? Mathf.Clamp01(strokes / (float)stitchCount) : 0f;
+                _progressTarget = arrived ? Mathf.Clamp01(strokes / (float)lines) : 0f;
                 _fastTimer = -1f;
             }
             else
@@ -182,35 +254,60 @@ namespace Game.View
                 else
                 {
                     // ★ 재조종 — 같은 연출을 타이머로 빠르게 재생한다.
-                    if (_fastTimer < 0f) _fastTimer = 0f;
-                    _fastTimer += dt;
+                    if (!arrived) _fastTimer = 0f;
+                    else
+                    {
+                        if (_fastTimer < 0f) _fastTimer = 0f;
+                        _fastTimer += dt;
+                    }
                     _progressTarget = fastStitchTime > 0.0001f
                         ? Mathf.Clamp01(_fastTimer / fastStitchTime)
                         : 1f;
                 }
             }
 
-            _tensionTarget = hacking ? looseTension : 1f;
+            // ── 조작 중인가 ─────────────────────────────────────────────────
+            // HackDriver를 건드리지 않고 알아내려면 <b>실이 실제로 붙어 있는 지점</b>이
+            // 움직이는지를 보면 된다. 대상 루트가 아니라 첫 땀 자리를 봐야 한다 —
+            // 프레스·피스톤은 루트가 가만히 있고 자식 파츠만 움직이기 때문이다.
+            Vector3 anchor = (_sites != null && _picked.Count > 0)
+                           ? _sites.WorldPos(_sites.sites[_picked[0]])
+                           : target.position;
+            if (_hasAnchor && dt > 0f)
+            {
+                float speed = (anchor - _prevAnchor).magnitude / dt;
+                if (speed > driveSpeedEpsilon) _driveHold = slackDelay;
+                else _driveHold -= dt;
+            }
+            _prevAnchor = anchor;
+            _hasAnchor = true;
+
+            // ★ 발사 중에는 무조건 팽팽하다 — 실이 빳빳하게 쭉 나가서 팍 박혀야 힘이 있다.
+            //   늘어지는 건 <b>박힌 뒤</b>다.
+            _tensionTarget = !arrived ? 1f
+                           : hacking ? looseTension
+                                     : (_driveHold > 0f ? 1f : idleTension);
+
+            // 기준은 '획 하나 분량'이다 — 땀 개수를 바꿔도 체감 속도가 안 변한다.
+            // 재조종만 예외로 정해진 시간 안에 전부 박는다("쓰윽").
+            bool fastPath = !hacking && !_wasHacking;
+            float rate = fastPath
+                ? 1f / Mathf.Max(0.01f, fastStitchTime)
+                : (1f / lines) / Mathf.Max(0.01f, strokeStitchTime);
+
             _wasHacking = hacking;
 
-            Step(dt, retract: false);
+            Step(dt, rate);
             DrawWith(from, target, captured);
         }
 
-        void Step(float dt, bool retract)
+        /// <param name="rate">초당 진행도 증가량(0~1 기준).</param>
+        void Step(float dt, float rate)
         {
-            // 박힐 때는 짧게 '탁', 회수할 때는 정해진 시간에 걸쳐 스르르.
-            if (retract)
-            {
-                float rate = retractTime > 0.0001f ? dt / retractTime : 1f;
-                _progress = Mathf.MoveTowards(_progress, _progressTarget, rate);
-            }
-            else
-            {
-                _progress = stitchSnapTime > 0.0001f
-                    ? Mathf.Lerp(_progress, _progressTarget, 1f - Mathf.Exp(-dt / stitchSnapTime))
-                    : _progressTarget;
-            }
+            // ★ 일정 속도로 민다. 목표에 즉시 따라붙지 <b>않는다</b> —
+            //   획을 이어도 실은 늦게 따라오면서 한 땀씩 박히는 게 보여야 한다.
+            //   그 지연이 곧 애니메이션이다.
+            _progress = Mathf.MoveTowards(_progress, _progressTarget, Mathf.Max(0.0001f, rate) * dt);
 
             _tension = tensionTime > 0.0001f
                 ? Mathf.Lerp(_tension, _tensionTarget, 1f - Mathf.Exp(-dt / tensionTime))
@@ -242,9 +339,14 @@ namespace Game.View
 
             if (thread == null) { EndPoint = fallbackEnd; return; }
 
+            // 조임이 곧 밝기다 — 흑백 씬에서 상태를 알리는 유일한 채널.
+            // 알파는 1로 둔다(불투명 큐라 쓰이지 않지만 곱해서 흐트러뜨릴 이유가 없다).
+            float g = Mathf.Lerp(looseGlow, tightGlow, _tension);
+            var hdr = new Color(color.r * g, color.g * g, color.b * g, 1f);
+
             Vector3 dir = SpinneretDir(a, fallbackEnd);
             thread.Draw(a, dir, _sites, _picked, fallbackEnd,
-                        _progress, _tension, color);
+                        _launch, _progress, _tension, hdr);
 
             EndPoint = thread.Ready ? thread.LastEnd : fallbackEnd;
 
@@ -297,7 +399,12 @@ namespace Game.View
 
             var cam = Camera.main;
             Vector3 viewer = cam != null ? cam.transform.position : transform.position;
+            Vector3 aim = cam != null ? cam.transform.forward : transform.forward;
+
             _sites.Pick(stitchCount, viewer, _seed, _picked);
+
+            // 첫 발사는 조준점 근처에 꽂혀야 "내가 쏜 것"으로 읽힌다. 나머지 순서는 그대로 둔다.
+            _sites.SortAimFirst(_picked, viewer, aim);
         }
 
         /// <summary>
@@ -348,7 +455,7 @@ namespace Game.View
                     localPos = holder.transform.InverseTransformPoint(hit.point),
                     localNormal = holder.transform.InverseTransformDirection(hit.normal),
                     thickness = thick,
-                    boneIndex = -1,
+                    spaceIndex = -1,
                 });
             }
 

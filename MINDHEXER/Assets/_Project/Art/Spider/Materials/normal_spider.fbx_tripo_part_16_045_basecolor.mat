@@ -13,7 +13,6 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords:
-  - _INVERT_ON
   - _USEGLOBAL_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -87,6 +86,7 @@ Material:
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
+    - _AmbientFloor: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
@@ -100,9 +100,11 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
+    - _FixedLight: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.31622785
     - _GlossyReflections: 1
+    - _HackSet: 0
     - _InBlack: 0
     - _InWhite: 0.5
     - _Invert: 0
@@ -116,6 +118,7 @@ Material:
     - _ReceiveShadows: 1
     - _Smoothness: 0.31622785
     - _SmoothnessTextureChannel: 0
+    - _SpecWeight: 1
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1

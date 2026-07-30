@@ -23,17 +23,22 @@ namespace Game.View
 
         [Header("굽힘 (0=편 손, 1=꽉 쥠)")]
         [Range(0f, 1f)] public float grip;
-        [Range(0f, 1f)] public float thumb;
-        [Range(0f, 1f)] public float index;
-        [Range(0f, 1f)] public float middle;
-        [Range(0f, 1f)] public float ring;
-        [Range(0f, 1f)] public float pinky;
+        // 손가락별 값은 <b>기준선(grip·sustainGrip)에 대한 차이</b>다. 음수여야 하는 경우가 있다 —
+        // 등반의 시차 감기에서 늦게 감기는 손가락은 기준선보다 덜 말려야 한다.
+        [Range(-1f, 1f)] public float thumb;
+        [Range(-1f, 1f)] public float index;
+        [Range(-1f, 1f)] public float middle;
+        [Range(-1f, 1f)] public float ring;
+        [Range(-1f, 1f)] public float pinky;
 
         [Header("각도 설정")]
         [Tooltip("굽는 축(로컬). 엉뚱하게 꺾이면 이걸 바꾸십시오")]
         public Vector3 curlAxis = new Vector3(0f, 0f, 1f);
         public float maxCurlDeg = 70f;
-        public Vector3 jointWeights = new Vector3(1f, 1f, 0.85f);
+        // 마디별 비율. (1, 1, 0.85)는 세 마디가 거의 균일하게 말려 <b>갈고리</b>처럼 보였다.
+        // 실제로 무언가를 걸어 쥘 때는 뿌리 마디가 가장 굽고 끝마디는 훨씬 덜 굽는다.
+        [Tooltip("마디별 말림 비율 (뿌리, 중간, 끝). 다섯 손가락이 공유한다.")]
+        public Vector3 jointWeights = new Vector3(1f, 0.8f, 0.5f);
         public float thumbScale = 0.6f;
 
         [Header("벌림")]
@@ -65,6 +70,12 @@ namespace Game.View
         Transform[,] chain;
         Quaternion[,] rest;
         bool ready;
+        int _foundBones;
+
+        /// <summary>손가락 뼈를 실제로 찾았는가. 못 찾으면 값을 아무리 넣어도 아무것도 안 움직인다.</summary>
+        public bool Ready => ready;
+        /// <summary>찾은 뼈 개수(최대 15 = 5손가락 × 3마디). 진단 표시용.</summary>
+        public int FoundBones => _foundBones;
 
         void OnEnable()  { Instance = this; Rebuild(); }
         void OnValidate(){ if (!ready) Rebuild(); }
@@ -95,6 +106,7 @@ namespace Game.View
                     }
                 }
             ready = found > 0;
+            _foundBones = found;
             if (!ready) Debug.LogWarning($"[FingerPoser] 손가락 뼈를 못 찾았습니다. handRoot를 손 뼈로 지정하십시오. (검사 대상 {all.Length}개)");
         }
 

@@ -86,16 +86,19 @@ namespace Game.EditorTools
             public Vector3 a, b, c;     // 월드
             public Vector3 n;           // 기하 법선 — 오프셋에는 스무딩 법선보다 이게 맞다
             public float area;
-            public int bone;            // −1 = 정적
+            public int space;           // spaces 인덱스. −1 = 붙일 곳 없음
         }
 
         public static bool Bake(GameObject root, int count)
         {
-            var bones = new List<Transform>();
+            // ★ 본만이 아니라 <b>움직이는 정적 파츠</b>도 여기 들어간다.
+            //   피스톤 로드·프레스 헤드·터렛 헤드는 자식 트랜스폼이 움직이므로,
+            //   루트 기준으로 구우면 부품이 움직여도 실이 제자리에 남는다.
+            var spaces = new List<Transform>();
             var tris = new List<Tri>(4096);
 
-            CollectStatic(root, tris);
-            CollectSkinned(root, tris, bones);
+            CollectStatic(root, tris, spaces);
+            CollectSkinned(root, tris, spaces);
 
             if (tris.Count == 0)
             {
@@ -128,7 +131,7 @@ namespace Game.EditorTools
             var sites = host.GetComponent<StitchSites>();
             if (sites == null) sites = host.AddComponent<StitchSites>();
             sites.sites.Clear();
-            sites.bones = bones.ToArray();
+            sites.spaces = spaces.ToArray();
 
             // 결정적 시드 — 같은 모델을 다시 구우면 같은 결과가 나와야 비교가 된다.
             var rng = new System.Random(root.name.GetHashCode());
@@ -147,22 +150,22 @@ namespace Game.EditorTools
 
                 float thick = MeasureThickness(tris, p, t.n);
 
-                Transform space = (t.bone >= 0 && t.bone < bones.Count && bones[t.bone] != null)
-                                ? bones[t.bone] : host.transform;
+                bool hasSpace = t.space >= 0 && t.space < spaces.Count && spaces[t.space] != null;
+                Transform space = hasSpace ? spaces[t.space] : host.transform;
 
                 sites.sites.Add(new StitchSites.Site
                 {
                     localPos = space.InverseTransformPoint(p),
                     localNormal = space.InverseTransformDirection(t.n),
                     thickness = thick,
-                    boneIndex = (space == host.transform) ? -1 : t.bone,
+                    spaceIndex = hasSpace ? t.space : -1,
                 });
             }
 
             sites.bakedCount = sites.sites.Count;
             EditorUtility.SetDirty(sites);
             Debug.Log($"[땀 자리 굽기] '{root.name}' — 후보 {sites.sites.Count}개 " +
-                      $"(삼각형 {tris.Count}, 본 {bones.Count})", root);
+                      $"(삼각형 {tris.Count}, 공간 {spaces.Count})", root);
             return sites.sites.Count > 0;
         }
 
@@ -201,13 +204,21 @@ namespace Game.EditorTools
         /// 여기서 걸러내 버리면 구매 에셋(Synty·TallCity)·Tripo 모델이 통째로 대상에서 빠진다 —
         /// 그것들이 정확히 우리가 구워야 할 것들이다. 실패하면 그때 알려 준다.
         /// </summary>
-        static void CollectStatic(GameObject root, List<Tri> tris)
+        static void CollectStatic(GameObject root, List<Tri> tris, List<Transform> spaces)
         {
             foreach (var mf in root.GetComponentsInChildren<MeshFilter>(true))
             {
                 var mesh = mf.sharedMesh;
                 if (mesh == null || !Usable(mf)) continue;
-                try { AddMesh(mesh, mf.transform.localToWorldMatrix, null, tris); }
+
+                // ★ 파츠 자기 트랜스폼에 매단다. 이게 곧 "움직이면 실도 따라간다"이다.
+                int si = spaces.IndexOf(mf.transform);
+                if (si < 0) { si = spaces.Count; spaces.Add(mf.transform); }
+
+                var vertSpace = new int[mesh.vertexCount];
+                for (int i = 0; i < vertSpace.Length; i++) vertSpace[i] = si;
+
+                try { AddMesh(mesh, mf.transform.localToWorldMatrix, vertSpace, tris); }
                 catch (System.Exception e)
                 {
                     Debug.LogWarning($"[땀 자리 굽기] '{mesh.name}'를 읽지 못했습니다 — " +
@@ -288,7 +299,7 @@ namespace Game.EditorTools
                         a = a, b = b, c = c,
                         n = cross.normalized,
                         area = area,
-                        bone = vertBone != null ? vertBone[idx[i]] : -1,
+                        space = vertBone != null ? vertBone[idx[i]] : -1,
                     });
                 }
             }

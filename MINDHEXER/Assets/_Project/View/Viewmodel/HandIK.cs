@@ -208,6 +208,14 @@ namespace Game.View
             Quaternion local = end.localRotation;
             Quaternion delta = Quaternion.Inverse(endRestLocal) * local;
 
+            // ★ 같은 회전을 나타내는 쿼터니언은 부호가 뒤집힌 짝이 하나 더 있다(q와 −q).
+            //   w가 음수인 쪽이 들어오면 아래 SwingTwist가 "먼 길로 도는" 해로 분해하고,
+            //   ToAngleAxis도 축이 뒤집힌 채 각도를 돌려준다. 그러면 손목이 <b>거울처럼 반대로</b>
+            //   클램프되어 돌아간 채로 굳는다 — 등반처럼 손목을 크게 꺾은 뒤 돌아올 때 경계를
+            //   넘나들며 <b>될 때도 있고 안 될 때도 있는</b> 증상이 정확히 이것이다.
+            //   분해 전에 반구를 한쪽으로 고정해야 결과가 경로에 의존하지 않는다.
+            if (delta.w < 0f) delta = new Quaternion(-delta.x, -delta.y, -delta.z, -delta.w);
+
             Vector3 twistAxis = end.parent != null
                 ? end.parent.InverseTransformDirection((end.position - lower.position).normalized)
                 : Vector3.forward;
@@ -235,6 +243,8 @@ namespace Game.View
 
         static Quaternion ClampAngle(Quaternion q, float maxDeg)
         {
+            // 여기도 같은 이유로 반구를 고정한다 — 부호가 뒤집힌 쿼터니언은 축까지 뒤집혀 들어온다.
+            if (q.w < 0f) q = new Quaternion(-q.x, -q.y, -q.z, -q.w);
             q.ToAngleAxis(out float ang, out Vector3 axis);
             if (float.IsNaN(axis.x) || axis.sqrMagnitude < 1e-8f) return Quaternion.identity;
             if (ang > 180f) ang -= 360f;

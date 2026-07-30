@@ -62,7 +62,8 @@ namespace Game.View
 
         [Header("뷰모델 전용 (Point · 손·거미)")]
         [Tooltip("월드 조명과 무관하게 손을 항상 일정하게 보이게 한다")]
-        public float vmIntensity = 2f;
+        // 0 = 사실상 꺼짐. 손·거미가 고정 키 조명으로 바뀌어 이 라이트를 읽지 않는다.
+        public float vmIntensity = 0f;
         public float vmRange = 2.5f;
         public Color vmColor = Color.white;
         [Tooltip("카메라 기준 위치. 정면이 아니라 비스듬해야 손의 형태가 드러난다")]
@@ -124,7 +125,7 @@ namespace Game.View
             fillRange      = vr ? 5f : 4f;
             fillColor      = Color.white;
 
-            vmIntensity    = 2f;
+            vmIntensity    = 0f;   // 고정 키 조명으로 대체됨
             vmRange        = 2.5f;
             vmColor        = Color.white;
             vmOffset       = new Vector3(-0.2f, 0.25f, 0.15f);
@@ -249,6 +250,10 @@ namespace Game.View
             _fill.renderMode  = LightRenderMode.ForcePixel;
 
             _vm.transform.localPosition = vmOffset;
+            // ★ 손·거미가 고정 키 조명(OneBit `_FixedLight`)으로 바뀐 뒤로 이 라이트는 <b>손에 닿지
+            //   않는다</b> — 그쪽 셰이더가 씬 조명을 아예 안 읽는다. 세기를 0으로 두어 사실상 꺼 둔다.
+            //   오브젝트 자체는 남긴다: 뷰모델 레이어에 고정 조명을 안 쓰는 물체(예: 들고 있는 소품)를
+            //   나중에 넣게 되면 이 값만 올리면 되고, 삭제하면 씬·JSON 참조가 끊긴다.
             _vm.intensity   = vmIntensity;
             _vm.range       = Mathf.Max(0.1f, vmRange);
             _vm.color       = vmColor;

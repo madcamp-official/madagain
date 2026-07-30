@@ -26,6 +26,18 @@ namespace Game.View
         [Tooltip("해킹 사거리 (placeholder, 튜닝 대상 §9).")]
         public float hackRange = 15f;
 
+        [Tooltip("사거리를 무시하고 <b>어디서든</b> 해킹된다. 거대 유압프레스 전용(§0.4 보스 파트).\n" +
+                 "★ 조준은 그대로다 — 레이가 닿아야 한다. 거리 판정만 빠진다.\n" +
+                 "HackableGlitchManager의 전역 사거리 덮어쓰기(hackRangeOverride)도 우회한다.")]
+        public bool ignoreRange = false;
+
+        /// <summary>
+        /// 이 거리에서 해킹이 가능한가. <b>사거리 판정은 전부 여기를 지난다</b> —
+        /// 판정이 세 곳(조준·치지직·손가락)에 흩어져 있어서 한 곳만 고치면 나머지가 어긋난다.
+        /// </summary>
+        public bool WithinHackRange(float distance)
+            => ignoreRange || distance <= Mathf.Max(0.01f, hackRange);
+
         [Tooltip("시선 Raycast용 콜라이더. 모델보다 넉넉하게, Hackable 레이어. 비우면 자식에서 탐색.")]
         public Collider gazeCollider;
 

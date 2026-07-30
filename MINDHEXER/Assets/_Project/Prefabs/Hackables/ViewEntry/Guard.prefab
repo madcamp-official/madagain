@@ -979,6 +979,8 @@ GameObject:
   - component: {fileID: 3628375487612758766}
   - component: {fileID: 7974092317786902223}
   - component: {fileID: 347971646719672786}
+  - component: {fileID: 4790825081769094530}
+  - component: {fileID: 8264162719278197238}
   m_Layer: 8
   m_Name: Guard
   m_TagString: Untagged
@@ -1108,7 +1110,7 @@ MonoBehaviour:
   hardClampTilt: 0
   eyeBlocked: 0
   allowsMove: 1
-  possessEyeLift: 0
+  possessEyeLift: 0.35
   useBlocker: 0
   blockerColor: {r: 0.15, g: 0.85, b: 0.25, a: 1}
   hideOwnMeshWhilePossessed: 1
@@ -1169,164 +1171,644 @@ MonoBehaviour:
   - localPos: {x: -0.058901813, y: 0.2749762, z: -0.067968}
     localNormal: {x: -0.9969593, y: 0.07757115, z: -0.007409524}
     thickness: 0.23323391
-    boneIndex: 40
+    spaceIndex: 40
   - localPos: {x: 0.037386607, y: 0.114639685, z: -0.060802225}
     localNormal: {x: 0.9956911, y: -0.07892001, z: 0.048690595}
     thickness: 0.015766138
-    boneIndex: 3
+    spaceIndex: 3
   - localPos: {x: -0.13195069, y: 0.084539995, z: -0.099420756}
     localNormal: {x: -0.86316824, y: -0.5025903, z: -0.048410576}
     thickness: 0.52538335
-    boneIndex: 0
+    spaceIndex: 0
   - localPos: {x: 0.021628657, y: 0.31285456, z: 0.028887786}
     localNormal: {x: 0.99697983, y: 0.07583546, z: 0.016738875}
     thickness: 0.091217875
-    boneIndex: 21
+    spaceIndex: 21
   - localPos: {x: 0.020002162, y: 0.13116042, z: 0.11690482}
     localNormal: {x: -0.054090798, y: 0.009025246, z: 0.9984953}
     thickness: 0.3997145
-    boneIndex: 43
+    spaceIndex: 43
   - localPos: {x: 0.06380058, y: -0.0090337545, z: 0.04022524}
     localNormal: {x: 0.19751298, y: -0.9802711, z: -0.007569276}
     thickness: 0.1804433
-    boneIndex: 20
+    spaceIndex: 20
   - localPos: {x: 0.08712149, y: -0.03747998, z: 0.060085982}
     localNormal: {x: 0.6461986, y: -0.22619687, z: 0.72887754}
     thickness: 0.57152617
-    boneIndex: 0
+    spaceIndex: 0
   - localPos: {x: 0.018912785, y: 0.22889058, z: 0.03387243}
     localNormal: {x: 0.042918086, y: 0.06773612, z: 0.99677986}
     thickness: 0.32164776
-    boneIndex: 44
+    spaceIndex: 44
   - localPos: {x: -0.0020888986, y: 0.39893907, z: 0.10833705}
     localNormal: {x: 0.3331679, y: -0.16805896, z: -0.927769}
     thickness: 0.02503909
-    boneIndex: 2
+    spaceIndex: 2
   - localPos: {x: 0.027668962, y: 0.23299639, z: -0.06782483}
     localNormal: {x: 0.037090458, y: 0.14272302, z: -0.98906755}
     thickness: 0.37018433
-    boneIndex: 43
+    spaceIndex: 43
   - localPos: {x: 0.020326352, y: 0.045608334, z: 0.013244994}
     localNormal: {x: 0.78467256, y: -0.61669827, z: -0.06302665}
     thickness: 0.075441554
-    boneIndex: 43
+    spaceIndex: 43
   - localPos: {x: -0.08289377, y: 0.2793754, z: -0.045585316}
     localNormal: {x: 0.53755623, y: 0.83582604, z: -0.111481026}
     thickness: 0.56293154
-    boneIndex: 2
+    spaceIndex: 2
   - localPos: {x: 0.06424625, y: -0.07663135, z: 0.02441297}
     localNormal: {x: 0.1420566, y: -0.8793707, z: -0.45445254}
     thickness: 0.8225366
-    boneIndex: 2
+    spaceIndex: 2
   - localPos: {x: 0.032462165, y: 0.025345713, z: 0.050350394}
     localNormal: {x: -0.09826082, y: -0.91216964, z: 0.39785868}
     thickness: 0.48369405
-    boneIndex: 44
+    spaceIndex: 44
   - localPos: {x: 0.20165293, y: -0.05039335, z: -0.029109031}
     localNormal: {x: 0.9384526, y: -0.3401053, z: -0.06029232}
     thickness: 0.8880155
-    boneIndex: 2
+    spaceIndex: 2
   - localPos: {x: -0.03525513, y: 0.027552012, z: 0.069408916}
     localNormal: {x: -0.8527561, y: 0.09796101, z: 0.51304054}
     thickness: 0.2138325
-    boneIndex: 41
+    spaceIndex: 41
   - localPos: {x: -0.089847006, y: 0.16698134, z: -0.06217512}
     localNormal: {x: -0.9024104, y: 0.14701669, z: -0.40502042}
     thickness: 0.38211504
-    boneIndex: 43
+    spaceIndex: 43
   - localPos: {x: -0.039319627, y: 0.1778917, z: 0.24676758}
     localNormal: {x: -0.14437145, y: 0.3509709, z: 0.92518985}
     thickness: 0.8502754
-    boneIndex: 2
+    spaceIndex: 2
   - localPos: {x: -0.11201926, y: 0.22435313, z: 0.021873562}
     localNormal: {x: -0.99587446, y: 0.0906082, z: 0.004914536}
     thickness: 0.38368478
-    boneIndex: 43
+    spaceIndex: 43
   - localPos: {x: 0.02756374, y: 0.24585822, z: -0.019487571}
     localNormal: {x: 0.1407013, y: 0.9894022, z: 0.035868928}
     thickness: 0.44877344
-    boneIndex: 3
+    spaceIndex: 3
   - localPos: {x: -0.07966877, y: -0.07787312, z: -0.011594441}
     localNormal: {x: -0.8354207, y: -0.5434736, z: 0.081906736}
     thickness: 0.0074613392
-    boneIndex: 43
+    spaceIndex: 43
   - localPos: {x: 0.02923698, y: -0.03566398, z: -0.12233147}
     localNormal: {x: -0.00000425661, y: -0.8562863, z: -0.51650167}
     thickness: 0.12634507
-    boneIndex: 41
+    spaceIndex: 41
   - localPos: {x: 0.045577828, y: 0.07828349, z: 0.032796364}
     localNormal: {x: 0.99436533, y: 0.08931586, z: 0.057100073}
     thickness: 0.17681572
-    boneIndex: 4
+    spaceIndex: 4
   - localPos: {x: -0.0004729489, y: 0.051769443, z: -0.0043818853}
     localNormal: {x: -0.6163284, y: 0.18303382, z: -0.765923}
     thickness: 0.13056074
-    boneIndex: 6
+    spaceIndex: 6
   - localPos: {x: -0.0139469085, y: -0.014671657, z: 0.019398598}
     localNormal: {x: -0.998859, y: 0.013220448, z: 0.04589041}
     thickness: 0.087436795
-    boneIndex: 4
+    spaceIndex: 4
   - localPos: {x: 0.05998245, y: 0.41061464, z: 0.07207693}
     localNormal: {x: 0.85086876, y: 0.20041168, z: 0.48565155}
     thickness: 0.3715802
-    boneIndex: 43
+    spaceIndex: 43
   - localPos: {x: -0.074853964, y: 0.19419311, z: -0.15398397}
     localNormal: {x: -0.34853983, y: 0.2387065, z: -0.9063879}
     thickness: 0.5315233
-    boneIndex: 0
+    spaceIndex: 0
   - localPos: {x: 0.05737836, y: -0.0103526935, z: 0.0048034675}
     localNormal: {x: 0.0000009970137, y: -0.9128314, z: 0.40833673}
     thickness: 0.24255794
-    boneIndex: 38
+    spaceIndex: 38
   - localPos: {x: 0.015310944, y: 0.0006815562, z: 0.0013217028}
     localNormal: {x: -0.0033272356, y: -0.9979003, z: -0.06468385}
     thickness: 0.65826654
-    boneIndex: 21
+    spaceIndex: 21
   - localPos: {x: 0.018917141, y: 0.3707921, z: -0.09193371}
     localNormal: {x: 0.04584398, y: 0.21924722, z: -0.9745918}
     thickness: 0.24248382
-    boneIndex: 44
+    spaceIndex: 44
   - localPos: {x: -0.067749925, y: 0.19442515, z: -0.15877952}
     localNormal: {x: -0.6128217, y: 0.19561459, z: -0.76562697}
     thickness: 0.57006466
-    boneIndex: 0
+    spaceIndex: 0
   - localPos: {x: -0.1227689, y: 0.19832605, z: -0.07700641}
     localNormal: {x: -0.72440577, y: 0.67852217, z: 0.12183553}
     thickness: 0.53200424
-    boneIndex: 0
+    spaceIndex: 0
   - localPos: {x: 0.025750471, y: 0.23349977, z: -0.06782414}
     localNormal: {x: 0.037090458, y: 0.14272302, z: -0.98906755}
     thickness: 0.370287
-    boneIndex: 43
+    spaceIndex: 43
   - localPos: {x: -0.049176715, y: 0.17619671, z: 0.03416839}
     localNormal: {x: -0.8538031, y: 0.08256898, z: 0.5140065}
     thickness: 0.2612216
-    boneIndex: 44
+    spaceIndex: 44
   - localPos: {x: 0.23609467, y: 0.31230715, z: 0.025828375}
     localNormal: {x: 0.225156, y: 0.89595395, z: -0.3828464}
     thickness: 0.13243127
-    boneIndex: 2
+    spaceIndex: 2
   - localPos: {x: -0.099689856, y: 0.053657338, z: 0.055958733}
     localNormal: {x: -0.8825208, y: -0.27933455, z: 0.37832442}
     thickness: 0.1950473
-    boneIndex: 1
+    spaceIndex: 1
   - localPos: {x: -0.018438587, y: -0.0014534286, z: 0.018444946}
     localNormal: {x: 0.11572189, y: -0.011801571, z: 0.9932116}
     thickness: 0.041590177
-    boneIndex: 33
+    spaceIndex: 33
   - localPos: {x: 0.14837848, y: 0.08639979, z: -0.011794241}
     localNormal: {x: 0.910286, y: -0.37452206, z: -0.17638734}
     thickness: 0.53691745
-    boneIndex: 0
+    spaceIndex: 0
   - localPos: {x: 0.007437585, y: 0.0060001547, z: -0.007918948}
     localNormal: {x: 0.99088424, y: 0.13087282, z: 0.031946763}
     thickness: 0.1365611
-    boneIndex: 17
+    spaceIndex: 17
   - localPos: {x: 0.054838423, y: 0.030455314, z: -0.008842043}
     localNormal: {x: 0.9900762, y: -0.06704688, z: 0.12350591}
     thickness: 0.25273448
-    boneIndex: 45
-  bones:
+    spaceIndex: 45
+  - localPos: {x: -0.03792663, y: 0.061532386, z: 0.004195882}
+    localNormal: {x: -0.7229479, y: -0.6903794, z: -0.026877835}
+    thickness: 0.41306648
+    spaceIndex: 39
+  - localPos: {x: 0.03802094, y: 0.31652427, z: 0.023046238}
+    localNormal: {x: 0.88036615, y: 0.07218598, z: 0.46876937}
+    thickness: 0.21353969
+    spaceIndex: 40
+  - localPos: {x: -0.022858141, y: 0.37723115, z: -0.057783168}
+    localNormal: {x: 0.019021362, y: -0.20494546, z: -0.97858876}
+    thickness: 0.0607282
+    spaceIndex: 39
+  - localPos: {x: 0.03492824, y: 0.09834563, z: -0.024935778}
+    localNormal: {x: 0.3721856, y: 0.48792818, z: -0.7895595}
+    thickness: 0.10697758
+    spaceIndex: 46
+  - localPos: {x: 0.08158888, y: 0.21481015, z: -0.14596444}
+    localNormal: {x: 0.34854, y: 0.23870662, z: -0.9063879}
+    thickness: 0.062321264
+    spaceIndex: 0
+  - localPos: {x: 0.10589579, y: -0.11187936, z: 0.13116623}
+    localNormal: {x: 0.18955535, y: -0.9652582, z: -0.17984846}
+    thickness: 0.82635
+    spaceIndex: 2
+  - localPos: {x: -0.055791166, y: -0.091180235, z: 0.16394722}
+    localNormal: {x: -0.21507932, y: -0.6326112, z: 0.7440054}
+    thickness: 0.18484128
+    spaceIndex: 2
+  - localPos: {x: -0.11173439, y: -0.012832694, z: -0.15718442}
+    localNormal: {x: -0.7119772, y: -0.13639426, z: -0.6888288}
+    thickness: 0.06506235
+    spaceIndex: 2
+  - localPos: {x: -0.22087947, y: 0.21982525, z: 0.10593283}
+    localNormal: {x: -0.9287945, y: -0.35914373, z: -0.09141464}
+    thickness: 0.041869134
+    spaceIndex: 2
+  - localPos: {x: -0.016524086, y: 0.18949983, z: 0.057329424}
+    localNormal: {x: 0.0020292923, y: 0.0059082657, z: 0.99998045}
+    thickness: 0.030982833
+    spaceIndex: 3
+  - localPos: {x: -0.039778512, y: -0.0006059836, z: 0.07341977}
+    localNormal: {x: -0.45648518, y: 0.019485384, z: 0.8895176}
+    thickness: 0.10525544
+    spaceIndex: 43
+  - localPos: {x: 0.104765296, y: 0.2678146, z: 0.009583177}
+    localNormal: {x: 0.9945569, y: 0.10401645, z: 0.006095641}
+    thickness: 0.37068698
+    spaceIndex: 39
+  - localPos: {x: 0.04364336, y: 0.2157422, z: -0.024877662}
+    localNormal: {x: 0.9956911, y: -0.07892001, z: 0.048690595}
+    thickness: 0.053185813
+    spaceIndex: 3
+  - localPos: {x: -0.06587206, y: 0.032276012, z: 0.006776212}
+    localNormal: {x: -1, y: -0.0000013748843, z: -0.0000005101974}
+    thickness: 0.25268197
+    spaceIndex: 42
+  - localPos: {x: 0.07295848, y: 0.19297352, z: 0.06919165}
+    localNormal: {x: -0.00000014827239, y: 0.27433014, z: 0.9616356}
+    thickness: 0.038083803
+    spaceIndex: 0
+  - localPos: {x: 0.030260611, y: 0.18693128, z: 0.05808486}
+    localNormal: {x: 0.9969654, y: 0.07359718, z: 0.025369132}
+    thickness: 0.13178192
+    spaceIndex: 21
+  - localPos: {x: -0.022004234, y: 0.25295547, z: 0.031164102}
+    localNormal: {x: 0.18116003, y: 0.98343813, z: 0.005505502}
+    thickness: 0.3518776
+    spaceIndex: 3
+  - localPos: {x: -0.019643165, y: 0.032457747, z: 0.09905768}
+    localNormal: {x: -0.77621394, y: -0.62723064, z: -0.06382485}
+    thickness: 0.2841714
+    spaceIndex: 39
+  - localPos: {x: 0.043962315, y: 0.47149864, z: 0.095428266}
+    localNormal: {x: -0.060284905, y: 0.27834976, z: 0.958586}
+    thickness: 0.070133105
+    spaceIndex: 39
+  - localPos: {x: -0.115925446, y: 0.13688453, z: 0.060195442}
+    localNormal: {x: -0.99449795, y: 0.07441483, z: 0.0737303}
+    thickness: 0.41076356
+    spaceIndex: 43
+  - localPos: {x: -0.0775368, y: -0.062289596, z: -0.0150313545}
+    localNormal: {x: 0.21817222, y: -0.9753399, z: -0.033362605}
+    thickness: 0.0945445
+    spaceIndex: 3
+  - localPos: {x: -0.022492522, y: -0.004772464, z: -0.095204435}
+    localNormal: {x: -0.93671316, y: 0.039227888, z: -0.347894}
+    thickness: 0.12561727
+    spaceIndex: 38
+  - localPos: {x: -0.055042565, y: -0.031926617, z: -0.08473726}
+    localNormal: {x: -0.10718765, y: 0.05592951, z: -0.99266446}
+    thickness: 0.055882838
+    spaceIndex: 3
+  - localPos: {x: -0.036321204, y: 0.00009715755, z: 0.01298905}
+    localNormal: {x: -0.0033174455, y: -0.99790066, z: -0.06467799}
+    thickness: 0.38853732
+    spaceIndex: 21
+  - localPos: {x: -0.11922474, y: 0.0977871, z: 0.055153683}
+    localNormal: {x: -0.99449795, y: 0.07441483, z: 0.0737303}
+    thickness: 0.3543811
+    spaceIndex: 43
+  - localPos: {x: -0.20739765, y: 0.11433193, z: -0.06708685}
+    localNormal: {x: -0.7804689, y: 0.18667066, z: -0.5966761}
+    thickness: 0.9609778
+    spaceIndex: 2
+  - localPos: {x: 0.1022198, y: -0.02184463, z: 0.025908437}
+    localNormal: {x: 0.87956387, y: -0.44861102, z: -0.1584791}
+    thickness: 0.49421728
+    spaceIndex: 0
+  - localPos: {x: -0.08019393, y: 0.119328186, z: 0.08943956}
+    localNormal: {x: -0.66724163, y: 0.19157779, z: 0.7197823}
+    thickness: 0.54434276
+    spaceIndex: 0
+  - localPos: {x: 0.054681316, y: -0.020716636, z: 0.20519072}
+    localNormal: {x: 0.0427819, y: -0.494114, z: 0.86834383}
+    thickness: 0.82775676
+    spaceIndex: 2
+  - localPos: {x: 0.07587356, y: 0.16375244, z: 0.07752768}
+    localNormal: {x: -0.00000014827239, y: 0.27433014, z: 0.9616356}
+    thickness: 0.5376551
+    spaceIndex: 0
+  - localPos: {x: 0.032182842, y: 0.15115607, z: -0.065272614}
+    localNormal: {x: 0.0150061045, y: 0.1251062, z: -0.9920301}
+    thickness: 0.26350722
+    spaceIndex: 4
+  - localPos: {x: 0.022015389, y: 0.031026296, z: -0.006623698}
+    localNormal: {x: 0.59441435, y: 0.74136114, z: 0.31153697}
+    thickness: 0.15389134
+    spaceIndex: 3
+  - localPos: {x: -0.05300989, y: 0.33294475, z: -0.0194738}
+    localNormal: {x: -0.99172544, y: 0.09758119, z: 0.083417565}
+    thickness: 0.21340121
+    spaceIndex: 40
+  - localPos: {x: -0.048739336, y: 0.38283995, z: 0.0017103031}
+    localNormal: {x: -0.88005877, y: 0.074567735, z: 0.46897364}
+    thickness: 0.21642235
+    spaceIndex: 44
+  - localPos: {x: 0.039106276, y: 0.2582337, z: 0.00028435513}
+    localNormal: {x: 0.9753613, y: 0.218032, z: -0.03365189}
+    thickness: 0.03772277
+    spaceIndex: 20
+  - localPos: {x: -0.06470144, y: 0.05214163, z: -0.07876975}
+    localNormal: {x: -0.11690351, y: 0.062330544, z: -0.9911854}
+    thickness: 0.02245387
+    spaceIndex: 3
+  - localPos: {x: -0.025557308, y: 0.026631884, z: -0.0735856}
+    localNormal: {x: 0.032511998, y: -0.32754153, z: -0.9442773}
+    thickness: 0.26482978
+    spaceIndex: 40
+  - localPos: {x: 0.13398746, y: 0.037184924, z: 0.03512326}
+    localNormal: {x: 0.87956387, y: -0.44861102, z: -0.1584791}
+    thickness: 0.50249106
+    spaceIndex: 0
+  - localPos: {x: -0.13986678, y: 0.21192159, z: 0.21294338}
+    localNormal: {x: -0.25847158, y: 0.4705032, z: 0.84369373}
+    thickness: 0.8470334
+    spaceIndex: 2
+  - localPos: {x: 0.011181179, y: 0.012850943, z: -0.036287427}
+    localNormal: {x: -0.7894793, y: -0.0843824, z: -0.6079495}
+    thickness: 0.06224329
+    spaceIndex: 23
+  - localPos: {x: -0.13601503, y: -0.06551037, z: 0.098453745}
+    localNormal: {x: -0.48779812, y: -0.40429363, z: 0.77369225}
+    thickness: 0.08822288
+    spaceIndex: 2
+  - localPos: {x: 0.012758824, y: 0.13879699, z: 0.11500892}
+    localNormal: {x: 0.05275452, y: 0.009983107, z: 0.9985577}
+    thickness: 0.39665326
+    spaceIndex: 39
+  - localPos: {x: 0.094895646, y: 0.013885431, z: -0.0058014253}
+    localNormal: {x: 0.9738444, y: 0.22695816, z: -0.01082322}
+    thickness: 0.07865946
+    spaceIndex: 20
+  - localPos: {x: 0.103636995, y: -0.0010344614, z: -0.025134033}
+    localNormal: {x: 0.87956387, y: -0.44861102, z: -0.1584791}
+    thickness: 0.07835169
+    spaceIndex: 0
+  - localPos: {x: 0.08242947, y: 0.28584754, z: 0.0957214}
+    localNormal: {x: 0.8227785, y: 0.083825305, z: 0.56214666}
+    thickness: 0.39276448
+    spaceIndex: 39
+  - localPos: {x: -0.103345945, y: 0.14010525, z: -0.04185439}
+    localNormal: {x: -0.9024104, y: 0.14701669, z: -0.40502042}
+    thickness: 0.40879333
+    spaceIndex: 43
+  - localPos: {x: -0.053870782, y: 0.06693357, z: 0.101847745}
+    localNormal: {x: -0.00000015357023, y: -0.108442, z: 0.99410284}
+    thickness: 0.5955298
+    spaceIndex: 0
+  - localPos: {x: -0.03052906, y: -0.013233354, z: 0.07755281}
+    localNormal: {x: -0.47045124, y: 0.01704365, z: 0.8822613}
+    thickness: 0.15579732
+    spaceIndex: 39
+  - localPos: {x: -0.05635114, y: -0.030849203, z: -0.018553466}
+    localNormal: {x: -0.990075, y: -0.06704141, z: 0.12351936}
+    thickness: 0.23975688
+    spaceIndex: 41
+  - localPos: {x: -0.071293525, y: 0.19455087, z: -0.13644794}
+    localNormal: {x: -0.23753601, y: 0.58900195, z: -0.7724334}
+    thickness: 0.8403188
+    spaceIndex: 2
+  - localPos: {x: 0.08296941, y: 0.27780443, z: -0.057726696}
+    localNormal: {x: -0.5375563, y: 0.8358262, z: -0.11148094}
+    thickness: 0.5613525
+    spaceIndex: 2
+  - localPos: {x: 0.19196242, y: 0.28772762, z: -0.015760992}
+    localNormal: {x: 0.41707808, y: 0.6540934, z: -0.63103724}
+    thickness: 0.770816
+    spaceIndex: 2
+  - localPos: {x: -0.09418719, y: 0.4057755, z: 0.04847578}
+    localNormal: {x: -0.9762064, y: 0.21208525, z: -0.045174956}
+    thickness: 0.3381446
+    spaceIndex: 43
+  - localPos: {x: 0.18681775, y: 0.14555843, z: 0.051642373}
+    localNormal: {x: 0.9287918, y: -0.35914758, z: -0.091426164}
+    thickness: 0.93532646
+    spaceIndex: 2
+  - localPos: {x: 0.03942793, y: -0.06713631, z: -0.066175215}
+    localNormal: {x: -0.000002540648, y: -0.98239887, z: -0.18679625}
+    thickness: 0.31976402
+    spaceIndex: 41
+  - localPos: {x: -0.19394857, y: 0.030468816, z: 0.10841981}
+    localNormal: {x: -0.5777895, y: -0.02643845, z: 0.8157575}
+    thickness: 0.69593376
+    spaceIndex: 2
+  - localPos: {x: -0.07841043, y: 0.294288, z: -0.014107111}
+    localNormal: {x: -0.99947137, y: 0.031088978, z: 0.009507898}
+    thickness: 0.36239564
+    spaceIndex: 39
+  - localPos: {x: -0.03994392, y: 0.06865468, z: -0.04755832}
+    localNormal: {x: 0.7189427, y: 0.694479, z: 0.028642803}
+    thickness: 0.12125508
+    spaceIndex: 3
+  - localPos: {x: 0.021759557, y: 0.010148473, z: 0.22337244}
+    localNormal: {x: 0.042486977, y: -0.1744226, z: 0.98375386}
+    thickness: 0.8169508
+    spaceIndex: 2
+  - localPos: {x: -0.034498014, y: 0.22200333, z: -0.053950757}
+    localNormal: {x: -0.013220259, y: 0.13592571, z: -0.9906309}
+    thickness: 0.21708603
+    spaceIndex: 21
+  - localPos: {x: 0.06379438, y: 0.18307447, z: -0.054358426}
+    localNormal: {x: 0.9969888, y: 0.077440664, z: 0.0040282477}
+    thickness: 0.26215804
+    spaceIndex: 40
+  - localPos: {x: 0.12800372, y: 0.02475385, z: 0.010176244}
+    localNormal: {x: 0.99331534, y: 0.087821834, z: 0.074913606}
+    thickness: 0.25047576
+    spaceIndex: 39
+  - localPos: {x: -0.03481581, y: -0.043373387, z: 0.052942205}
+    localNormal: {x: -0.30982852, y: -0.86696607, z: 0.3903544}
+    thickness: 0.06811225
+    spaceIndex: 43
+  - localPos: {x: -0.06692663, y: 0.22576684, z: 0.023520898}
+    localNormal: {x: 0.014177944, y: 0.97671646, z: 0.21406505}
+    thickness: 0.47382346
+    spaceIndex: 0
+  - localPos: {x: 0.012166204, y: 0.089964874, z: -0.07329198}
+    localNormal: {x: 0.014993843, y: 0.12510335, z: -0.9920303}
+    thickness: 0.2959659
+    spaceIndex: 4
+  - localPos: {x: 0.007531451, y: -0.110814236, z: -0.04141232}
+    localNormal: {x: -0.05357378, y: 0.020682417, z: -0.99834967}
+    thickness: 0.18512759
+    spaceIndex: 4
+  - localPos: {x: -0.074205145, y: 0.3322204, z: -0.04532885}
+    localNormal: {x: -0.63203174, y: 0.068513945, z: -0.7719079}
+    thickness: 0.39137924
+    spaceIndex: 43
+  - localPos: {x: 0.043001935, y: 0.050597858, z: -0.031817067}
+    localNormal: {x: 0.9966837, y: 0.07570664, z: 0.02983173}
+    thickness: 0.19661602
+    spaceIndex: 21
+  - localPos: {x: -0.032090757, y: 0.05590762, z: -0.087353475}
+    localNormal: {x: -0.5329677, y: -0.660347, z: -0.529044}
+    thickness: 0.25709605
+    spaceIndex: 38
+  - localPos: {x: -0.017058184, y: 0.3819406, z: 0.023705203}
+    localNormal: {x: -0.042502873, y: 0.06783457, z: 0.996791}
+    thickness: 0.23139946
+    spaceIndex: 40
+  - localPos: {x: -0.08390469, y: 0.03316257, z: 0.045286234}
+    localNormal: {x: -0.9807845, y: 0.19117868, z: -0.03889121}
+    thickness: 0.083515815
+    spaceIndex: 3
+  - localPos: {x: -0.045681868, y: -0.062237818, z: -0.17353576}
+    localNormal: {x: -0.87956387, y: -0.44861105, z: -0.15847936}
+    thickness: 0.3048768
+    spaceIndex: 0
+  - localPos: {x: -0.014661766, y: -0.048233274, z: 0.00566598}
+    localNormal: {x: -0.7889036, y: -0.08404208, z: -0.6087434}
+    thickness: 0.061920468
+    spaceIndex: 23
+  - localPos: {x: -0.19997247, y: 0.25620338, z: -0.034327727}
+    localNormal: {x: -0.33630782, y: 0.4118607, z: -0.8469166}
+    thickness: 0.6487158
+    spaceIndex: 2
+  - localPos: {x: 0.09488178, y: 0.36103234, z: 0.031494442}
+    localNormal: {x: 0.9945569, y: 0.10401645, z: 0.006095641}
+    thickness: 0.3444749
+    spaceIndex: 39
+  - localPos: {x: -0.06769392, y: 0.26820147, z: -0.06727422}
+    localNormal: {x: 0.05834607, y: 0.15103734, z: -0.9868048}
+    thickness: 0.3603901
+    spaceIndex: 43
+  - localPos: {x: 0.0126057975, y: 0.024234662, z: 0.011777296}
+    localNormal: {x: -0.11184746, y: 0.94257075, z: 0.31472296}
+    thickness: 0.12141925
+    spaceIndex: 3
+  - localPos: {x: 0.03416251, y: 0.25366566, z: -0.042743728}
+    localNormal: {x: 0.99436533, y: 0.08931586, z: 0.057100073}
+    thickness: 0.12426869
+    spaceIndex: 4
+  - localPos: {x: 0.011022294, y: 0.21935746, z: -0.070417196}
+    localNormal: {x: 0.037090458, y: 0.14272302, z: -0.98906755}
+    thickness: 0.37581727
+    spaceIndex: 43
+  - localPos: {x: -0.11508365, y: -0.06567231, z: -0.032172415}
+    localNormal: {x: 0.34088466, y: -0.90591305, z: -0.2512357}
+    thickness: 0.4039679
+    spaceIndex: 2
+  - localPos: {x: -0.07179211, y: 0.1197594, z: -0.044419717}
+    localNormal: {x: -0.9957503, y: 0.09147083, z: -0.010694454}
+    thickness: 0.2839653
+    spaceIndex: 40
+  - localPos: {x: -0.062105913, y: 0.31111914, z: -0.060375024}
+    localNormal: {x: 0.05834607, y: 0.15103734, z: -0.9868048}
+    thickness: 0.3462601
+    spaceIndex: 43
+  - localPos: {x: -0.059883416, y: 0.26016137, z: -0.09099037}
+    localNormal: {x: -0.9969593, y: 0.07757115, z: -0.007409524}
+    thickness: 0.2378031
+    spaceIndex: 40
+  - localPos: {x: -0.1504081, y: 0.11398112, z: 0.016295485}
+    localNormal: {x: -0.7827244, y: 0.27404332, z: 0.5587868}
+    thickness: 0.6286957
+    spaceIndex: 0
+  - localPos: {x: -0.024624007, y: 0.45010415, z: 0.08667991}
+    localNormal: {x: -0.084248655, y: 0.5085137, z: 0.8569223}
+    thickness: 0.3308765
+    spaceIndex: 39
+  - localPos: {x: -0.10811489, y: 0.15038915, z: -0.15879928}
+    localNormal: {x: -0.23753601, y: 0.58900195, z: -0.7724334}
+    thickness: 0.64995617
+    spaceIndex: 2
+  - localPos: {x: 0.05654183, y: 0.026938174, z: -0.07782055}
+    localNormal: {x: 0.99436533, y: 0.08931586, z: 0.057100073}
+    thickness: 0.17835717
+    spaceIndex: 4
+  - localPos: {x: 0.037136614, y: -0.03640217, z: 0.002660945}
+    localNormal: {x: 0.017946122, y: -0.8309107, z: -0.55611676}
+    thickness: 0.029134333
+    spaceIndex: 42
+  - localPos: {x: 0.07005779, y: -0.011680953, z: 0.09327207}
+    localNormal: {x: -0.00000015357023, y: -0.10844198, z: 0.9941028}
+    thickness: 0.2343668
+    spaceIndex: 0
+  - localPos: {x: -0.13910161, y: -0.04511209, z: 0.03221424}
+    localNormal: {x: -0.9776205, y: 0.2103672, z: 0.0019939095}
+    thickness: 0.1516761
+    spaceIndex: 3
+  - localPos: {x: 0.03196925, y: -0.005495866, z: -0.00981165}
+    localNormal: {x: -0.0797242, y: -0.95938295, z: -0.27060753}
+    thickness: 0.08031494
+    spaceIndex: 7
+  - localPos: {x: 0.059185173, y: -0.008328833, z: 0.0027527844}
+    localNormal: {x: 0.8235432, y: -0.5664758, z: 0.02970013}
+    thickness: 0.3123606
+    spaceIndex: 38
+  - localPos: {x: -0.043804057, y: 0.07003481, z: 0.015867995}
+    localNormal: {x: 0.7189427, y: 0.694479, z: 0.028642803}
+    thickness: 0.110507816
+    spaceIndex: 3
+  - localPos: {x: 0.08159925, y: -0.040032323, z: -0.08019108}
+    localNormal: {x: -0.32872164, y: -0.9096659, z: -0.2538702}
+    thickness: 0.7888368
+    spaceIndex: 2
+  - localPos: {x: 0.16853446, y: -0.08520958, z: -0.064752504}
+    localNormal: {x: -0.52522624, y: -0.83789843, z: -0.1485384}
+    thickness: 0.17168361
+    spaceIndex: 2
+  - localPos: {x: 0.21804787, y: 0.059637353, z: -0.060737357}
+    localNormal: {x: 0.7769611, y: 0.04555033, z: -0.6278987}
+    thickness: 0.9057322
+    spaceIndex: 2
+  - localPos: {x: -0.12201107, y: 0.31541088, z: 0.14911532}
+    localNormal: {x: -0.2339912, y: 0.23301706, z: 0.94390213}
+    thickness: 0.5121192
+    spaceIndex: 2
+  - localPos: {x: -0.033238076, y: 0.19187447, z: -0.1493229}
+    localNormal: {x: -0.2213724, y: 0.58051425, z: -0.7835799}
+    thickness: 0.85304505
+    spaceIndex: 2
+  - localPos: {x: 0.054086983, y: 0.10507444, z: -0.17604843}
+    localNormal: {x: 0.08134536, y: -0.067077406, z: -0.99442625}
+    thickness: 0.847384
+    spaceIndex: 2
+  - localPos: {x: 0.0907298, y: 0.34475264, z: -0.02613656}
+    localNormal: {x: -0.9139581, y: 0.4035036, z: -0.04319174}
+    thickness: 0.020892367
+    spaceIndex: 2
+  - localPos: {x: 0.011781034, y: 0.36738905, z: 0.10924873}
+    localNormal: {x: 0.03698708, y: 0.0396021, z: 0.9985307}
+    thickness: 0.3255109
+    spaceIndex: 43
+  - localPos: {x: -0.21116342, y: 0.33148548, z: 0.056048363}
+    localNormal: {x: -0.2251562, y: 0.89595395, z: -0.38284627}
+    thickness: 0.77543294
+    spaceIndex: 2
+  - localPos: {x: -0.02483087, y: -0.06418863, z: 0.02219078}
+    localNormal: {x: -0.63958377, y: -0.68974847, z: 0.3393815}
+    thickness: 0.010853342
+    spaceIndex: 3
+  - localPos: {x: 0.043373194, y: -0.08896314, z: 0.041750383}
+    localNormal: {x: 0.1420566, y: -0.8793707, z: -0.45445254}
+    thickness: 0.7877271
+    spaceIndex: 2
+  - localPos: {x: 0.12632795, y: 0.11005853, z: 0.04914044}
+    localNormal: {x: 0.66724133, y: 0.1915778, z: 0.7197826}
+    thickness: 0.653624
+    spaceIndex: 0
+  - localPos: {x: 0.06585827, y: 0.4573291, z: 0.045678515}
+    localNormal: {x: 0.89067966, y: 0.07247993, z: 0.44881645}
+    thickness: 0.011281251
+    spaceIndex: 43
+  - localPos: {x: -0.047242478, y: -0.017694606, z: -0.11228125}
+    localNormal: {x: -0.0000052824616, y: 0.5300025, z: -0.8479962}
+    thickness: 0.20919432
+    spaceIndex: 45
+  - localPos: {x: 0.045189217, y: 0.0023955896, z: 0.038561814}
+    localNormal: {x: -0.013291746, y: -0.9984516, z: -0.054017685}
+    thickness: 0.12950395
+    spaceIndex: 4
+  - localPos: {x: -0.023890391, y: -0.03336223, z: -0.071927965}
+    localNormal: {x: -0.1420567, y: -0.8793707, z: -0.45445254}
+    thickness: 0.7634665
+    spaceIndex: 2
+  - localPos: {x: -0.05524187, y: 0.20342566, z: -0.11385998}
+    localNormal: {x: -0.6642185, y: 0.19059739, z: -0.72283226}
+    thickness: 0.34315258
+    spaceIndex: 40
+  - localPos: {x: 0.07571688, y: 0.029876158, z: 0.058714792}
+    localNormal: {x: 0.98700124, y: -0.114880055, z: -0.11239019}
+    thickness: 0.29412782
+    spaceIndex: 38
+  - localPos: {x: -0.07848971, y: 0.35067213, z: 0.06390115}
+    localNormal: {x: 0.70029294, y: 0.04021405, z: -0.71272206}
+    thickness: 0.032864403
+    spaceIndex: 2
+  - localPos: {x: -0.03050593, y: 0.07272295, z: 0.23408781}
+    localNormal: {x: -0.04247772, y: -0.17439577, z: 0.983759}
+    thickness: 0.8463102
+    spaceIndex: 2
+  - localPos: {x: 0.0145024825, y: -0.0054850434, z: -0.10465024}
+    localNormal: {x: -0.0000037327409, y: 0.5299971, z: -0.84799933}
+    thickness: 0.26987207
+    spaceIndex: 41
+  - localPos: {x: 0.011054906, y: -0.098390706, z: -0.005385481}
+    localNormal: {x: 0.9989543, y: -0.003870504, z: 0.04555616}
+    thickness: 0.08699243
+    spaceIndex: 21
+  - localPos: {x: -0.038439374, y: 0.17251962, z: -0.024546532}
+    localNormal: {x: -0.993407, y: -0.10620761, z: 0.04315652}
+    thickness: 0.1515873
+    spaceIndex: 20
+  - localPos: {x: -0.14919172, y: 0.11479794, z: 0.017598735}
+    localNormal: {x: -0.7827244, y: 0.27404332, z: 0.5587868}
+    thickness: 0.62744486
+    spaceIndex: 0
+  - localPos: {x: 0.00023189749, y: 0.10529694, z: 0.06902358}
+    localNormal: {x: 0.013863329, y: 0.11956801, z: 0.9927291}
+    thickness: 0.28551093
+    spaceIndex: 21
+  - localPos: {x: 0.037972596, y: 0.25943854, z: -0.024768114}
+    localNormal: {x: 0.9753613, y: 0.218032, z: -0.03365189}
+    thickness: 0.034015704
+    spaceIndex: 20
+  - localPos: {x: 0.02575146, y: 0.11781746, z: -0.064598866}
+    localNormal: {x: 0.48147884, y: 0.66310054, z: -0.5731283}
+    thickness: 0.34621775
+    spaceIndex: 38
+  spaces:
   - {fileID: 2829636465347384128}
   - {fileID: 4749504899997263140}
   - {fileID: 5283762409323795617}
@@ -1383,7 +1865,53 @@ MonoBehaviour:
   - {fileID: 8665874949447775670}
   - {fileID: 4012996574815492465}
   - {fileID: 4214672099116115166}
-  bakedCount: 40
+  bakedCount: 160
+--- !u!114 &4790825081769094530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4357080393334123487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b7d8f7b4e99fb5499dee6975e14804c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.GuardTurnStep
+  leadAngle: 35
+  leadFraction: 0.18
+  footLiftHeight: 0.12
+  firstFoot: 0
+  kneeMinFlex: 2
+  kneeMaxFlex: 155
+  hipMaxCone: 70
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  logTurns: 0
+  logLegDiag: 0
+--- !u!114 &8264162719278197238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4357080393334123487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a5388cfd25d44f4896b1bd823ecd12f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.GuardPatrol
+  waypoints: []
+  moveSpeed: 1.4
+  arriveDistance: 0.05
+  midPause: 0.65
+  endPause: 1.3
+  walkClip: Walk_IP
+  idleClipA: Idle_2
+  idleClipB: Idle_3
+  blendTime: 0.2
+  drawGizmos: 1
 --- !u!1 &4501838392818531922
 GameObject:
   m_ObjectHideFlags: 0

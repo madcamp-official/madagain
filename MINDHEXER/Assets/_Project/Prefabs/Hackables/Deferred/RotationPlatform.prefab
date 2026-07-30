@@ -385,6 +385,11 @@ MonoBehaviour:
   flickTime: 0.28
   overshoot: 1.6
   snapAnalog: 0
+  creepStep:
+    stepSize: 0.8333333
+    minInterval: 0.013888889
+    noiseScale: 1
+    maxPendingSteps: 2
   carryRiders: 1
   probeDistance: 0.35
 --- !u!65 &2677833658759491694
@@ -424,6 +429,7 @@ MonoBehaviour:
   controlType: 0
   patternLineCount: 5
   hackRange: 15
+  ignoreRange: 0
   gazeCollider: {fileID: 2677833658759491694}
   glowRenderers:
   - {fileID: 4444431242968544367}
@@ -443,6 +449,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec9931c795ae0d645b09e0c0ea261eb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.ControlAxisGizmo
+  show: 0
   slot0Color: {r: 0.4, g: 1, b: 0.3, a: 1}
   slot1Color: {r: 1, g: 0.6, b: 0.2, a: 1}
   barLength: 3

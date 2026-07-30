@@ -22,14 +22,16 @@ namespace Game.View
     public class MoveIntegrator
     {
         [Header("속도")]
-        [Tooltip("최고 수평 속도(m/s).")]
-        public float maxSpeed = 6f;
+        [Tooltip("최고 수평 속도(m/s). 6 → 8.4 (1.4배).\n" +
+                 "⚠️ 이 값을 바꾸면 가속·감속 시간이 같이 변한다(시간 = maxSpeed / acceleration).\n" +
+                 "  손맛을 유지하려면 acceleration·deceleration도 같은 배율로 올릴 것.")]
+        public float maxSpeed = 8.4f;
 
-        [Tooltip("가속도(m/s²). 0→최고속 걸리는 시간 = maxSpeed / acceleration. 40이면 약 0.15초.")]
-        public float acceleration = 40f;
+        [Tooltip("가속도(m/s²). 0→최고속 걸리는 시간 = maxSpeed / acceleration. 56이면 약 0.15초.")]
+        public float acceleration = 56f;
 
-        [Tooltip("감속도(m/s²). 입력을 놓았을 때. 60이면 최고속→0이 약 0.1초.")]
-        public float deceleration = 60f;
+        [Tooltip("감속도(m/s²). 입력을 놓았을 때. 84면 최고속→0이 약 0.1초.")]
+        public float deceleration = 84f;
 
         [Tooltip("공중에서 가속·감속에 곱하는 배율(1=지상과 동일, 0=공중 조작 불가).")]
         [Range(0f, 1f)] public float airControl = 0.35f;

@@ -73,6 +73,7 @@ MonoBehaviour:
   controlType: 0
   patternLineCount: 0
   hackRange: 15
+  ignoreRange: 0
   gazeCollider: {fileID: 3082333943134537626}
   glowRenderers:
   - {fileID: 3589208702684046812}
@@ -136,8 +137,9 @@ MonoBehaviour:
   allowHold: 1
   allowFlick: 1
   holdStep:
-    stepSize: 0.05
-    minInterval: 0.0833
+    stepSize: 0.008333334
+    minInterval: 0.013888889
+    noiseScale: 1
     maxPendingSteps: 2
   actuator: {fileID: 0}
 --- !u!114 &7491158483383949350

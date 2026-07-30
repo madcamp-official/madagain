@@ -39,9 +39,9 @@ namespace Game.View
         public bool allowFlick = true;
 
         [Header("마일스톤 (홀드 전용 — 6DoF 떨림·튐 차단, §6.2)")]
-        [Tooltip("홀드 신축을 딸깍 단위로 양자화한다. 단위는 스트로크 비율(0~1).\n" +
-                 "스텝 ÷ 간격 = 최대 속도이므로 holdSpeed(0.6)와 간격(0.0833)에서 유도한 0.05가 기본이다.")]
-        public MilestoneStepper holdStep = new MilestoneStepper(0.05f);
+        [Tooltip("홀드 신축에서 컨트롤러 노이즈만 걸러낸다. 단위는 스트로크 비율(0~1). " +
+                 "스텝은 holdSpeed에서 자동 유도된다 — 손으로 넣지 말 것.")]
+        public MilestoneStepper holdStep = new MilestoneStepper();
 
         [Header("대상")]
         [Tooltip("비워두면 자기 자신·자식에서 자동으로 찾는다(모델 프리팹 안에 있는 게 정상).")]
@@ -62,6 +62,8 @@ namespace Game.View
             // 조종이 붙은 이상 Space 미리보기는 입력을 덮어쓰기만 한다. 모델 프리팹에 켜진 채 남아 있어도
             // 조용히 조작이 안 먹는 사고가 나지 않도록 여기서 확실히 끈다.
             _act.debugPreview = false;
+
+            holdStep.SyncTo(holdSpeed);   // 스텝 = 최고속도 × 1프레임 (§MilestoneStepper)
         }
 
         // 시작 상태는 TelescopingActuator.startExtension 하나가 소유한다 — 그 값이 에디터 씬 뷰에도
@@ -82,6 +84,10 @@ namespace Game.View
             if (_drivenFrame == Time.frameCount) return;
             holdStep.Advance(0f, Time.deltaTime);
         }
+
+#if UNITY_EDITOR
+        void OnValidate() => holdStep.SyncTo(holdSpeed);
+#endif
 
         // ── IExternalControl ──────────────────────────────────────────────
 

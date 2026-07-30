@@ -47,8 +47,9 @@ namespace Game.View
         [Tooltip("지형 판정 레이어.")]
         public LayerMask obstacleMask = ~0;
 
-        [Tooltip("착지 후 관성으로 이어받을 최소 속도(m/s). 발동 여부 자체는 '입력'으로 판정한다.")]
-        public float minSpeed = 0.6f;
+        [Tooltip("착지 후 관성으로 이어받을 최소 속도(m/s). 발동 여부 자체는 '입력'으로 판정한다.\n" +
+                 "0.6 → 0.84 (×1.4) — 이동속도와 같은 배율. 최고속 대비 비율을 유지한다.")]
+        public float minSpeed = 0.84f;
 
         [Tooltip("전진이 끊겨도 이 시간(초) 안이면 발동 허용(선입력 손맛).")]
         public float inputBuffer = 0.2f;
@@ -64,38 +65,45 @@ namespace Game.View
         public float safeDrop = 0.6f;
 
         [Tooltip("도약 목표가 없을 때 이 낙차까지는 그냥 떨어지게 둔다. 넘거나 바닥이 없으면 가장자리에서 멈춘다.")]
-        public float maxSafeFall = 2.5f;
+        public float maxSafeFall = 4.5f;
 
         [Header("시선 도약")]
         [Tooltip("도약 목표 검색 반경(m).")]
-        public float jumpSearchRadius = 8f;
+        public float jumpSearchRadius = 10f;
 
         [Tooltip("도약 원뿔 반각(도) — 축은 <b>이동 방향</b>(수평). 시선은 관여하지 않는다(decisions/0004).")]
         public float coneAngle = 25f;
 
         [Tooltip("수평 속도 상한(m/s). 비행 시간 = max(탄도 시간, 거리/이 값) — 먼 도약이 총알처럼 빠르지 않게.")]
-        public float airSpeedCap = 7f;
+        public float airSpeedCap = 9.8f;
 
         [Tooltip("비행 시간 하한(초). 짧은 도약이 순간이동처럼 보이지 않게.")]
-        public float minFlightTime = 0.18f;
+        public float minFlightTime = 0.13f;
 
-        [Tooltip("비행 시간 상한(초). 넘으면 중력을 키워 시간을 줄인다 — 정점·착지점은 그대로.")]
-        public float maxFlightTime = 0.9f;
+        [Tooltip("비행 시간 상한(초). 넘으면 중력을 키워 시간을 줄인다 — 정점·착지점은 그대로.\n\n" +
+                 "★ 이 값은 '도달 범위'가 아니라 사실상 <b>중력</b>이다. 중력이 시간에서 역산되기 때문:\n" +
+                 "    total = clamp(거리 / airSpeedCap, minFlightTime, 이 값)\n" +
+                 "    g     = (k / total)²      k = √(2·rise) + √(2·fall)\n" +
+                 "  올리면 긴 도약이 그만큼 늘어지고 g가 제곱으로 약해진다 — 1.3으로 올렸을 때\n" +
+                 "  0.9 대비 g가 (0.9/1.3)² = 0.48배가 되어 <b>달 중력처럼 둥실거렸다</b>(실제로 겪음).\n" +
+                 "  도달 높이·낙차를 늘리고 싶으면 maxMantleUp·maxSafeFall·maxDropTarget을 쓸 것.\n" +
+                 "  ⚠️ 낮출수록 먼 도약이 빠르고 낮은 포물선이 되어 PathClear가 천장·기둥에 걸릴 수 있다.")]
+        public float maxFlightTime = 0.64f;
 
         [Tooltip("이 높이(m)까지는 한 번의 도약으로 바로 올라선다.")]
         public float maxDirectUp = 1.1f;
 
         [Tooltip("이 높이(m)까지는 도약+잡고 올라가기로 처리. 이상이면 도달 불가.")]
-        public float maxMantleUp = 2.0f;
+        public float maxMantleUp = 4.0f;
 
         [Tooltip("목표가 발보다 이보다 많이 낮으면 후보에서 제외(그건 추락). 오르기(2m)와 비대칭인 게 정상이지만 과하면 아래가 너무 헐거워진다.")]
-        public float maxDropTarget = 4f;
+        public float maxDropTarget = 6f;
 
         [Tooltip("모서리 위 여유 높이(m).")]
         public float clearance = 0.35f;
 
         [Tooltip("궤적 중간 충돌 검사 샘플 수. 0이면 검사 안 함(지형 관통 허용 — 퍼즐 스킵 위험).")]
-        [Range(0, 16)] public int pathSamples = 8;
+        [Range(0, 24)] public int pathSamples = 12;
 
         [Tooltip("수평 경로가 진행 방향으로 치우치는 정도(0=직선, 대각선 휘어짐).")]
         [Range(0f, 0.8f)] public float curveBias = 0.35f;
@@ -114,6 +122,16 @@ namespace Game.View
         [Tooltip("이 높이(m) 이하의 낮은 단차는 방향 판정을 건너뛴다 — 쳐다보지 않아도, 옆·뒤로 움직여도 넘어간다.")]
         public float lowStepHeight = 0.7f;
 
+        [Tooltip("높은 단차는 <b>보고 있어야</b> 오른다. 낮은 단차는 영향 없다.\n" +
+                 "★ ADR-0004과 충돌하지 않는다 — 그 결정은 TryGazeJump의 원뿔 축 얘기이고,\n" +
+                 "  그쪽은 통과하면 낙하 보호(EdgeStop)를 건너뛰기 때문에 시선이 위험했다.\n" +
+                 "  걸어서 오르기는 보호를 건너뛰지 않으므로 같은 함정이 없다.")]
+        public bool highStepNeedsLook = true;
+
+        [Tooltip("높은 단차를 오를 때 요구하는 시점 원뿔 반각(도).\n" +
+                 "수평(yaw)만 본다 — 고개를 들든 숙이든 판정이 흔들리지 않게.")]
+        public float highStepLookCone = 40f;
+
         [Header("잡고 올라가기(맨틀)")]
         [Tooltip("팔 길이(m) — 매달렸을 때 눈이 모서리에서 이만큼 아래.")]
         public float armLength = 0.55f;
@@ -121,10 +139,11 @@ namespace Game.View
         [Tooltip("모서리가 이 거리(m) 안이면 도약을 건너뛰고 선 자리에서 바로 잡는다. 0이면 항상 도약으로 붙는다.")]
         public float directLatchRange = 1f;
 
-        public float pullDurationMin = 0.25f;
-        public float pullDurationMax = 0.45f;
+        // 잡고 올라가기 시간도 ÷1.4 — 나머지가 1.4배 빨라졌는데 여기만 그대로면 매달린 동안만 늘어진다.
+        public float pullDurationMin = 0.18f;
+        public float pullDurationMax = 0.32f;
         [Tooltip("모서리를 넘어 올라서는 시간(초). 이 구간에서 발이 모서리 아래에서 윗면까지 한 번에 올라오므로 너무 짧으면 확 튄다.")]
-        public float overDuration = 0.28f;
+        public float overDuration = 0.2f;
 
         [Tooltip("당김 중 좌우 교차 기울임 빈도(Hz) — 교차 횟수 = 당김 시간 × 이 값.")]
         public float swayFrequency = 3f;
@@ -133,10 +152,10 @@ namespace Game.View
         public float swayAmplitude = 2.5f;
 
         [Tooltip("동작 종료 시 전방 감쇠 임펄스(m/s) — 올라서자마자 달려나가게.")]
-        public float exitBoost = 4.5f;
+        public float exitBoost = 6.3f;
 
         [Tooltip("종료 임펄스 지속(초). 짧게 '탁' 밀고 즉시 일반 조작으로 넘어간다.")]
-        public float exitBoostDuration = 0.08f;
+        public float exitBoostDuration = 0.06f;
 
         [Tooltip("이 거리(m) 이하의 짧은 도약은 연출을 안 넣는다. 그 위로는 feelFullTravel까지 선형으로 커진다 " +
                  "— 이진 컷오프면 경계에서 '1.19m는 무연출, 1.21m는 풀연출'로 튄다.")]
@@ -452,6 +471,26 @@ namespace Game.View
 
         // ── 걸어서 오르기 ─────────────────────────────────────────────────
 
+        Camera _lookCam;
+
+        /// <summary>
+        /// 모서리가 시점 원뿔 안에 있는가. 수평(yaw)만 본다 — 고개를 들든 숙이든 흔들리지 않게.
+        /// <para>시점을 못 찾으면 <b>막지 않는다</b>(true). 카메라를 못 찾았다는 이유로
+        /// 이동이 통째로 잠기면 원인을 찾기 어렵다.</para>
+        /// </summary>
+        bool WithinLookCone(Vector3 flatTo, float d)
+        {
+            if (d <= 1e-3f) return true;
+            if (_lookCam == null) _lookCam = Camera.main;
+            if (_lookCam == null) return true;
+
+            Vector3 look = _lookCam.transform.forward; look.y = 0f;
+            if (look.sqrMagnitude < 1e-6f) return true;
+            look.Normalize();
+
+            return Vector3.Dot(flatTo / d, look) >= Mathf.Cos(highStepLookCone * Mathf.Deg2Rad);
+        }
+
         void TryWalkUp(Vector3 dir)
         {
             Vector3 feet = Feet;
@@ -489,8 +528,19 @@ namespace Game.View
 
                 // 낮은 단차는 방향 판정을 건너뛴다 — 걷다 걸리는 턱까지 "정면으로 봐야" 넘어가면 답답하다.
                 // 높은 것에만 전방 판정을 걸어 등 뒤 모서리로 끌려가는 것을 막는다.
-                if (h > lowStepHeight && d > 1e-3f && Vector3.Dot(flatTo / d, dir) < cosFwd)
-                { rejDir++; continue; }
+                if (h > lowStepHeight)
+                {
+                    if (d > 1e-3f && Vector3.Dot(flatTo / d, dir) < cosFwd) { rejDir++; continue; }
+
+                    // ★ 그리고 높은 단차는 <b>보고 있어야</b> 오른다.
+                    //   이동 방향 판정과 AND다 — OR로 하면 ADR-0004 시도 2와 같은 구멍이 생긴다.
+                    if (highStepNeedsLook && !WithinLookCone(flatTo, d))
+                    {
+                        rejDir++;
+                        if (logDecisions) Debug.Log($"[Climb] 거부 — 시점 밖 (높이 {h:F2}m) @{ledge.name}");
+                        continue;
+                    }
+                }
                 if (BlockedAt(g.landingFeet + Vector3.up * 0.03f, ledge.Volume)) { rejBlocked++; continue; }
 
                 if (d < bestDist) { bestDist = d; bestGrab = g; bestVolume = ledge.Volume; found = true; }

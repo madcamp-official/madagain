@@ -79,6 +79,22 @@ namespace Game.View
         public Vector3 idleEulerL = new Vector3(20f, 30f, 0f);
         [Tooltip("기본 자세에서의 IK 가중치. 1이면 완전히 이 자세, 0이면 모델 쉬는 자세.")]
         [Range(0f, 1f)] public float idleWeight = 1f;
+
+        // ★ 팔꿈치는 구도의 절반이다. 파츠를 팔꿈치 아래만 남겼으므로 화면에 보이는 것은
+        //   전완과 손뿐이고, 그 전완이 <b>어느 쪽에서 어떤 각도로 들어오는지</b>는 손 위치가
+        //   아니라 팔꿈치 위치가 정한다. 이전에는 이 값이 아예 없어 씬의 ElbowPole 오브젝트가
+        //   있는 자리로 고정이었다 — 평상시 구도를 통제할 수단이 없었다.
+        [Tooltip("평상시 오른쪽 팔꿈치가 향할 지점(카메라 기준). 전완이 화면에 들어오는 각도를 정한다.")]
+        public Vector3 idleElbowR = new Vector3(0.45f, -0.55f, 0.05f);
+        [Tooltip("왼쪽 팔꿈치.")]
+        public Vector3 idleElbowL = new Vector3(-0.45f, -0.55f, 0.05f);
+
+        [Header("평상시 자세 — 씬에서 직접 잡기")]
+        // 슬라이더 12개를 더듬는 것보다 마우스로 끄는 편이 빠르다. 켜면 이 스크립트가
+        // 타깃·폴 트랜스폼을 놓아주므로 씬 뷰 기즈모로 끌 수 있고, Game 뷰가 실시간으로 따라온다.
+        // 끈 뒤 CaptureIdleFromScene()을 부르면 끌어놓은 자세가 위 값들로 회수된다.
+        [Tooltip("켜면 평상시 손·팔꿈치 타깃을 이 스크립트가 덮어쓰지 않는다. 씬 뷰에서 직접 끌 수 있다.")]
+        public bool handleMode;
         [Tooltip("기본 자세 손가락의 <b>공통</b> 말림. 아래 손가락별 값이 여기에 더해진다.")]
         [Range(0f, 1f)] public float idleGripR = 0.15f;
         [Range(0f, 1f)] public float idleGripL = 0.15f;
@@ -132,6 +148,10 @@ namespace Game.View
         public Vector3 handEulerL = Vector3.zero;
 
         [Header("등반 손 절차 동작")]
+        [Tooltip("켜면 등반 중 손가락을 절차적으로 쥔다. 끄면 평상시 손 모양이 그대로 유지된다.\n" +
+                 "기본은 꺼짐 — 등반은 폈다/쥐었다 둘뿐이라 연속 계산이 값어치가 없고, " +
+                 "손 내리는 구간에서 손가락이 활짝 펴졌다 돌아오는 튐만 생긴다.")]
+        public bool climbDrivesFingers;
         [Tooltip("엄지는 반대편에서 물리므로 덜 감긴다.")]
         [Range(0f, 1f)] public float thumbCurlScale = 0.7f;
         [Tooltip("편 손일 때 손가락이 벌어지는 정도. 쥘수록 0으로 모인다.")]
@@ -141,9 +161,186 @@ namespace Game.View
         [Tooltip("잡는 순간 손목이 비틀리는 각도(°).")]
         [Range(0f, 40f)] public float climbWristRollDeg = 8f;
 
+        // ★ 등반 팔꿈치는 <b>모서리 기준</b>이다(카메라 기준이 아니다).
+        //   등반 중 손은 모서리에 월드 고정인데 팔꿈치만 카메라를 따라가면, 고개를 돌릴 때마다
+        //   팔꿈치가 헤엄쳐 팔이 뒤틀린다. Show()가 한 번 잡아 고정하는 모서리 기저에 매달아야
+        //   월드에서 안정된다.
+        [Tooltip("등반 중 팔꿈치 위치(모서리 기준). x=바깥쪽, y=위, z=모서리에서 몸 쪽으로.")]
+        public Vector3 climbElbowLocal = new Vector3(0.32f, -0.40f, -0.30f);
+
+        [Header("손 절차 동작 전체 세기")]
+        // MotionFeel의 masterScale은 <b>카메라</b> 연출이다(딥·킥·롤·FOV). 이건 <b>손</b>이 스스로
+        // 움직이는 양이다 — 공중 파킹과 손가락 미세 동작. 둘은 계통이 달라 한쪽 슬라이더로
+        // 다른 쪽이 줄지 않는다.
+        [Tooltip("손이 스스로 움직이는 양 전체. 0 = 손이 시점에 완전히 고정된다.")]
+        [Range(0f, 1f)] public float handMotionScale = 1f;
+
+        [Header("손가락 미세 동작 (평상시)")]
+        // ★ 위상을 손가락마다 흩는 것이 전부다. 다섯이 같은 위상으로 움직이면 손이 통째로
+        //   움찔거려 기계처럼 보인다. 어긋나게 두면 서로 스치듯 움직여 살아 있는 손으로 읽힌다.
+        //   벌림(spread)은 건드리지 않는다 — 손가락을 옆으로 비트는 회전이라 아주 작은 값도 눈에 띈다.
+        [Tooltip("떨림 진폭(말림 단위). 0.02면 약 1.4°. 0이면 끔.")]
+        [Range(0f, 0.1f)] public float fingerJitterAmp = 0.02f;
+        [Tooltip("떨림 주기(Hz). 손가락마다 ±30% 어긋난다.")]
+        [Range(0.05f, 6f)] public float fingerJitterHz = 0.55f;
+
+        [Tooltip("호흡 진폭(말림 단위). 다섯이 느슨하게 함께 움직인다.")]
+        [Range(0f, 0.1f)] public float fingerBreathAmp = 0.015f;
+        [Tooltip("호흡 주기(Hz). 0.05면 20초에 한 번.")]
+        [Range(0.01f, 1f)] public float fingerBreathHz = 0.05f;
+
+        [Tooltip("정면으로 이동할 때 추가로 구부리는 양. 뒤·옆 이동에는 안 걸린다.")]
+        [Range(0f, 0.2f)] public float fingerForwardCurl = 0.03f;
+        [Tooltip("이 속도(m/s)에서 추가 말림이 최대가 된다.")]
+        public float fingerForwardRefSpeed = 4f;
+        [Tooltip("추가 말림이 따라붙는 시간(초). 작으면 걸음마다 움찔한다.")]
+        [Range(0f, 1f)] public float fingerForwardSmooth = 0.25f;
+
+        [Header("걷기 흔들림 — 접지 + 이동 중일 때만")]
+        // ★ 공중 파킹과 <b>따로</b> 둔다. 원래는 접지 판정이 깜빡이면서 평상시↔park 블렌드가
+        //   덜컹거려 <b>우연히</b> 생긴 흔들림이었다. 마음에 든다고 하셔서 남기되, 우연을 걷어내고
+        //   전용 기구로 만든다. 같은 기구를 공유하면 흔들림을 줄일 때 점프에서 손이 내려가는
+        //   깊이까지 같이 줄어든다 — 그래서 분리가 필요하다.
+        [Tooltip("좌우 진폭(m). 걸음 주기로 왕복한다.")]
+        [Range(0f, 0.15f)] public float walkSwayX = 0.02f;
+
+        [Tooltip("상하 진폭(m). 좌우의 <b>두 배 빠르게</b> 오르내린다 — 한 걸음마다 한 번 꺼진다.")]
+        [Range(0f, 0.15f)] public float walkSwayY = 0.012f;
+
+        [Tooltip("걸음 주기(Hz). 좌우 기준이고 상하는 이것의 2배로 돈다.")]
+        [Range(0.2f, 3f)] public float walkSwayHz = 1.1f;
+
+        [Tooltip("살짝 기울이는 각도(°). 0이면 기울이지 않는다.")]
+        [Range(0f, 6f)] public float walkSwayRollDeg = 1.2f;
+
+        [Tooltip("이 속도(m/s)에서 진폭이 최대가 된다.")]
+        public float walkSwayRefSpeed = 4f;
+
+        [Tooltip("멈추고 출발할 때 진폭이 붙고 잦아드는 시간(초).")]
+        [Range(0f, 1f)] public float walkSwaySmooth = 0.18f;
+
+        [Header("공중 파킹 — 점프·낙하 중 손을 내린다")]
+        // ★ 등반 상태 기계와 <b>별개</b>로 둔다. 상태 기계는 Show()를 기다리며 park에서 멈출 수 있어,
+        //   점프했다가 등반이 아니었던 경우 손이 <b>공중에서 그대로 굳는다</b>(실제 증상).
+        //   접지 여부라는 <b>연속 입력</b>으로 굴리는 블렌드는 원리적으로 멈출 수 없다 —
+        //   땅에 닿으면 반드시 0으로 돌아온다.
+        [Tooltip("공중에서 손을 park 쪽으로 얼마나 내릴지. 0이면 안 내린다.")]
+        [Range(0f, 1f)] public float airParkAmount = 1f;
+
+        [Tooltip("내려가고 올라오는 데 걸리는 시간(초). 크면 느긋하게 따라온다.")]
+        [Range(0f, 0.6f)] public float airParkSmooth = 0.12f;
+
+        // ★ Grounded를 <b>그대로 읽으면 안 된다.</b> 걸을 때 접지 판정이 프레임마다 깜빡여
+        //   손이 평상시↔park 사이를 계속 오간다(실측: 카메라 기준 84mm 좌우 진동).
+        //   이 프로젝트에서 이미 겪은 함정이다 — MotionFeel.landMinSpeed 주석 참조.
+        //   <b>비대칭</b>으로 둔다: 공중 판정에는 지연을 두고, 착지 복귀는 즉시. 늦게 내려가는 것은
+        //   눈에 안 띄지만 늦게 올라오는 것은 손이 굼떠 보인다.
+        [Tooltip("체공이 이 시간(초)을 넘으면 손을 내린다. 낮은 단차는 체공이 짧아 안 내려가고, " +
+                 "낮아도 멀리 뛰는 점프는 체공이 길어 내려간다.")]
+        [Range(0f, 0.5f)] public float airParkDelay = 0.10f;
+
+        /// <summary>
+        /// 파킹 중의 IK 가중치. <b>목표만 옮기면 안 된다</b> — 가중치가 낮으면 손이 목표를 그만큼만
+        /// 따라간다. 실제로 <c>idleWeight = 0.10</c>인 상태에서 목표를 43cm 내렸는데 손은 4cm만
+        /// 움직여, "점프해도 손이 안 내려간다"로 보였다.
+        ///
+        /// <para>평상시 가중치는 사용자가 잡은 구도(모델 쉬는 자세에 가깝게)라 건드리지 않고,
+        /// <b>파킹으로 갈수록 1로 올린다</b>. 손이 화면 밖으로 나가는 구간이라 자세가 바뀌어도 안 보인다.</para>
+        /// </summary>
+        float ParkWeight => Mathf.Lerp(idleWeight, 1f, _airBlend);
+
+        // ── 프레임 단위 기록기 ────────────────────────────────────────────
+        // MCP 왕복이 프레임보다 훨씬 느려(호출 사이 수백 프레임) 점프처럼 짧은 사건은 표본으로
+        // 못 잡는다. 매 프레임 링 버퍼에 남겨 두고 나중에 통째로 덤프한다.
+        [Tooltip("켜면 매 프레임 상태를 기록한다. DebugDump()로 콘솔에 쏟는다.")]
+        public bool debugRecord;
+
+        struct Rec { public float t, air, blend, w, handX, handY, tgtY, sway, spd; public Vector3 handEul, tgtEul; public bool grd; public Phase ph; }
+        // 30초분. 5초로는 부족했다 — 사용자가 조작을 마치고 창을 옮겨 알려 줄 때까지의 공백에
+        // 정작 필요한 구간이 밀려난다.
+        Rec[] _rec = new Rec[1800];
+        int _recHead, _recCount;
+
+        void Record()
+        {
+            if (!debugRecord) return;
+            var cam = _cam != null ? _cam.transform : transform;
+            var r = new Rec {
+                t = Time.time, grd = _fppRef == null || _fppRef.Grounded,
+                air = _airTime, blend = _airBlend, ph = _phase, sway = _swayOffset.x,
+                w = handIkR != null ? handIkR.weight : -1f,
+                handX = handIkR != null && handIkR.end != null ? cam.InverseTransformPoint(handIkR.end.position).x : 0f,
+                handY = handIkR != null && handIkR.end != null ? cam.InverseTransformPoint(handIkR.end.position).y : 0f,
+                tgtY = handIkR != null && handIkR.target != null ? cam.InverseTransformPoint(handIkR.target.position).y : 0f,
+            };
+            if (_fppRef != null && _fppRef.Controller != null)
+            { var vv = _fppRef.Controller.velocity; vv.y = 0f; r.spd = vv.magnitude; }
+            if (handIkR != null)
+            {
+                if (handIkR.end != null)
+                    r.handEul = (Quaternion.Inverse(cam.rotation) * handIkR.end.rotation).eulerAngles;
+                if (handIkR.target != null)
+                    r.tgtEul = (Quaternion.Inverse(cam.rotation) * handIkR.target.rotation).eulerAngles;
+            }
+            _rec[_recHead] = r;
+            _recHead = (_recHead + 1) % _rec.Length;
+            if (_recCount < _rec.Length) _recCount++;
+        }
+
+        /// <summary>기록을 콘솔에 쏟는다. 한 줄에 한 프레임.</summary>
+        [ContextMenu("기록 덤프")]
+        public void DebugDump()
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("[MantleRig] t/단계/weight/손XY/목표Y/손회전/목표회전");
+            int start = (_recHead - _recCount + _rec.Length) % _rec.Length;
+            // ★ 등반이 있었으면 그 구간과 그 뒤 2초만 본다 — "등반 직후 손이 이상하다"가 주제다.
+            //   등반이 없었으면 움직인 구간만 본다.
+            float climbEnd = -1f;
+            for (int i = 0; i < _recCount; i++)
+            {
+                var r = _rec[(start + i) % _rec.Length];
+                if (r.ph != Phase.Idle) climbEnd = r.t;
+            }
+            int shown = 0;
+            for (int i = 0; i < _recCount; i++)
+            {
+                var r = _rec[(start + i) % _rec.Length];
+                bool keep = climbEnd > 0f
+                          ? (r.ph != Phase.Idle || (r.t > climbEnd && r.t <= climbEnd + 2f))
+                          : (r.spd >= 0.05f || !r.grd || r.blend >= 0.01f);
+                if (!keep) continue;
+                sb.AppendLine($"{r.t:0.00} {r.ph} w{r.w:0.00} ({r.handX:0.00},{r.handY:0.00}) tY{r.tgtY:0.00} " +
+                              $"손({r.handEul.x:0},{r.handEul.y:0},{r.handEul.z:0}) 목표({r.tgtEul.x:0},{r.tgtEul.y:0},{r.tgtEul.z:0})");
+                shown++;
+            }
+            sb.AppendLine(climbEnd > 0f
+                ? $"— 등반 구간 + 이후 2초, {shown}줄 (등반 종료 t={climbEnd:0.00})"
+                : $"— 등반 없음. 움직인 {shown}줄 / 전체 {_recCount}프레임");
+            Debug.Log(sb.ToString());
+        }
+
+        /// <summary>진단용 — 지금 얼마나 떠 있었나(초). F6 패널이 읽는다.</summary>
+        public float DebugAirTime => _airTime;
+        /// <summary>진단용 — 지금 손이 park 쪽으로 얼마나 가 있나(0~1).</summary>
+        public float DebugAirBlend => _airBlend;
+
+        // 수직 속도를 보조 신호로 쓰던 방식은 폐기했다 — 낮게 멀리 뛰는 점프는 수직 속도가 작아
+        // 높이·속도 어느 쪽으로 재도 놓친다. 체공시간 하나로만 판정한다.
+
+        [Tooltip("예고(Prepare)만 받고 Show가 안 올 때 park에서 기다리는 상한(초). " +
+                 "넘으면 등반이 아니었다고 보고 스스로 복귀한다 — 없으면 영원히 기다린다.")]
+        [Range(0.1f, 3f)] public float prepareWaitMax = 0.8f;
+
+        [Header("디버그 — F7 등반 조정 패널이 쓴다")]
+        [Tooltip("켜면 단계가 자동으로 넘어가지 않는다. 0.26초짜리 자세를 눈으로 볼 수 있게 멈춰 세운다.")]
+        public bool debugFreeze;
+
         [Header("손가락")]
+        // 0.85는 과했다 — maxCurlDeg 70°에서 마디마다 59.5°, 합 170°는 주먹을 넘어 손바닥을 파고든다.
+        // 턱을 <b>걸어 쥐는</b> 손은 그렇게까지 안 말린다. 0.6이면 마디당 42°다.
         [Tooltip("모서리를 쥐는 세기(0=편 손, 1=꽉 쥠). 블렌드 속도는 FingerPoser.sustainSpeed가 맡는다.")]
-        [Range(0f, 1f)] public float gripAmount = 0.85f;
+        [Range(0f, 1f)] public float gripAmount = 0.6f;
 
         [Tooltip("뻗기 진행률이 이 값을 넘으면 쥐기 시작. 늦게 쥘수록 '닿고 나서 쥔다'로 읽힌다.")]
         [Range(0f, 1f)] public float gripCloseAt = 0.6f;
@@ -173,6 +370,11 @@ namespace Game.View
         bool  _resolved, _usingIk;
         bool  _hasAnchors;                 // Show가 와서 앵커·기저가 유효한가
         Transform _idleAnchorR, _idleAnchorL;   // 기본 자세 IK 타깃(카메라 자식, 저장 안 함)
+        Transform _idleElbowR, _idleElbowL;     // 팔꿈치 폴 앵커(평상시·등반 공용, 두는 자리만 다르다)
+        float _airBlend;                        // 0 = 평상시 자세, 1 = park. 접지 상태로 굴러간다
+        float _airTime;                         // 연속으로 안 닿아 있은 시간(접지 깜빡임 필터)
+        float _prepWait;                        // 예고 후 Show를 기다린 시간
+        FirstPersonPlayer _fppRef;
         float _entryScale = 1f;            // 진입 압축 배율(1 = 정상 속도)
 
         // 압축이 적용된 실제 재생 시간
@@ -214,6 +416,7 @@ namespace Game.View
             CaptureBaseWeights();
             _phase = Phase.Lowering;
             _t = 0f;
+            _prepWait = 0f;
             _prepared = true;
             _entryScale = 1f;      // 여유가 있으므로 정상 속도
             if (logPhase) Debug.Log("[MantleRig] Prepare — 기본손 내리기 시작");
@@ -243,6 +446,7 @@ namespace Game.View
             {
                 // 예고를 받아 이미 내리는 중(대개 다 내려간 상태). 정상 속도로 이어간다.
                 _prepared = false;
+                _prepWait = 0f;
                 if (logPhase) Debug.Log("[MantleRig] Show — 예고 있었음, 정상 속도");
             }
             else
@@ -290,6 +494,7 @@ namespace Game.View
         void Update()
         {
             if (_phase == Phase.Idle) return;
+            if (debugFreeze) return;        // 단계 진행만 멈춘다 — LateUpdate의 자세 적용은 계속 돈다
             float dt = Time.deltaTime;
             _t += dt;
 
@@ -298,7 +503,20 @@ namespace Game.View
                 case Phase.Lowering:
                     if (_t < LowerDur) break;
                     // 예고만 받고 아직 Show가 안 왔으면 park에서 <b>대기</b>한다 — 잡을 곳을 모르므로 뻗을 수 없다.
-                    if (_prepared) { _t = LowerDur; break; }
+                    // ★ 단 무한히 기다리면 안 된다. 도약했다가 등반이 아니었고 Hide도 안 오는 경우
+                    //   손이 공중에서 그대로 굳는다(실제 증상). 상한을 넘으면 스스로 복귀한다.
+                    if (_prepared)
+                    {
+                        _t = LowerDur;
+                        _prepWait += dt;
+                        if (_prepWait >= prepareWaitMax)
+                        {
+                            _prepared = false; _prepWait = 0f;
+                            _phase = Phase.Raising; _t = 0f;
+                            if (logPhase) Debug.Log("[MantleRig] 예고 대기 상한 초과 — 등반 아님으로 보고 복귀");
+                        }
+                        break;
+                    }
                     _phase = Phase.Reaching; _t = 0f; Log();
                     break;
 
@@ -322,7 +540,8 @@ namespace Game.View
 
         void LateUpdate()
         {
-            if (_phase == Phase.Idle) { ApplyIdlePose(); return; }
+            if (_phase == Phase.Idle) { ApplyIdlePose(); Record(); return; }
+            Record();
 
             if (!_usingIk) { PlaceCapsules(); return; }
 
@@ -385,12 +604,25 @@ namespace Game.View
             if (handIkR != null && handIkR.target != null) handIkR.target.SetPositionAndRotation(posR, rotR * WristFlex(grip, true));
             if (handIkL != null && handIkL.target != null) handIkL.target.SetPositionAndRotation(posL, rotL * WristFlex(grip, false));
 
-            // 손가락은 목표값과 시점만 준다 — 스무딩은 FingerPoser.sustainSpeed가 단독 소유한다(§3 규칙2).
-            if (fingerR != null) fingerR.SetSustain(grip);
-            if (fingerL != null) fingerL.SetSustain(grip);
+            PlaceClimbElbows(posR, posL);
 
-            // 다섯 손가락이 동시에 같은 양으로 감기면 집게처럼 보인다 — 시차를 준다.
-            ApplyClimbHands(grip);
+            // ★ 기본값은 <b>손가락을 안 건드리는 것</b>이다 — 평상시 손 모양이 등반 내내 유지된다.
+            //
+            // <para>절차적 쥐기는 "쥐는 세기가 연속으로 변할 때" 값어치가 있는데, 등반은 사실상
+            // 폈다/쥐었다 둘뿐이다. 연속 변화가 필요 없는 곳에 연속 계산을 넣는 바람에 굽는 축·
+            // 마디 비율·시차를 전부 추측해야 했고, 그때마다 어긋났다.</para>
+            //
+            // <para>게다가 첫 단계 Lowering은 grip이 0이라, 켜 두면 손을 내리는 동안 손가락이
+            // <b>활짝 펴졌다가</b> 다시 쥔다 — 평상시의 느슨한 손에서 튄다. 안 건드리면 그 튐이
+            // 원리적으로 없다. 등반은 0.26초이고 손은 화면 구석에서 반쯤 잘려 보인다.</para>
+            if (climbDrivesFingers)
+            {
+                // 손가락은 목표값과 시점만 준다 — 스무딩은 FingerPoser.sustainSpeed가 단독 소유한다(§3 규칙2).
+                if (fingerR != null) fingerR.SetSustain(grip);
+                if (fingerL != null) fingerL.SetSustain(grip);
+                // 다섯 손가락이 동시에 같은 양으로 감기면 집게처럼 보인다 — 시차를 준다.
+                ApplyClimbHands(grip);
+            }
         }
 
         void ApplyWeights(float wR, float wL)
@@ -408,8 +640,11 @@ namespace Game.View
         void RestoreWeights()
         {
             ApplyWeights(_baseWeightR, _baseWeightL);
-            if (fingerR != null) fingerR.SetSustain(0f);
-            if (fingerL != null) fingerL.SetSustain(0f);
+
+            // ★ 손가락 sustain을 0으로 내리지 않는다. 평상시 자세가 곧바로 이어받아
+            //   SetSustain(idleGripR)을 다시 넣는데, 그 사이에 0을 한 번 찍으면 sustainSpeed(8/s)를
+            //   타고 손가락이 <b>잠깐 펴졌다 다시 말린다</b> — 등반이 끝나는 바로 그 순간에.
+            //   등반이 손가락을 건드리지 않게 된 뒤로는 지울 잔재도 없다.
         }
 
         /// <summary>양 끝이 부드러운 smoothstep. 조절할 것은 시간이지 곡선 모양이 아니다(§4.5).</summary>
@@ -448,36 +683,254 @@ namespace Game.View
 
             // 등반 단계와 <b>같은 방식</b>으로 기존 타깃을 옮긴다(§338행). 타깃이 비어 있을 때만
             // 앵커를 만든다 — 씬에서 지정해 둔 타깃을 덮어쓰면 다른 시스템이 같이 망가진다.
+            EnsureElbowAnchors(t);
+
+            // 공중이면 park 쪽으로, 접지면 평상시 쪽으로 지수 감쇠로 굴러간다.
+            // 목표가 접지 상태에서 나오므로 땅에 닿는 순간 반드시 0으로 되돌아온다 — 굳을 수 없다.
+            if (_fppRef == null) _fppRef = GetComponent<FirstPersonPlayer>();
+            // 접지 깜빡임 제거 — 닿으면 즉시 0으로, 떨어지면 airParkDelay만큼 버틴 뒤에야 공중으로 본다.
+            // ★ 판정 기준은 <b>체공시간</b> 하나다(사용자 지시).
+            //   높이로 재면 "낮지만 멀리 뛰는 점프"를 놓치고, 수직 속도로 재도 같은 문제가 생긴다.
+            //   낮은 단차는 체공이 짧고 멀리 뛰는 점프는 낮아도 체공이 길다 — 둘을 가르는 것은 시간이다.
+            bool grounded = _fppRef == null || _fppRef.Grounded;
+            _airTime = grounded ? 0f : _airTime + Time.deltaTime;
+            float want = _airTime > airParkDelay ? airParkAmount * handMotionScale : 0f;
+            _airBlend = airParkSmooth > 1e-4f
+                      ? Mathf.Lerp(_airBlend, want, 1f - Mathf.Exp(-Time.deltaTime / airParkSmooth))
+                      : want;
+
+            Vector3 posR = Vector3.Lerp(idleLocalR, parkLocalR, _airBlend);
+            Vector3 posL = Vector3.Lerp(idleLocalL, parkLocalL, _airBlend);
+            Quaternion rotR = Quaternion.Slerp(Quaternion.Euler(idleEulerR), Quaternion.Euler(parkEulerR), _airBlend);
+            Quaternion rotL = Quaternion.Slerp(Quaternion.Euler(idleEulerL), Quaternion.Euler(parkEulerL), _airBlend);
+
+            // 걷기 흔들림은 그 위에 <b>더한다</b>. 공중에서는 진폭이 0으로 잦아들므로
+            // 파킹과 겹쳐도 서로 싸우지 않는다.
+            UpdateWalkSway();
+            posR += _swayOffset; posL += _swayOffset;
+            if (Mathf.Abs(_swayRoll) > 0.001f)
+            {
+                Quaternion r = Quaternion.Euler(0f, 0f, _swayRoll);
+                rotR = r * rotR; rotL = r * rotL;
+            }
+
             if (handIkR != null)
             {
                 if (handIkR.target == null) { EnsureIdleAnchor(ref _idleAnchorR, "[IdleHandR]", t); handIkR.target = _idleAnchorR; }
-                handIkR.target.SetPositionAndRotation(t.TransformPoint(idleLocalR),
-                                                      t.rotation * Quaternion.Euler(idleEulerR));
-                handIkR.weight = idleWeight;
+                // handleMode에서는 사람이 트랜스폼의 주인이다 — 덮어쓰면 끌자마자 되돌아간다.
+                if (!handleMode)
+                {
+                    handIkR.target.SetPositionAndRotation(t.TransformPoint(posR), t.rotation * rotR);
+                    if (_idleElbowR != null) _idleElbowR.position = t.TransformPoint(idleElbowR);
+                }
+                handIkR.weight = ParkWeight;
             }
             if (handIkL != null)
             {
                 if (handIkL.target == null) { EnsureIdleAnchor(ref _idleAnchorL, "[IdleHandL]", t); handIkL.target = _idleAnchorL; }
-                handIkL.target.SetPositionAndRotation(t.TransformPoint(idleLocalL),
-                                                      t.rotation * Quaternion.Euler(idleEulerL));
-                handIkL.weight = idleWeight;
+                if (!handleMode)
+                {
+                    handIkL.target.SetPositionAndRotation(t.TransformPoint(posL), t.rotation * rotL);
+                    if (_idleElbowL != null) _idleElbowL.position = t.TransformPoint(idleElbowL);
+                }
+                handIkL.weight = ParkWeight;
             }
 
             // 손가락 — 거미를 받치는 살짝 편 손. 등반의 꽉 쥠과 달라야 한다.
             // 공통 말림은 sustain으로, 손가락별 차이는 개별 값으로 준다(둘은 더해진다).
+            UpdateForwardCurl(t);
             if (fingerR != null) { fingerR.SetSustain(idleGripR); ApplyIdleFingers(fingerR, idleFingerR); }
             if (fingerL != null) { fingerL.SetSustain(idleGripL); ApplyIdleFingers(fingerL, idleFingerL); }
         }
 
-        static void ApplyIdleFingers(FingerPoser f, IdleFingerPose p)
+        /// <summary>
+        /// 팔꿈치 폴을 <b>이 스크립트가 소유하는 앵커</b>로 고정한다. 평상시든 등반이든 같은 앵커를
+        /// 쓰고 <b>어디에 두느냐만</b> 단계별로 다르다 — 씬의 ElbowPole 오브젝트는 더 이상 안 쓴다.
+        ///
+        /// <para>처음에는 등반 때 씬 폴로 되돌리는 방식이었으나, 등반 팔꿈치도 값으로 잡고 싶다는
+        /// 요구가 생겨 폐기했다. 소유자를 하나로 두는 편이 단순하다.</para>
+        /// </summary>
+        /// <summary>
+        /// 등반 중 팔꿈치를 <b>모서리 기저</b>에 매단다. 앵커가 없는 구간(Lowering·Raising 등 park
+        /// 자세)은 기저가 쓰레기이므로 카메라 기준 평상시 값으로 둔다 — park 자체가 카메라 공간이라
+        /// 그쪽이 맞다.
+        /// </summary>
+        void PlaceClimbElbows(Vector3 handR, Vector3 handL)
+        {
+            Transform camT = _cam != null ? _cam.transform : transform;
+            EnsureElbowAnchors(camT);
+
+            if (!_hasAnchors)
+            {
+                if (_idleElbowR != null) _idleElbowR.position = camT.TransformPoint(idleElbowR);
+                if (_idleElbowL != null) _idleElbowL.position = camT.TransformPoint(idleElbowL);
+                return;
+            }
+
+            Vector3 e = climbElbowLocal;
+            // x는 바깥쪽 — 오른손은 +edgeRight, 왼손은 −edgeRight로 대칭.
+            if (_idleElbowR != null)
+                _idleElbowR.position = handR + _edgeRight * e.x + Vector3.up * e.y + _approach * e.z;
+            if (_idleElbowL != null)
+                _idleElbowL.position = handL - _edgeRight * e.x + Vector3.up * e.y + _approach * e.z;
+        }
+
+        // ── F7 등반 조정 패널이 쓰는 진입점 ──────────────────────────────
+
+        /// <summary>카메라 앞에 가짜 모서리를 만들어 등반을 발동한다. 실제 턱을 찾아가지 않아도 된다.</summary>
+        public void DebugFakeLedge(float distance, float height, float width)
+        {
+            Transform t = _cam != null ? _cam.transform : transform;
+            Vector3 fwd = Vector3.ProjectOnPlane(t.forward, Vector3.up).normalized;
+            if (fwd.sqrMagnitude < 1e-6f) fwd = Vector3.forward;
+            Vector3 right = Vector3.Cross(Vector3.up, fwd).normalized;
+            Vector3 mid = t.position + fwd * distance;
+            mid.y = transform.position.y + height;   // 높이는 카메라가 아니라 발 기준이 직관적이다
+            Prepare();
+            Show(mid - right * (width * 0.5f), mid + right * (width * 0.5f));
+        }
+
+        /// <summary>단계를 강제로 놓는다. <paramref name="t01"/>은 그 단계 안에서의 진행률.</summary>
+        public void DebugForcePhase(Phase p, float t01)
+        {
+            Resolve();
+            _phase = p;
+            float dur = p == Phase.Lowering ? LowerDur
+                      : p == Phase.Reaching ? ReachDur
+                      : p == Phase.Releasing ? releaseTime
+                      : p == Phase.Raising ? raiseTime : 0f;
+            _t = Mathf.Clamp01(t01) * dur;
+            _prepared = false;
+            if (p == Phase.Idle) { _hasAnchors = false; RestoreWeights(); }
+        }
+
+        public string DebugPhaseName => _phase.ToString();
+        public bool DebugHasAnchors => _hasAnchors;
+
+        void EnsureElbowAnchors(Transform camT)
+        {
+            if (handIkR != null)
+            {
+                EnsureIdleAnchor(ref _idleElbowR, "[IdleElbowR]", camT);
+                if (handIkR.pole != _idleElbowR) handIkR.pole = _idleElbowR;
+            }
+            if (handIkL != null)
+            {
+                EnsureIdleAnchor(ref _idleElbowL, "[IdleElbowL]", camT);
+                if (handIkL.pole != _idleElbowL) handIkL.pole = _idleElbowL;
+            }
+        }
+
+        /// <summary>
+        /// 씬에서 끌어놓은 손·팔꿈치 자세를 카메라 기준 값으로 회수한다(<see cref="handleMode"/> 작업 마무리).
+        ///
+        /// <para>드래그 결과는 트랜스폼에만 있어 Play를 끄면 사라진다. 여기서 숫자로 바꿔 넣어야
+        /// 저장할 수 있다.</para>
+        /// </summary>
+        public void CaptureIdleFromScene()
+        {
+            Transform t = _cam != null ? _cam.transform : transform;
+            if (handIkR != null && handIkR.target != null)
+            {
+                idleLocalR = t.InverseTransformPoint(handIkR.target.position);
+                idleEulerR = (Quaternion.Inverse(t.rotation) * handIkR.target.rotation).eulerAngles;
+            }
+            if (handIkL != null && handIkL.target != null)
+            {
+                idleLocalL = t.InverseTransformPoint(handIkL.target.position);
+                idleEulerL = (Quaternion.Inverse(t.rotation) * handIkL.target.rotation).eulerAngles;
+            }
+            if (_idleElbowR != null) idleElbowR = t.InverseTransformPoint(_idleElbowR.position);
+            if (_idleElbowL != null) idleElbowL = t.InverseTransformPoint(_idleElbowL.position);
+            Debug.Log($"[MantleRig] 씬 자세 회수 — 손 {idleLocalR:F3} / 회전 {idleEulerR:F1} / 팔꿈치 {idleElbowR:F3}");
+        }
+
+        // 손가락마다 흩어 둔 위상·주기. 같은 값을 쓰면 다섯이 함께 움찔거려 기계처럼 보인다.
+        static readonly float[] JitterPhase = { 0.00f, 0.21f, 0.43f, 0.64f, 0.86f };
+        static readonly float[] JitterRate  = { 1.00f, 0.83f, 1.19f, 0.91f, 1.27f };
+        static readonly float[] BreathPhase = { 0.00f, 0.04f, 0.07f, 0.10f, 0.13f };  // 느슨하게 동조
+
+        float _fwdCurl;   // 정면 이동에 따른 추가 말림(스무딩된 값)
+
+        Vector3 _swayOffset;   // 카메라 기준 흔들림 오프셋
+        float _swayRoll, _swayPhase, _swayAmt;
+
+        /// <summary>
+        /// 걷기 흔들림. <b>접지 + 이동 중</b>일 때만 붙고, 속도에 비례하며, 멈추면 잦아든다.
+        ///
+        /// <para>상하를 좌우의 <b>두 배</b> 주기로 돌린다 — 한 걸음마다 한 번 내려앉는 8자 궤적이다.
+        /// 같은 주기로 돌리면 대각선으로 왕복해 걷는 것으로 안 읽힌다.</para>
+        ///
+        /// <para><b>위상은 멈춰도 계속 돈다.</b> 정지할 때 위상을 0으로 되돌리면 다시 걸을 때
+        /// 손이 툭 튄다. 진폭만 0으로 잦아들게 하고 위상은 굴러가게 둔다.</para>
+        /// </summary>
+        void UpdateWalkSway()
+        {
+            if (_fppRef == null) _fppRef = GetComponent<FirstPersonPlayer>();
+
+            float speed = 0f;
+            if (_fppRef != null && _fppRef.Controller != null)
+            {
+                Vector3 v = _fppRef.Controller.velocity; v.y = 0f;
+                speed = v.magnitude;
+            }
+            bool grounded = _fppRef == null || _fppRef.Grounded;
+            float target = grounded ? Mathf.Clamp01(speed / Mathf.Max(0.01f, walkSwayRefSpeed)) : 0f;
+
+            float dt = Time.deltaTime;
+            _swayAmt = walkSwaySmooth > 1e-4f
+                     ? Mathf.Lerp(_swayAmt, target, 1f - Mathf.Exp(-dt / walkSwaySmooth))
+                     : target;
+
+            // 느리게 걸으면 보폭도 느려진다 — 진폭만 줄면 종종걸음처럼 보인다.
+            _swayPhase += dt * walkSwayHz * Mathf.PI * 2f * Mathf.Lerp(0.6f, 1f, _swayAmt);
+            if (_swayPhase > Mathf.PI * 2f) _swayPhase -= Mathf.PI * 2f;
+
+            float k = _swayAmt * handMotionScale;
+            float s = Mathf.Sin(_swayPhase);
+            _swayOffset = new Vector3(s * walkSwayX, -Mathf.Abs(s) * walkSwayY, 0f) * k;
+            _swayRoll   = s * walkSwayRollDeg * k;
+        }
+
+        /// <summary>정면으로 갈 때만 아주 조금 더 구부린다. 뒤·옆 이동에는 안 걸린다.</summary>
+        void UpdateForwardCurl(Transform camT)
+        {
+            float want = 0f;
+            if (_fppRef == null) _fppRef = GetComponent<FirstPersonPlayer>();
+            if (fingerForwardCurl > 0f && _fppRef != null && _fppRef.Controller != null)
+            {
+                Vector3 v = _fppRef.Controller.velocity; v.y = 0f;
+                Vector3 fwd = Vector3.ProjectOnPlane(camT.forward, Vector3.up);
+                if (fwd.sqrMagnitude > 1e-6f)
+                {
+                    // 뒤로 가면 음수 → Clamp01이 0으로 자른다. "정면으로 갈 때만"이 이 한 줄이다.
+                    float s = Vector3.Dot(v, fwd.normalized);
+                    want = Mathf.Clamp01(s / Mathf.Max(0.01f, fingerForwardRefSpeed)) * fingerForwardCurl;
+                }
+            }
+            _fwdCurl = fingerForwardSmooth > 1e-4f
+                     ? Mathf.Lerp(_fwdCurl, want, 1f - Mathf.Exp(-Time.deltaTime / fingerForwardSmooth))
+                     : want;
+        }
+
+        /// <summary>손가락 순서는 FingerPoser와 같다 — 0 엄지 · 1 검지 · 2 중지 · 3 약지 · 4 소지.</summary>
+        float MicroOffset(int f)
+        {
+            float t = Time.time;
+            float jitter = Mathf.Sin((t * fingerJitterHz * JitterRate[f] + JitterPhase[f]) * Mathf.PI * 2f) * fingerJitterAmp;
+            float breath = Mathf.Sin((t * fingerBreathHz + BreathPhase[f]) * Mathf.PI * 2f) * fingerBreathAmp;
+            return (jitter + breath + _fwdCurl) * handMotionScale;
+        }
+
+        void ApplyIdleFingers(FingerPoser f, IdleFingerPose p)
         {
             if (f == null || p == null) return;
-            f.thumb  = p.thumb;
-            f.index  = p.index;
-            f.middle = p.middle;
-            f.ring   = p.ring;
-            f.pinky  = p.pinky;
-            f.spread = p.spread;
+            f.thumb  = p.thumb  + MicroOffset(0);
+            f.index  = p.index  + MicroOffset(1);
+            f.middle = p.middle + MicroOffset(2);
+            f.ring   = p.ring   + MicroOffset(3);
+            f.pinky  = p.pinky  + MicroOffset(4);
+            f.spread = p.spread;   // 벌림엔 미세 동작을 안 얹는다 — 옆으로 비틀려 즉시 티가 난다
         }
 
         /// <summary>
@@ -501,12 +954,19 @@ namespace Game.View
         {
             if (f == null) return;
 
-            // 검지 → 중지 → 약지 → 새끼 순으로 늦게 감긴다. 엄지는 가장 늦고 덜 감긴다.
-            f.index  = Stagger(grip, 0.00f);
-            f.middle = Stagger(grip, 0.06f);
-            f.ring   = Stagger(grip, 0.12f);
-            f.pinky  = Stagger(grip, 0.18f);
-            f.thumb  = Stagger(grip, 0.26f) * thumbCurlScale;
+            // ★ 여기는 <b>차이</b>만 준다. 절대값을 주면 두 번 세어진다.
+            //   FingerPoser의 말림은 clamp01(grip + 손가락별 + sustainGrip)인데, 바로 위에서
+            //   SetSustain(grip)으로 sustain에 이미 grip을 넣었다. 여기서 Stagger(grip, …)라는
+            //   <b>또 하나의 온전한 값</b>을 얹으면 합이 2×grip이 되어, grip이 0.5만 넘어도
+            //   clamp01에 붙는다. 그러면 쥐는 세기를 낮춰도 손가락이 최대치로 말린 채 꿈쩍하지
+            //   않는다 — 실제로 그 상태였다.
+            //   sustain이 부드러운 기준선을 담당하고(§3 규칙2), 이 값들은 손가락마다 그 기준선에서
+            //   얼마나 <b>뒤처지는가</b>만 나타낸다. 늦게 감기는 손가락일수록 음수가 된다.
+            f.index  = Stagger(grip, 0.00f) - grip;
+            f.middle = Stagger(grip, 0.06f) - grip;
+            f.ring   = Stagger(grip, 0.12f) - grip;
+            f.pinky  = Stagger(grip, 0.18f) - grip;
+            f.thumb  = Stagger(grip, 0.26f) * thumbCurlScale - grip;
 
             // 손가락이 감길수록 벌림이 줄어든다 — 편 손은 벌어지고 쥔 손은 모인다.
             f.spread = Mathf.Lerp(fingerSpreadOpen, 0f, grip);

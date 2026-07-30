@@ -168,7 +168,9 @@ namespace Game.View
                 // ★ 보스는 더 이상 해킹 대상이 아니다 — 치지직을 걸지 않는다.
                 if (h.kind == HackableKind.Boss) continue;
 
-                if (overrideHackRange) h.hackRange = hackRangeOverride;
+                // ★ 사거리 무시 대상(거대 프레스)은 전역 덮어쓰기에서 뺀다 — 덮어써 봐야 판정이
+                //   WithinHackRange를 지나 어차히 무시되지만, 인스펙터 값이 조용히 바뀌면 헷갈린다.
+                if (overrideHackRange && !h.ignoreRange) h.hackRange = hackRangeOverride;
 
                 if (!_entries.TryGetValue(h, out Entry e))
                 {
@@ -178,7 +180,7 @@ namespace Game.View
                 if (e == null || e.renderers.Length == 0) continue;   // glowRenderers 미지정 — 조용히 스킵
 
                 float dist = Vector3.Distance(viewerPos, h.transform.position);
-                bool inRange = dist <= Mathf.Max(0.01f, h.hackRange);
+                bool inRange = h.WithinHackRange(dist);
 
                 // ── 상태 → 목표 세기 ────────────────────────────────────
                 // ★ 거리 비례는 폐기했다. 거리는 "사거리 안인가"라는 <b>이진 판정</b>으로만 쓴다 —
@@ -252,6 +254,11 @@ namespace Game.View
 
         void Apply(Entry e)
         {
+            // Play 중 스크립트를 다시 컴파일하면 도메인 리로드가 일어나는데, _glitchMat은
+            // UnityEngine.Object라 복원되지만 MaterialPropertyBlock은 직렬화 대상이 아니라
+            // null이 된다. Update의 _glitchMat 검사는 그걸 못 걸러 여기서 터진다.
+            if (_mpb == null) _mpb = new MaterialPropertyBlock();
+
             for (int i = 0; i < e.renderers.Length; i++)
             {
                 var r = e.renderers[i];

@@ -18,7 +18,7 @@ namespace Game.View
     /// </summary>
     public class StitchSites : MonoBehaviour
     {
-        /// <summary>구운 후보 하나. 좌표는 <see cref="boneIndex"/>가 가리키는 공간 기준이다.</summary>
+        /// <summary>구운 후보 하나. 좌표는 <see cref="spaceIndex"/>가 가리키는 공간 기준이다.</summary>
         [System.Serializable]
         public struct Site
         {
@@ -28,15 +28,23 @@ namespace Game.View
             /// <summary>이 지점에서 반대편 표면까지의 거리(m). 실이 뒤로 뚫고 나오지 않게 깊이를 제한한다.</summary>
             public float thickness;
 
-            /// <summary><see cref="bones"/> 인덱스. <b>−1이면 정적</b>이라 이 컴포넌트의 트랜스폼 기준.</summary>
-            public int boneIndex;
+            /// <summary><see cref="spaces"/> 인덱스. <b>−1이면</b> 이 컴포넌트의 트랜스폼 기준.</summary>
+            public int spaceIndex;
         }
 
         [Header("구운 결과 (StitchSiteBaker가 채운다)")]
         public List<Site> sites = new List<Site>();
 
-        [Tooltip("스킨드 메시일 때 땀이 매달릴 본. 정적 대상이면 비어 있다.")]
-        public Transform[] bones;
+        /// <summary>
+        /// 땀이 매달릴 트랜스폼 — <b>본만이 아니라 움직이는 파츠도 포함</b>한다.
+        ///
+        /// <para>★ 이게 루트 하나였을 때 문제가 났다. 피스톤 로드·프레스 헤드·터렛 헤드는
+        /// <b>자식 트랜스폼</b>이 움직이는데, 땀을 <see cref="Hackable"/> 루트 기준으로 저장하면
+        /// 부품이 움직여도 실이 제자리에 남아 크게 어색하다. 경비병이 멀쩡했던 이유는
+        /// 스킨드라 본에 매달렸기 때문이고, 정적 파츠에도 같은 원리를 적용한 것이다.</para>
+        /// </summary>
+        [Tooltip("땀이 매달릴 트랜스폼(본 또는 움직이는 파츠). 베이커가 채운다.")]
+        public Transform[] spaces;
 
         [Tooltip("구울 때 쓴 후보 개수. 다시 구울 때 참고만 한다.")]
         public int bakedCount;
@@ -46,18 +54,18 @@ namespace Game.View
         // ── 공간 변환 ────────────────────────────────────────────────────────
         // 정적이면 자기 트랜스폼, 스킨드면 해당 본. 본을 쓰면 경비병이 걸어도 땀이 따라간다.
 
-        Transform SpaceOf(int boneIndex)
+        Transform SpaceOf(int spaceIndex)
         {
-            if (boneIndex < 0 || bones == null || boneIndex >= bones.Length) return transform;
-            var b = bones[boneIndex];
+            if (spaceIndex < 0 || spaces == null || spaceIndex >= spaces.Length) return transform;
+            var b = spaces[spaceIndex];
             return b != null ? b : transform;
         }
 
-        public Vector3 WorldPos(in Site s) => SpaceOf(s.boneIndex).TransformPoint(s.localPos);
+        public Vector3 WorldPos(in Site s) => SpaceOf(s.spaceIndex).TransformPoint(s.localPos);
 
         public Vector3 WorldNormal(in Site s)
         {
-            Vector3 n = SpaceOf(s.boneIndex).TransformDirection(s.localNormal);
+            Vector3 n = SpaceOf(s.spaceIndex).TransformDirection(s.localNormal);
             return n.sqrMagnitude < 1e-8f ? Vector3.up : n.normalized;
         }
 
@@ -95,7 +103,10 @@ namespace Game.View
             int wantBack = Mathf.Clamp(count / 5, 0, back.Count);
             int wantFront = count - wantBack;
 
-            float minSepDeg = 40f;
+            // 개수에 맞춰 좁힌다. 40°는 다섯 땀에는 맞지만 마흔 땀은 구 표면에 그 간격으로
+            // 놓을 수가 없어, 조건을 못 맞춘 나머지가 전부 아래 채우기 루프로 새 버린다
+            // (= 인덱스 순서대로 박혀 무작위성이 죽는다).
+            float minSepDeg = Mathf.Clamp(180f / Mathf.Max(1, count), 5f, 40f);
             TakeSpread(front, wantFront, center, minSepDeg, result);
             TakeSpread(back, wantBack, center, minSepDeg, result);
 
@@ -106,6 +117,33 @@ namespace Game.View
                 for (int i = 0; i < n && result.Count < count; i++)
                     if (!result.Contains(i)) result.Add(i);
             }
+        }
+
+        /// <summary>
+        /// 고른 것 중 <b>조준점에 가장 가까운</b> 자리를 맨 앞으로 보낸다.
+        ///
+        /// <para>실은 순서대로 꿰므로 0번이 곧 <b>첫 발사가 꽂히는 곳</b>이다. 무작위로 두면
+        /// 조준한 곳과 전혀 다른 데로 날아가 "내가 쏜 것"으로 안 읽힌다. 나머지 순서는
+        /// 그대로 두어 이후의 들쑤시는 무작위성은 유지한다.</para>
+        /// </summary>
+        public void SortAimFirst(List<int> picked, Vector3 eye, Vector3 aimDir)
+        {
+            if (picked == null || picked.Count < 2) return;
+            if (aimDir.sqrMagnitude < 1e-6f) return;
+            aimDir = aimDir.normalized;
+
+            int best = 0;
+            float bestDot = -2f;
+            for (int i = 0; i < picked.Count; i++)
+            {
+                Vector3 to = WorldPos(sites[picked[i]]) - eye;
+                if (to.sqrMagnitude < 1e-8f) continue;
+                float d = Vector3.Dot(to.normalized, aimDir);   // 클수록 조준선에 가깝다
+                if (d > bestDot) { bestDot = d; best = i; }
+            }
+
+            if (best == 0) return;
+            (picked[0], picked[best]) = (picked[best], picked[0]);
         }
 
         /// <summary>대상 중심에서 본 방향이 서로 <paramref name="minSepDeg"/> 이상 떨어지도록 골라 담는다.</summary>

@@ -19,8 +19,11 @@ namespace Game.View
     public class TetherThread : MonoBehaviour
     {
         [Header("굵기")]
-        [Tooltip("실 두께(m). 실은 얇아야 실로 보인다 — 2~4mm.")]
-        public float thickness = 0.003f;
+        [Tooltip("실 두께(m). 사실적인 실 굵기(3mm)는 실기에서 전혀 안 보였다 — 게임 안에서\n" +
+                 "확실히 읽히려면 이 정도는 되어야 한다(사용자 실측: 3mm의 21배).\n" +
+                 "★ 이 값을 키우면 loopOut·stitchDepth도 같이 키워야 한다. 안 그러면 땀이\n" +
+                 "  실 자기 굵기에 파묻혀 바느질이 아예 안 보인다.")]
+        public float thickness = 0.038f;
 
         [Header("엉덩이에서 뻗는 구간")]
         [Tooltip("방적돌기 축 방향으로 곧게 나가는 첫 구간 길이(m).\n" +
@@ -29,24 +32,47 @@ namespace Game.View
         public float stubLength = 0.08f;
 
         [Header("자유 구간 (거미 → 첫 땀)")]
-        [Tooltip("느슨할 때 아래로 처지는 최대량(m). 조이면 0이 되며 직선이 된다.")]
-        public float sagMax = 0.12f;
+        [Tooltip("느슨할 때 아래로 처지는 최대량(m). 조이면 0이 되며 팽팽한 직선이 된다.\n" +
+                 "몇 미터짜리 구간이라 작게 잡으면 처진 게 안 보인다.")]
+        public float sagMax = 0.35f;
 
-        [Tooltip("처짐을 표현할 중간 점 개수. 늘려도 비용은 미미하나 3이면 충분하다.")]
-        [Range(1, 6)] public int sagSegments = 3;
+        [Tooltip("처짐을 표현할 중간 점 개수. 적으면 곡선이 각져 보인다.")]
+        [Range(1, 8)] public int sagSegments = 4;
+
+        [Tooltip("대상에 박힌 뒤(바느질 구간) 실 굵기 비율. 나가는 줄은 굵고, 꿰는 실은 가늘다.")]
+        [Range(0.05f, 1f)] public float stitchWidthRatio = 0.3f;
+
+        [Tooltip("느슨할 때 바느질 구간 굵기에 곱할 배율.\n" +
+                 "★ 중력 처짐보다 이쪽이 훨씬 잘 읽힌다 — 흑백 화면에서는 위치보다 굵기가 눈에 띈다.\n" +
+                 "  실제 줄도 당기면 가늘어지고 늘어지면 굵어진다. 조종하면 1배로 쭉 줄어든다.")]
+        [Range(1f, 3f)] public float slackWidthScale = 2f;
 
         [Header("땀")]
-        [Tooltip("표면 위로 솟는 높이(m). 조이면 줄어들어 '눌려 붙은' 모양이 된다.")]
-        public float loopOut = 0.02f;
+        [Tooltip("표면 위로 솟는 높이(m).\n" +
+                 "★ 바느질 구간의 실 <b>반지름</b>보다 확실히 커야 한다. 작으면 솟은 부분이\n" +
+                 "  자기 굵기에 파묻혀 그냥 직선으로 보인다(실제로 그랬다).")]
+        public float loopOut = 0.06f;
 
         [Tooltip("표면 안으로 들어가는 깊이(m). 얇은 대상에서는 두께에 맞춰 자동으로 줄어든다.")]
-        public float stitchDepth = 0.05f;
+        public float stitchDepth = 0.12f;
 
-        [Tooltip("한 땀이 표면을 따라 벌어지는 폭의 절반(m). 들어간 곳과 나온 곳 사이 간격.")]
-        public float stitchHalfSpan = 0.03f;
+        [Tooltip("한 땀이 표면을 따라 벌어지는 폭의 절반(m). 좁으면 굵은 실이 매듭처럼 뭉친다.")]
+        public float stitchHalfSpan = 0.10f;
 
         [Tooltip("조였을 때 솟은 높이에 곱할 비율. 낮을수록 세게 조인 티가 난다.")]
         [Range(0.05f, 1f)] public float tightLoopScale = 0.35f;
+
+        [Tooltip("느슨할 때 땀이 중력으로 아래로 늘어지는 양(m).\n" +
+                 "조이면 0이 되어 표면에 붙는다 — 조작을 쉬면 매듭까지 축 늘어져 보여야 한다.")]
+        public float slackDroop = 0.05f;
+
+        [Tooltip("땀 하나를 몇 조각으로 쪼개 그릴 것인가.\n" +
+                 "★ 1이면 꼭짓점 하나짜리 V가 되어 <b>각진 꺾임</b>일 뿐 곡선으로 안 보인다.\n" +
+                 "  실은 뻣뻣한 철사가 아니라 늘어지는 줄이므로 곡선이어야 한다.")]
+        [Range(1, 10)] public int loopSegments = 6;
+
+        [Tooltip("팽팽할 때도 남기는 최소 휘어짐 비율. 0이면 완전한 직선이 되어 실 같지 않다.")]
+        [Range(0f, 0.5f)] public float minCurve = 0.12f;
 
         readonly List<Vector3> _pts = new List<Vector3>(32);
         Vector3[] _buf = new Vector3[32];   // 매 프레임 ToArray()를 하면 GC가 쌓인다
@@ -133,7 +159,7 @@ namespace Game.View
         /// <param name="color">실 색.</param>
         public void Draw(Vector3 origin, Vector3 spinneretDir,
                          StitchSites sites, List<int> picked, Vector3 fallbackEnd,
-                         float progress, float tension, Color color)
+                         float launch, float progress, float tension, Color color)
         {
             if (!Ensure()) return;
 
@@ -146,21 +172,32 @@ namespace Game.View
             // ① 방적돌기 + 엉덩이 축으로 곧게 나가는 구간
             if (spinneretDir.sqrMagnitude < 1e-6f) spinneretDir = Vector3.forward;
             spinneretDir = spinneretDir.normalized;
-            _pts.Add(origin);
+            AddPt(origin);
             Vector3 stubEnd = origin + spinneretDir * stubLength;
-            _pts.Add(stubEnd);
+            AddPt(stubEnd);
 
             // ② 자유 구간 — 첫 땀의 진입점(없으면 대상 지점)까지, 느슨하면 처진다
+            //
+            // ★ launch가 발사다. 실 끝이 방적돌기에서 대상까지 <b>날아가는 게 보여야</b> 한다.
+            //   예전엔 완성된 길이로 한 번에 나타나 "탁" 생겨 버렸다.
             Vector3 firstAnchor = fallbackEnd;
             if (siteCount > 0)
             {
                 ResolveStitch(sites, picked, 0, siteCount, out Vector3 a0, out _, out _);
                 firstAnchor = a0;
             }
-            AppendSag(stubEnd, firstAnchor, tension);
+            launch = Mathf.Clamp01(launch);
+            Vector3 tip = Vector3.Lerp(stubEnd, firstAnchor, launch);
+            // ⚠️ 예전엔 여기에 `tension * launch`를 넘겼다. launch는 0에서 시작하므로 곱하면
+            //    <b>날아가는 동안 처짐이 최대</b>가 된다 — 주석과 정반대였고, 실이 축 늘어진 채
+            //    힘없이 나갔다. 발사 중 팽팽함은 ControlTether가 tension으로 직접 준다.
+            AppendSag(stubEnd, tip, tension);
 
             // ③ 땀 — 완성된 것과, 지금 박히는 중인 것 하나
-            if (siteCount > 0)
+            //    여기서부터가 '꿰는 실'이라 굵기가 가늘어진다.
+            //    ★ 실이 <b>도착한 뒤에야</b> 꿰기 시작한다.
+            int stitchStart = _pts.Count;
+            if (siteCount > 0 && launch >= 0.999f)
             {
                 float exact = progress * siteCount;
                 int done = Mathf.Clamp(Mathf.FloorToInt(exact), 0, siteCount);
@@ -169,25 +206,20 @@ namespace Game.View
                 for (int i = 0; i < done; i++)
                 {
                     ResolveStitch(sites, picked, i, siteCount, out Vector3 a, out Vector3 o, out Vector3 b);
-                    _pts.Add(a);
-                    _pts.Add(Vector3.Lerp(a, o, LoopScale(tension)));
-                    _pts.Add(b);
+                    AddPt(a);
+                    AppendLoop(a, OuterOf(a, o, tension), b);
+                    AddPt(b);
                 }
 
-                // 박히는 중인 땀 — 솟은 부분이 표면 아래에서 위로 올라오며 "뚫고 나온다"
-                if (done < siteCount && frac > 0.001f)
+                // ★ 박히는 중인 땀 — 앞 땀의 끝에서 <b>이어져 자라난다</b>.
+                //   예전엔 진입점을 통째로 찍고 솟은 점만 올렸다 — 실이 다음 자리로
+                //   순간이동한 뒤 거기서 부풀어 오르는 꼴이라 "탁 생긴다"로 보였다.
+                if (done < siteCount && frac > 0.001f && _pts.Count > 0)
                 {
                     ResolveStitch(sites, picked, done, siteCount, out Vector3 a, out Vector3 o, out Vector3 b);
-                    _pts.Add(a);
-                    _pts.Add(Vector3.Lerp(a, Vector3.Lerp(a, o, LoopScale(tension)), frac));
-                    _pts.Add(Vector3.Lerp(a, b, frac));
+                    AppendPartial(_pts[_pts.Count - 1], a, OuterOf(a, o, tension), b, frac);
                 }
             }
-
-            // 자유 구간의 끝점과 첫 땀의 진입점은 같은 자리다. 인접 중복점은 LineRenderer에서
-            // 방향이 정의되지 않아 그 구간이 깜빡인다 — 지운다.
-            for (int i = _pts.Count - 1; i > 0; i--)
-                if ((_pts[i] - _pts[i - 1]).sqrMagnitude < 1e-10f) _pts.RemoveAt(i);
 
             if (_pts.Count < 2) { _line.enabled = false; return; }
             LastEnd = _pts[_pts.Count - 1];
@@ -201,6 +233,7 @@ namespace Game.View
             _line.widthMultiplier = thickness;
             _line.positionCount = _pts.Count;
             _line.SetPositions(_buf);
+            ApplyWidthCurve(stitchStart, stitchWidthRatio * Mathf.Lerp(slackWidthScale, 1f, tension));
 
             if (_mat != null)
             {
@@ -211,6 +244,137 @@ namespace Game.View
         }
 
         float LoopScale(float tension) => Mathf.Lerp(1f, tightLoopScale, tension);
+
+        /// <summary>
+        /// 땀이 표면 위로 솟은 점. 조이면 낮게 눌리고, 느슨하면 <b>중력으로 아래로 늘어진다</b>.
+        /// 자유 구간만 처지고 땀은 그대로면 "위쪽만 늘어진" 어색한 그림이 된다.
+        /// </summary>
+        Vector3 OuterOf(Vector3 enter, Vector3 outer, float tension)
+        {
+            Vector3 p = Vector3.Lerp(enter, outer, LoopScale(tension));
+            // 완전히 조여도 minCurve만큼은 남긴다 — 실이 자로 그은 듯 곧으면 철사처럼 보인다.
+            float slack = Mathf.Max(minCurve, 1f - tension);
+            return p + Vector3.down * (slackDroop * slack);
+        }
+
+        /// <summary>
+        /// 땀 하나를 <b>곡선</b>으로 그린다. <paramref name="apex"/>를 실제로 지나가는 이차 곡선이다.
+        ///
+        /// <para>예전엔 점 세 개(<c>진입 → 솟음 → 이탈</c>)만 찍었다. 그건 곡선이 아니라
+        /// <b>꼭짓점 하나짜리 V</b>라, 가는 실에서는 그냥 꺾인 직선으로 보인다.
+        /// 실은 늘어지는 줄이므로 휘어야 한다.</para>
+        /// </summary>
+        void AppendLoop(Vector3 enter, Vector3 apex, Vector3 exit)
+        {
+            int segs = Mathf.Max(1, loopSegments);
+            if (segs == 1) { AddPt(apex); return; }
+
+            // 이차 베지어는 제어점을 지나가지 않는다 — t=0.5에서 apex를 지나도록 제어점을 역산한다.
+            Vector3 ctrl = 2f * apex - (enter + exit) * 0.5f;
+
+            for (int i = 1; i < segs; i++)
+            {
+                float t = i / (float)segs;
+                float u = 1f - t;
+                AddPt(u * u * enter + 2f * u * t * ctrl + t * t * exit);
+            }
+        }
+
+        /// <summary>
+        /// 박히는 중인 땀 — <b>완성됐을 때와 똑같은 곡선</b>을 따라 <paramref name="frac"/>만큼만 그린다.
+        ///
+        /// <para>직선으로 자라다가 완성되는 순간 곡선으로 바뀌면 매 땀마다 튄다.
+        /// 그래서 같은 경로를 만들어 두고 길이 비율로 잘라 낸다.</para>
+        /// </summary>
+        void AppendPartial(Vector3 prev, Vector3 enter, Vector3 apex, Vector3 exit, float frac)
+        {
+            _tmp.Clear();
+            _tmp.Add(prev);
+            _tmp.Add(enter);
+
+            int segs = Mathf.Max(1, loopSegments);
+            if (segs == 1) _tmp.Add(apex);
+            else
+            {
+                Vector3 ctrl = 2f * apex - (enter + exit) * 0.5f;
+                for (int i = 1; i < segs; i++)
+                {
+                    float t = i / (float)segs;
+                    float u = 1f - t;
+                    _tmp.Add(u * u * enter + 2f * u * t * ctrl + t * t * exit);
+                }
+            }
+            _tmp.Add(exit);
+
+            float total = 0f;
+            for (int i = 1; i < _tmp.Count; i++) total += Vector3.Distance(_tmp[i - 1], _tmp[i]);
+            if (total < 1e-5f) return;
+
+            float want = Mathf.Clamp01(frac) * total;
+            for (int i = 1; i < _tmp.Count; i++)
+            {
+                float d = Vector3.Distance(_tmp[i - 1], _tmp[i]);
+                if (want <= d) { AddPt(Vector3.Lerp(_tmp[i - 1], _tmp[i], want / Mathf.Max(1e-5f, d))); return; }
+                AddPt(_tmp[i]);
+                want -= d;
+            }
+        }
+
+        readonly List<Vector3> _tmp = new List<Vector3>(16);
+
+        /// <summary>인접 중복점은 넣지 않는다 — LineRenderer에서 방향이 정의되지 않아 깜빡인다.</summary>
+        void AddPt(Vector3 p)
+        {
+            if (_pts.Count > 0 && (_pts[_pts.Count - 1] - p).sqrMagnitude < 1e-10f) return;
+            _pts.Add(p);
+        }
+
+        /// <summary>
+        /// 나가는 줄은 굵게, 대상에 박힌 뒤 꿰는 실은 가늘게.
+        ///
+        /// <para><see cref="LineRenderer.widthCurve"/>는 <b>길이 비율</b>로 평가되므로,
+        /// 땀이 시작되는 점이 전체 길이의 몇 %인지를 재서 그 지점에서 굵기를 떨어뜨린다.
+        /// 점 개수로 나누면 안 된다 — 자유 구간은 점이 적고 길며, 땀은 점이 많고 짧다.</para>
+        /// </summary>
+        void ApplyWidthCurve(int stitchStart, float stitchRatio)
+        {
+            float t = 1f;
+            if (stitchStart > 0 && stitchStart < _pts.Count)
+            {
+                float total = 0f, upTo = 0f;
+                for (int i = 1; i < _pts.Count; i++)
+                {
+                    total += Vector3.Distance(_pts[i - 1], _pts[i]);
+                    if (i == stitchStart - 1) upTo = total;   // 자유 구간이 끝나는 지점까지의 길이
+                }
+                if (total > 1e-5f) t = Mathf.Clamp01(upTo / total);
+            }
+
+            // 매 프레임 AnimationCurve를 새로 만들면 GC가 쌓인다. 변화가 클 때만 다시 만든다.
+            if (_curve != null && Mathf.Abs(t - _curveT) < 0.01f
+                && Mathf.Abs(_curveRatio - stitchRatio) < 0.005f) return;
+
+            _curveT = t;
+            _curveRatio = stitchRatio;
+
+            if (t >= 0.999f)
+            {
+                _curve = AnimationCurve.Constant(0f, 1f, 1f);
+            }
+            else
+            {
+                // 굵기가 뚝 떨어지게 — 대상에 닿는 순간이 눈에 보여야 한다.
+                _curve = new AnimationCurve(
+                    new Keyframe(0f, 1f),
+                    new Keyframe(Mathf.Max(0f, t - 0.001f), 1f),
+                    new Keyframe(t, stitchRatio),
+                    new Keyframe(1f, stitchRatio));
+            }
+            _line.widthCurve = _curve;
+        }
+
+        AnimationCurve _curve;
+        float _curveT = -1f, _curveRatio = -1f;
 
         /// <summary>
         /// 땀 하나의 세 점을 푼다 — 진입(안) / 솟음(밖) / 이탈(안).

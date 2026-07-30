@@ -45,7 +45,24 @@ namespace Game.View
         /// 이식된 Precog 포즈가 rootScale 100을 들고 있어 몸이 100배가 된 사고의 재발 방지.
         /// </summary>
         public static bool applyRootTrs;
-        public bool holdBaseWhenIdle = true;
+
+        /// <summary>
+        /// 재생 중이 아닐 때 <see cref="basePoseName"/> 포즈를 계속 유지할지. <b>기본은 끔.</b>
+        ///
+        /// <para>★ <c>applyRootTrs</c>와 <b>같은 부류의 사고</b>다. 이 스크립트는
+        /// <c>[RuntimeInitializeOnLoadMethod]</c>로 Play마다 자동 부착되고, 켜져 있으면 평상시 내내
+        /// <c>Poses/pose_기본포즈.json</c>을 우리 리그에 적용한다. 그런데 그 파일은 <b>이식된 Precog
+        /// 데이터</b>다 — <c>root: "KatanaViewmodel"</c>, <c>rootScale [100,100,100]</c>,
+        /// 뼈 경로는 <c>Meshy_AI_Hooded_Mech_Character_…</c>. 우리 Protag가 아니다.</para>
+        ///
+        /// <para>더 나쁜 것은 적용 직후 <c>FingerPoser.Rebuild()</c>를 부른다는 점이다. Rebuild는
+        /// <c>rest[f,j] = 현재 localRotation</c>으로 <b>손가락 기준 자세를 다시 굽는다</b> —
+        /// 즉 카타나 포즈가 손가락의 새 기준이 된다. "가끔 기본 상태에서 손이 뒤틀린다"의 정체다.</para>
+        ///
+        /// <para>이 기능 자체가 칼 콤보 사이에 기본 자세를 물고 있으려던 Precog 전용 장치이고,
+        /// 우리 1인칭 자세는 <see cref="MantleRig"/>가 IK로 단독 소유한다(설계 §3). 켜야 할 이유가 없다.</para>
+        /// </summary>
+        public bool holdBaseWhenIdle;
         public bool snapReturn = true;
 
         bool idleHoldOn = true;
