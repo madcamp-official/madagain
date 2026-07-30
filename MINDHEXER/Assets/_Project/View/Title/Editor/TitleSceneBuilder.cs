@@ -24,6 +24,34 @@ namespace Game.View
         const string RobotPrefab = "Assets/_Project/Prefabs/Hackables/Boss/MegaRobot.prefab";
         const string VolumeAsset = "Assets/_Project/Scenes/TitleVolume.asset";
 
+        /// <summary>
+        /// 로봇 Y 회전(도). 실제로 확인한 결과 MegaRobot의 모델 정면은 +Z라,
+        /// -Z에서 바라보는 카메라를 마주보려면 180°가 맞다. (0으로 두면 뒷모습이 보인다)
+        /// </summary>
+        const float RobotYaw = 180f;
+
+        /// <summary>
+        /// 로봇 스케일. 원본 프리팹이 1m급이라 화면을 채우려면 카메라가 바짝 붙어야 했고,
+        /// 그만큼 메시·노멀맵이 확대돼 거칠게 보였다. 크게 세우고 멀리서 잡는다.
+        /// </summary>
+        const float RobotScale = 50f;
+
+        /// <summary>후광(rim) 세기. "그림자가 대부분, 윤곽만 희미하게"가 목표라 낮게 잡는다.</summary>
+        const float RimIntensity = 4f;
+
+        /// <summary>후광이 머리 뒤로 물러나는 거리 = 로봇 키 × 이 비율. 광원↔머리 거리가 이 값으로 확정된다.</summary>
+        const float RimBackOffRatio = 0.30f;
+
+        /// <summary>후광 사거리 = 로봇 키 × 이 비율. 물러난 거리(0.30)의 두 배라 머리에 확실히 닿는다.</summary>
+        const float RimRangeRatio = 0.60f;
+
+        /// <summary>
+        /// 후광 콘 각도(도). <b>확산을 막는 건 사거리가 아니라 이 콘이다.</b>
+        /// 광원이 머리 뒤 0.30×키 지점에 있으므로, 55°면 머리에서 반경 약 0.16×키만 밝아지고
+        /// 그보다 아래(허리 등)는 콘 밖이라 빛이 전혀 닿지 않는다.
+        /// </summary>
+        const float RimConeAngle = 55f;
+
         [MenuItem("MINDHEXER/Build/Title Scene")]
         public static void Build()
         {
@@ -44,8 +72,10 @@ namespace Game.View
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             // ── 다크 환경(암전 톤) ─────────────────────────────────────────────
+            // 앰비언트를 완전한 검정으로 둔다. 아주 약한 앰비언트라도 모든 면을 균일하게 들어올려
+            // 빛이 닿지 않는 하반신까지 실루엣으로 떠오르게 만든다. 0이어야 "어둠에 잠긴다".
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.012f, 0.013f, 0.02f, 1f);
+            RenderSettings.ambientLight = Color.black;
             RenderSettings.fog = false;
             RenderSettings.skybox = null;
 
@@ -57,10 +87,11 @@ namespace Game.View
             {
                 robot = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
                 robot.transform.position = Vector3.zero;
-                // 카메라는 -Z에 있으므로 로봇이 -Z(카메라)를 정면으로 보도록 180° 회전.
-                // (모델 기본 정면이 +Z라 뒷모습이 보이던 것을 바로잡음. 여전히 뒤돌아 있으면 이 값을 0으로.)
-                robot.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
-                bounds = ComputeBounds(robot);
+                // MegaRobot의 모델 정면은 -Z다. 카메라도 -Z쪽(z<0)에서 +Z를 보므로 회전 0이 정면.
+                // (직전 초안은 180°를 줘서 뒷모습이 보였다. 다시 뒤돌면 이 값만 180으로 바꾸면 된다.)
+                robot.transform.rotation = Quaternion.Euler(0f, RobotYaw, 0f);   // 카메라를 마주보게
+                robot.transform.localScale = Vector3.one * RobotScale;
+                bounds = ComputeBounds(robot);   // 스케일 적용 뒤에 재야 카메라·조명이 함께 커진다
             }
             else
             {
@@ -86,10 +117,13 @@ namespace Game.View
             var camGo = new GameObject("Main Camera") { tag = "MainCamera" };
             var cam = camGo.AddComponent<Camera>();
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0.006f, 0.007f, 0.012f, 1f);
+            // 배경도 완전한 검정. 배경이 조금이라도 밝으면 빛 안 받는 하반신이 '더 검은 덩어리'로
+            // 오려낸 듯 보인다. 배경과 같은 값이어야 경계 없이 어둠에 녹아든다.
+            cam.backgroundColor = Color.black;
             cam.fieldOfView = fov;
-            cam.nearClipPlane = 0.05f;
-            cam.farClipPlane = 1000f;
+            // 클립 평면도 피사체 크기에 맞춘다. 로봇이 커지면 near를 같이 키워야 뎁스 정밀도가 유지된다.
+            cam.nearClipPlane = Mathf.Max(0.05f, bounds.size.y * 0.02f);
+            cam.farClipPlane = Mathf.Max(1000f, dist * 5f);
             cam.allowHDR = true;    // 블룸/톤매핑 품질
             cam.allowMSAA = true;
             camGo.transform.position = camPos;
@@ -98,20 +132,37 @@ namespace Game.View
             var camData = camGo.AddComponent<UniversalAdditionalCameraData>();
             camData.renderPostProcessing = true;
             camData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
-            camGo.AddComponent<TitleHeadLook>();
+            var headLook = camGo.AddComponent<TitleHeadLook>();
+            // 시차는 씬 스케일에 비례해야 보인다(로봇이 클수록 카메라도 멀어지므로 절대값 고정이면 무의미).
+            headLook.parallaxAmount = bounds.size.y * 0.06f;
             // 13:12는 카메라 뷰포트 축소가 아니라 오버레이 검은 바로 만든다(아래 BuildLetterbox) →
             // 카메라는 전체 화면 풀해상도로 렌더해 화질을 유지한다.
 
-            // ── 후광(rim) 라이트: 머리 바로 뒤(카메라 반대편)에서 윤곽만 은은하게(부분일식 코로나). ─
-            // 실루엣이 너무 또렷하지 않도록 약하게. 세기는 눈으로 미세조정.
+            // ── 후광(rim) 라이트: 머리 뒤에서 좁은 콘으로 쏘는 스포트라이트 ────────
+            //
+            // 포인트 라이트를 쓰면 '사거리' 하나가 도달 거리와 확산 범위를 동시에 결정한다.
+            // 하반신을 어둡게 하려고 사거리를 줄이면 머리에도 빛이 닿지 않아 모델이 통째로 사라진다.
+            // (실제로 그랬다 — 광원을 bounds.max.z 뒤에 뒀는데 그건 팔·다리가 뻗은 지점이라
+            //  몸통 중심선의 머리까지는 사거리보다 멀었다.)
+            //
+            // 스포트라이트는 확산을 '콘'이 막아주므로 사거리를 넉넉히 줄 수 있다.
+            // 위치를 bounds.max.z가 아니라 bounds.center.z 기준으로 잡아, 광원↔머리 거리가
+            // 로봇 형상과 무관하게 RimBackOffRatio로 확정된다.
             var rimGo = new GameObject("Rim Light");
             var rim = rimGo.AddComponent<Light>();
-            rim.type = LightType.Point;
+            rim.type = LightType.Spot;
             rim.color = new Color(0.95f, 0.97f, 1f, 1f);
-            rim.intensity = 3.2f;                  // 은은한 후광(과하지 않게)
-            rim.range = Mathf.Max(1.5f, bounds.size.magnitude * 1.3f);
+            rim.intensity = RimIntensity;
             rim.shadows = LightShadows.None;
-            rimGo.transform.position = new Vector3(head.x, head.y + bounds.size.y * 0.05f, bounds.max.z + 0.12f);
+            rim.range = bounds.size.y * RimRangeRatio;
+            rim.spotAngle = RimConeAngle;
+            rim.innerSpotAngle = RimConeAngle * 0.55f;
+
+            rimGo.transform.position = new Vector3(
+                head.x,
+                head.y + bounds.size.y * 0.02f,
+                bounds.center.z + bounds.size.y * RimBackOffRatio);   // 머리 '뒤'(카메라 반대편)
+            rimGo.transform.LookAt(head);                             // 머리를 정확히 겨눈다
 
             // ── 얼굴 필 라이트: 정면 근접에서 얼굴을 비춘다. 평소 0, PLAY 섬광 때만(TitleIntro 제어). ─
             var fillGo = new GameObject("Face Fill Light");
@@ -120,10 +171,11 @@ namespace Game.View
             fill.color = new Color(1f, 0.98f, 0.95f, 1f);
             fill.intensity = 0f;
             fill.range = Mathf.Max(3f, dist);
-            fill.spotAngle = 45f;
+            fill.spotAngle = 16f;      // 좁게 → 얼굴만 도려내듯 비춘다(몸통까지 밝아지지 않게)
+            fill.innerSpotAngle = 7f;
             fill.shadows = LightShadows.None;
             Vector3 frontDir = (camPos - head).normalized;             // 머리→카메라 방향(정면)
-            fillGo.transform.position = head + frontDir * Mathf.Min(dist * 0.35f, 2.5f) + Vector3.up * (bounds.size.y * 0.03f);
+            fillGo.transform.position = head + frontDir * (dist * 0.35f) + Vector3.up * (bounds.size.y * 0.03f);
             fillGo.transform.LookAt(head);
 
             // ── URP Volume(후광 글로우/비네트) — API 편차 대비 try/catch ────────
@@ -209,9 +261,10 @@ namespace Game.View
 
             Debug.Log(ok
                 ? $"[TitleSceneBuilder] Title 씬 빌드 완료 → {ScenePath}\n" +
-                  "  · 로봇은 카메라를 향하도록 180° 회전됨. 여전히 뒤돌아 있으면 MegaRobot 회전 Y를 0으로.\n" +
-                  "  · 후광(rim 3.2)·얼굴필·프레이밍은 눈으로 미세조정. 섬광은 PLAY 때만 재생됨.\n" +
+                  $"  · 로봇 Y 회전 {RobotYaw}° (정면), 스케일 ×{RobotScale}. 뒤돌아 보이면 RobotYaw만 180으로.\n" +
+                  $"  · 후광 rim {RimIntensity} / range = 키×{RimRangeRatio} — 머리 주변만 은은하게. 얼굴 섬광은 PLAY 때만.\n" +
                   "  · 13:12는 오버레이 검은 바로 처리(카메라는 풀해상도 렌더).\n" +
+                  "  · 3D 공간 검증: MINDHEXER ▸ Build ▸ Title 3D 검증(마우스 드래그로 궤도 회전).\n" +
                   "  · PLAY 대상 'Intro' 씬은 아직 없어 안전 처리됨(추가되면 자동 이동)."
                 : "[TitleSceneBuilder] 씬 저장 실패");
 
@@ -325,23 +378,39 @@ namespace Game.View
                 var profile = ScriptableObject.CreateInstance<VolumeProfile>();
                 AssetDatabase.CreateAsset(profile, VolumeAsset);
 
+                // 후광이 흰 덩어리로 번지지 않도록 threshold를 올리고 intensity를 낮춘다.
                 var bloom = profile.Add<Bloom>(true);
                 bloom.active = true;
-                bloom.threshold.overrideState = true; bloom.threshold.value = 0.9f;
-                bloom.intensity.overrideState = true; bloom.intensity.value = 1.3f;
-                bloom.scatter.overrideState = true; bloom.scatter.value = 0.8f;
-                bloom.tint.overrideState = true; bloom.tint.value = new Color(0.9f, 0.94f, 1f, 1f);
+                bloom.threshold.overrideState = true; bloom.threshold.value = 1.15f;
+                bloom.intensity.overrideState = true; bloom.intensity.value = 0.35f;
+                bloom.scatter.overrideState = true; bloom.scatter.value = 0.62f;
+                bloom.clamp.overrideState = true; bloom.clamp.value = 6f;
+                bloom.tint.overrideState = true; bloom.tint.value = new Color(0.86f, 0.9f, 1f, 1f);
+                // 고품질 필터링: 어두운 화면에서 블룸 계단현상(밴딩)이 눈에 띄던 것을 없앤다.
+                bloom.highQualityFiltering.overrideState = true; bloom.highQualityFiltering.value = true;
 
                 var vig = profile.Add<Vignette>(true);
                 vig.active = true;
-                vig.intensity.overrideState = true; vig.intensity.value = 0.5f;
-                vig.smoothness.overrideState = true; vig.smoothness.value = 0.7f;
+                vig.intensity.overrideState = true; vig.intensity.value = 0.62f;
+                vig.smoothness.overrideState = true; vig.smoothness.value = 0.75f;
 
                 var tone = profile.Add<Tonemapping>(true);
                 tone.active = true;
                 tone.mode.overrideState = true; tone.mode.value = TonemappingMode.Neutral;
 
+                // VolumeProfile.Add()가 만든 VolumeComponent는 별도의 ScriptableObject다.
+                // .asset의 서브에셋으로 등록하지 않으면 저장 시 전부 null로 날아가고
+                // (components: [{fileID: 0}, ...]) 블룸/비네트/톤매핑이 통째로 사라진다.
+                foreach (var comp in profile.components)
+                {
+                    if (comp == null) continue;
+                    comp.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector;
+                    if (!AssetDatabase.IsSubAsset(comp))
+                        AssetDatabase.AddObjectToAsset(comp, profile);
+                    EditorUtility.SetDirty(comp);
+                }
                 EditorUtility.SetDirty(profile);
+                AssetDatabase.SaveAssetIfDirty(profile);
 
                 var volGo = new GameObject("Global Volume");
                 var vol = volGo.AddComponent<Volume>();

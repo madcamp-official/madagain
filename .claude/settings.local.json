@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls ~/.claude.json 2>/dev/null && ls .mcp.json 2>/dev/null; ls .claude/ 2>/dev/null)",
+      "Bash(python -c ' *)",
+      "PowerShell($d = Get-Content \"$env:USERPROFILE\\\\.claude.json\" -Raw | ConvertFrom-Json; \"TOP:\"; $d.mcpServers.PSObject.Properties.Name; \"PROJECTS:\"; $d.projects.PSObject.Properties | ForEach-Object { $n=$_.Name; $m=$_.Value.mcpServers; if \\($m\\) { \"$n -> \" + \\($m.PSObject.Properties.Name -join ','\\) } })",
+      "Bash(xargs grep -ln \"UniversalRenderPipelineAsset\\\\|m_RenderScale\")",
+      "Bash(git checkout *)",
+      "Bash(xargs -I{} sh -c 'echo \"FILE: {}\"; grep -v \"^-r:\" {} ; echo \"--- ref count:\"; grep -c \"^-r:\" {}')"
+    ]
+  }
+}
