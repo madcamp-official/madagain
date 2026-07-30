@@ -130,6 +130,13 @@ namespace Game.View
         float _baseFov = -1f;
         Camera _cam;
 
+        [Header("전체 세기")]
+        // 레이어가 여덟 개에 튜너블이 서른 개가 넘어, "조금만 줄이고 싶다"를 개별 값으로 하려면
+        // 전부를 같은 비율로 손대야 한다. 그 비율 하나를 여기 둔다 — 0이면 절차 연출이 완전히 꺼진다.
+        // VR 배율과 <b>곱해진다</b>(대체가 아니다). VR은 멀미 때문에 따로 더 줄여야 하기 때문이다.
+        [Tooltip("절차 연출 전체 세기. 0 = 완전히 끔, 1 = 원래대로. F6에서 조절한다.")]
+        [Range(0f, 1f)] public float masterScale = 1f;
+
         [Header("VR 감쇠")]
         [Tooltip("VR에서 위치 오프셋에 곱하는 배율.")]
         [Range(0f, 1f)] public float vrPositionScale = 0.25f;
@@ -138,6 +145,19 @@ namespace Game.View
 
         /// <summary>이번 프레임의 롤(도).</summary>
         public float CurrentRoll { get; private set; }
+
+        /// <summary>
+        /// 연출이 얹는 롤(도). 기상 연출(<see cref="WakeUpSequence"/>)이 <b>매 프레임 대입</b>한다.
+        ///
+        /// <para>여기로 넣는 이유: 롤은 리그 배치에 따라 이 컴포넌트가 직접 적용하거나
+        /// (<see cref="OwnsRotation"/>) <see cref="MouseLook"/>이 합성하는데, 둘 다
+        /// <see cref="CurrentRoll"/>을 통과한다. 그래서 여기 넣으면 <b>두 배치에서 모두</b> 걸린다.
+        /// 연출이 직접 회전을 쓰면 배치에 따라 되거나 안 되거나 한다.</para>
+        ///
+        /// <para><b>VR에서는 <see cref="vrRollScale"/>(기본 0)로 함께 억제된다</b> — 인위적 롤은
+        /// 멀미 유발 1순위다. 즉 VR에서는 비스듬해지지 않는다. 의도한 동작이다.</para>
+        /// </summary>
+        public float ExternalRoll;
 
         /// <summary>
         /// 이 컴포넌트가 <b>자기 트랜스폼의 회전을 직접 소유</b>하는가.
@@ -310,7 +330,8 @@ namespace Game.View
                        + Tick(ref _landKick, landKickCurve, dt);
 
             // 롤 킥 — 감쇠 진동. sin이 0에서 출발해 빠르게 최고점을 찍으므로 '파박' 하고 튄다.
-            float roll = 0f;
+            // 연출 롤(ExternalRoll)도 여기 섞는다 — 아래 rollScale을 같이 타서 VR에서 자동 억제된다.
+            float roll = ExternalRoll;
             if (_rollKick.active)
             {
                 _rollKick.t += dt;
@@ -358,8 +379,8 @@ namespace Game.View
             _carryFov.Step(dt);
 
             bool vr = VrMode.Enabled;
-            float posScale = vr ? vrPositionScale : 1f;
-            float rollScale = vr ? vrRollScale : 1f;
+            float posScale  = (vr ? vrPositionScale : 1f) * masterScale;
+            float rollScale = (vr ? vrRollScale : 1f) * masterScale;
             CurrentRoll = roll * rollScale + _carryRoll.Value * rollScale;
 
             if (_cam != null && _baseFov > 0f)

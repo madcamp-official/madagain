@@ -27,6 +27,35 @@ namespace Game.View
         /// </summary>
         public Vector2 ExternalLook;
 
+        /// <summary>
+        /// 감도 배율. 연출이 "아직 정신이 안 든" 여운을 줄 때 1 미만으로 낮췄다 되돌린다.
+        /// <see cref="lookSens"/>를 직접 건드리지 않는 이유: 그건 사용자 설정이라, 연출이 중간에
+        /// 끊기면 낮아진 값이 그대로 굳는다.
+        /// </summary>
+        public float SensScale = 1f;
+
+        /// <summary>지금 보고 있는 방향(도). 기상 연출이 시작점을 읽고 목표로 되돌릴 때 쓴다.</summary>
+        public float Yaw => _yaw;
+
+        /// <summary>지금 위아래 각(도). −는 위, +는 아래(Euler.x 규약 그대로).</summary>
+        public float Pitch => _pitch;
+
+        /// <summary>
+        /// 시점을 직접 지정한다. <b>연출이 시점을 움직이려면 반드시 이걸 써야 한다.</b>
+        ///
+        /// <para>이 컴포넌트는 매 프레임 <c>transform.localRotation</c>을 자기 yaw/pitch로
+        /// 덮어쓴다. 그래서 다른 컴포넌트가 <c>localRotation</c>을 직접 쓰면 <b>다음 프레임에
+        /// 사라진다</b> — 회전의 소유자를 하나로 유지하기 위해 진입점을 여기 둔다.</para>
+        ///
+        /// <para>입력 누적을 같이 막으려면 <see cref="FirstPersonPlayer.LookFrozen"/>을 켤 것.
+        /// 안 그러면 이 값이 마우스 입력에 곧바로 밀린다.</para>
+        /// </summary>
+        public void SetLook(float yaw, float pitch)
+        {
+            _yaw = yaw;
+            _pitch = Mathf.Clamp(pitch, -85f, 85f);
+        }
+
         FirstPersonPlayer _body;
         MotionFeel _feel;
         float _yaw, _pitch;
@@ -64,8 +93,9 @@ namespace Game.View
                 if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
                     d += mouse.delta.ReadValue();
 
-                _yaw += d.x * lookSens;
-                _pitch = Mathf.Clamp(_pitch - d.y * lookSens, -85f, 85f);
+                float s = lookSens * Mathf.Max(0f, SensScale);
+                _yaw += d.x * s;
+                _pitch = Mathf.Clamp(_pitch - d.y * s, -85f, 85f);
             }
             ExternalLook = Vector2.zero;   // 델타는 매 프레임 소비(frozen이어도 쌓이면 안 된다)
 

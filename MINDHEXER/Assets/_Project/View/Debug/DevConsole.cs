@@ -109,6 +109,10 @@ namespace Game.View
                     Print("  guards            — 씬의 경비병 목록·위치");
                     Print("  clear guards      — 경비병 전부 제거");
                     Print("  clear             — 로그 지우기");
+                    Print("  death             — 사망 연출(암전 1.5s→치지직 0.2s→기상 1.5s)");
+                    Print("  intro             — 시작 인트로(치지직→기상). 사망 연출의 뒷부분");
+                    Print("  wake              — 기상만(암전 없이). 흔들거림·상승·팔만 볼 때");
+                    Print("  veil <검정> [치지직] — 덮개 값 직접 지정(0~1). veil 0 으로 걷음");
                     break;
 
                 case "spawn":
@@ -139,6 +143,43 @@ namespace Game.View
                     if (a.Length >= 2 && a[1].ToLowerInvariant().StartsWith("guard")) ClearGuards();
                     else _log.Length = 0;
                     break;
+
+                case "death":
+                    DeathSequence.Instance.Play();
+                    Print("  사망 연출 재생. 콘솔을 닫아야(`) 화면이 보인다");
+                    break;
+
+                case "intro":
+                    DeathSequence.Instance.PlayIntro();
+                    Print("  인트로 재생. 콘솔을 닫아야(`) 화면이 보인다");
+                    break;
+
+                case "wake":
+                {
+                    // 기상만 따로 본다 — 암전·선 없이 눈높이·흔들림·팔만 확인할 때.
+                    var w = FindAnyObjectByType<WakeUpSequence>();
+                    if (w == null) w = DeathSequence.Instance.wakeUp;
+                    if (w == null) { Print("  WakeUpSequence가 없습니다"); break; }
+                    w.Play();
+                    Print("  기상 연출 재생");
+                    break;
+                }
+
+                case "veil":
+                {
+                    var v = DeathSequence.Instance.veil;
+                    if (v == null) { Print("  ScreenVeil이 없습니다"); break; }
+                    if (a.Length < 2) { Print("  사용: veil <검정 0~1> [선 0~1]"); break; }
+
+                    float b, l = 0f;
+                    if (!float.TryParse(a[1], out b)) { Print("  숫자를 넣으십시오"); break; }
+                    if (a.Length >= 3) float.TryParse(a[2], out l);
+
+                    v.black = Mathf.Clamp01(b);
+                    v.glitch = Mathf.Clamp01(l);
+                    Print($"  덮개 검정 {v.black:0.##} / 치지직 {v.glitch:0.##}");
+                    break;
+                }
 
                 default:
                     Print("  알 수 없는 명령: " + cmd + " (help)");

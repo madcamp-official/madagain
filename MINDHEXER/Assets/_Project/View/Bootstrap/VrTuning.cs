@@ -67,7 +67,35 @@ namespace Game.View
         public void SetPossessLift(float lift)
         {
             _possessLift = lift;
-            Apply();
+            ApplyHead();
+        }
+
+        /// <summary>기상 연출이 얹는 [Head] 오프셋(m). 일어나는 동안 y가 올라오고 x가 흔들린다.</summary>
+        Vector3 _wakeOffset;
+
+        /// <summary>
+        /// 기상 연출(<see cref="WakeUpSequence"/>)이 <b>매 프레임</b> 부른다. 0으로 부르면 원복.
+        ///
+        /// <para><see cref="Apply"/>가 아니라 <see cref="ApplyHead"/>만 부른다 — Apply는
+        /// renderScale·Cardboard 프로파일까지 건드리므로 매 프레임 부를 것이 아니다.</para>
+        /// </summary>
+        public void SetWakeOffset(Vector3 offset)
+        {
+            _wakeOffset = offset;
+            ApplyHead();
+        }
+
+        /// <summary>
+        /// [Head] 로컬 위치만 갱신한다. <b>이 트랜스폼의 유일한 소유자가 여기다</b> — 눈높이·빙의
+        /// 리프트·기상 오프셋이 한 식에서 합성되므로 서로 덮어쓸 일이 없다.
+        /// </summary>
+        void ApplyHead()
+        {
+            if (head == null || Data == null) return;
+            head.localPosition = new Vector3(
+                _wakeOffset.x,
+                Data.eyeHeight - eyeBase + _possessLift + _wakeOffset.y,
+                _wakeOffset.z);
         }
         [Tooltip("HUD 배치 적용 대상. GameBoot이 세팅.")]
         public VrHudSpace hud;
@@ -86,12 +114,7 @@ namespace Game.View
         {
             if (Data == null) return;
 
-            if (head != null)
-            {
-                Vector3 lp = head.localPosition;
-                lp.y = Data.eyeHeight - eyeBase + _possessLift;   // 기본 눈높이는 몸이 갖고, 카메라는 차이+빙의 리프트만
-                head.localPosition = lp;
-            }
+            ApplyHead();   // 기본 눈높이는 몸이 갖고, [Head]는 차이 + 빙의 리프트 + 기상 오프셋만
 
             if (hud != null) hud.SetPlacement(Data.hudDistance, Data.hudPanelHeight);
 
