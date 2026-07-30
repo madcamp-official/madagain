@@ -12,6 +12,12 @@ namespace Game.View
         public float moveSpeed = 6f;
         public float lookSens = 0.1f;
 
+        [Tooltip("E=위 / Q=아래로 날아다닌다. 높이를 바꿔가며 확인해야 하는 테스트(보스 허리 굽힘 등)용.")]
+        public bool verticalKeys = true;
+
+        [Tooltip("상하 이동 속도(m/s). 0 이하면 moveSpeed를 쓴다.")]
+        public float verticalSpeed = 0f;
+
         [Tooltip("마우스 시점 회전 사용 여부. VR에선 머리 트래킹(Cardboard)이 회전을 소유하므로 false(이동만).")]
         public bool lookEnabled = true;
 
@@ -45,6 +51,17 @@ namespace Game.View
             if (kb.aKey.isPressed) m.x -= 1f;
             if (kb.dKey.isPressed) m.x += 1f;
             transform.position += transform.TransformDirection(m.normalized) * moveSpeed * Time.deltaTime;
+
+            // 상하는 <b>월드 기준</b>이다 — 시점 기준으로 하면 아래를 볼 때 E가 앞으로 가버려서
+            // 높이만 바꿔가며 보는 테스트가 안 된다.
+            if (verticalKeys)
+            {
+                float v = 0f;
+                if (kb.eKey.isPressed) v += 1f;
+                if (kb.qKey.isPressed) v -= 1f;
+                if (v != 0f)
+                    transform.position += Vector3.up * (v * (verticalSpeed > 0f ? verticalSpeed : moveSpeed) * Time.deltaTime);
+            }
 
             if (lookEnabled && kb.escapeKey.wasPressedThisFrame)
                 Cursor.lockState = Cursor.lockState == CursorLockMode.Locked
