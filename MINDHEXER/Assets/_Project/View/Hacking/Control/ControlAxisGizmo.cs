@@ -11,6 +11,11 @@ namespace Game.View
     [DisallowMultipleComponent]
     public class ControlAxisGizmo : MonoBehaviour
     {
+        [Tooltip("막대를 실제로 띄울지. <b>기본 꺼짐</b> — 임시 표현이라 화면에 안 나오는 게 낫다는 판단.\n" +
+                 "끈 상태에서는 막대를 만들지도 않는다(런타임에 켜면 그때 만든다).\n" +
+                 "축 방향을 눈으로 확인해야 할 때만 개별 오브젝트에서 켜십시오.")]
+        public bool show;
+
         [Tooltip("슬롯1 축(좌클릭 −/우클릭 +) 색.")]
         public Color slot0Color = new Color(0.4f, 1f, 0.3f, 1f);
 
@@ -33,6 +38,13 @@ namespace Game.View
             _control = GetComponent<IExternalControl>();
             if (_control == null) { enabled = false; return; }
 
+            // 꺼져 있으면 만들지 않는다 — 조종 대상마다 큐브 + 머티리얼이 하나씩 생기므로.
+            if (show) BuildBars();
+        }
+
+        void BuildBars()
+        {
+            if (_bars != null) return;
             _bars = new Transform[_control.AxisCount];
             for (int i = 0; i < _bars.Length; i++) _bars[i] = MakeBar(i);
             SetVisible(false);
@@ -66,10 +78,13 @@ namespace Game.View
 
         void LateUpdate()
         {
+            if (!show) { SetVisible(false); return; }
+            BuildBars();   // 런타임에 켠 경우 여기서 만들어진다
+
             // 조종 중이면 항상 표시 — 시선과 무관하게 조종되므로(도주하며 조종, §2.5).
-            bool show = _hackable != null && _hackable.captureState == CaptureState.Captured;
-            SetVisible(show);
-            if (!show) return;
+            bool driving = _hackable != null && _hackable.captureState == CaptureState.Captured;
+            SetVisible(driving);
+            if (!driving) return;
 
             for (int i = 0; i < _bars.Length; i++)
             {
