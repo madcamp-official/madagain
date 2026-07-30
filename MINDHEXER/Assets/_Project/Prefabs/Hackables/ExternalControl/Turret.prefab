@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 1474382372554472168}
   - component: {fileID: 1499881089934816987}
   - component: {fileID: 3946925539658892375}
-  - component: {fileID: 1090879342955629824}
   - component: {fileID: 6798278562109568758}
+  - component: {fileID: 833894624969284826}
   m_Layer: 8
   m_Name: Turret
   m_TagString: Untagged
@@ -70,7 +70,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b3de27fbae44c484cbc6dd54861e1698, type: 2}
+  - {fileID: 2100000, guid: d2c0cd404a7f8014f9676658a0b26c28, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -107,36 +107,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.Hackable
   kind: 5
-  controlType: 1
-  patternLineCount: 7
+  controlType: 0
+  patternLineCount: 0
   hackRange: 20
   gazeCollider: {fileID: 0}
   glowRenderers:
   - {fileID: 1499881089934816987}
   - {fileID: 6490263529684782526}
   - {fileID: 1084667975450488394}
---- !u!114 &1090879342955629824
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2666440652627555177}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 626ca024286bb69468a866da0ccc36c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.ViewEntryTarget
-  eye: {fileID: 0}
-  panRange: 360
-  tiltRange: 30
-  hardClampPan: 0
-  hardClampTilt: 0
-  eyeBlocked: 0
-  allowsMove: 0
-  useBlocker: 1
-  blockerColor: {r: 0.15, g: 0.85, b: 0.25, a: 1}
-  hideOwnMeshWhilePossessed: 1
 --- !u!114 &6798278562109568758
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -156,10 +134,36 @@ MonoBehaviour:
     m_Bits: 4294967295
   fireInterval: 0.2
   showRangeGizmo: 1
-  gizmoRadius: 0.15
-  gizmoColor: {r: 1, g: 0.15, b: 0.1, a: 0.22}
-  playerFireInterval: 0.25
-  playerFireRange: 40
+  fireAnimator: {fileID: 3880283467230287085}
+  fireTrigger: Shot
+  shotClip: {fileID: 8300000, guid: 29c04ba19da834fb0968146ce5e3a847, type: 3}
+  audioSource: {fileID: 6317818936660527437}
+  muzzleFlash: {fileID: 1579546626485678, guid: 7db58c0e931b44d52826ad1829194c32, type: 3}
+  muzzleFlashLife: 2
+--- !u!114 &833894624969284826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2666440652627555177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0783ad989719b9419c27be4296ce387, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.RotationPlatform
+  riderRoot: {fileID: 4819744768996864995}
+  axis: {x: 0, y: 1, z: 0}
+  rangeMinDeg: -360
+  rangeMaxDeg: 360
+  rotateSpeedDeg: 60
+  accelTime: 0.08
+  flickStepDeg: 30
+  flickTime: 0.28
+  overshoot: 1.6
+  snapAnalog: 0
+  carryRiders: 0
+  probeDistance: 0.35
 --- !u!1 &3034995794242897228
 GameObject:
   m_ObjectHideFlags: 0
@@ -257,7 +261,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b3de27fbae44c484cbc6dd54861e1698, type: 2}
+  - {fileID: 2100000, guid: d2c0cd404a7f8014f9676658a0b26c28, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -352,7 +356,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5415434948725116917}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b7b77d5a3ac0349a9a4c1bbd36979f97, type: 3}
   m_Name: 
@@ -410,7 +414,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b3de27fbae44c484cbc6dd54861e1698, type: 2}
+  - {fileID: 2100000, guid: d2c0cd404a7f8014f9676658a0b26c28, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -575,7 +579,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 94
   m_CollisionDetection: 0

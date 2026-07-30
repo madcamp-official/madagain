@@ -34,6 +34,11 @@ namespace Game.View
         [Tooltip("끄면 플릭을 무시하고 홀드만 받는다. 압사 위험이 있는 프레스를 느리게만 쓰고 싶을 때.")]
         public bool allowFlick = true;
 
+        [Header("마일스톤 (홀드 전용 — 6DoF 떨림·튐 차단, §6.2)")]
+        [Tooltip("홀드 신축을 딸깍 단위로 양자화한다. 단위는 스트로크 비율(0~1).\n" +
+                 "스텝 ÷ 간격 = 최대 속도이므로 holdSpeed(0.6)와 간격(0.0833)에서 유도한 0.05가 기본이다.")]
+        public MilestoneStepper holdStep = new MilestoneStepper(0.05f);
+
         [Header("대상")]
         [Tooltip("비워두면 자기 자신·자식에서 자동으로 찾는다(모델 프리팹 안에 있는 게 정상).")]
         public TelescopingActuator actuator;
@@ -58,6 +63,22 @@ namespace Game.View
         // 시작 상태는 TelescopingActuator.startExtension 하나가 소유한다 — 그 값이 에디터 씬 뷰에도
         // 그대로 보이므로 "보이는 대로 시작"이 보장된다. 여기에 같은 값을 또 두면 둘이 어긋난다.
 
+        int _drivenFrame = -1;
+
+        /// <summary>
+        /// 입력이 없는 프레임에도 마일스톤을 흘려보낸다.
+        ///
+        /// <para><b>왜 필요한가</b>: <see cref="HackDriver"/>는 <b>입력이 있을 때만</b> <see cref="Drive"/>를
+        /// 부른다(0 입력은 아예 건너뛴다). 그러면 쿨다운이 안 흐르고 잔량이 남아, 손을 뗐다가 다시 잡는
+        /// 순간 밀린 딸깍이 한꺼번에 튀어나온다. 레일·회전판은 자기 LateUpdate에서 매 프레임 돌리므로
+        /// 이 문제가 없지만, 여기는 Drive가 유일한 입구라 따로 흘려줘야 한다.</para>
+        /// </summary>
+        void Update()
+        {
+            if (_drivenFrame == Time.frameCount) return;
+            holdStep.Advance(0f, Time.deltaTime);
+        }
+
         // ── IExternalControl ──────────────────────────────────────────────
 
         /// <summary>신축 1축뿐. 슬롯0(좌/우클릭)에만 배정된다.</summary>
@@ -77,12 +98,18 @@ namespace Game.View
             // 화면 보정을 받지 않기로 했으므로(ScreenRelativeSign=false) 이 뒤집기가 유일한 부호 처리다.
             if (allowFlick && flick != 0)
             {
-                _act.Target = flick < 0 ? 1f : 0f;
+                // 플릭은 마일스톤을 안 탄다 — 각본된 '끝에서 끝'이라 양자화하면 딸깍이 겹쳐 덜덜거린다.
+                _act.Flick(flick < 0 ? 1f : 0f);
+                holdStep.Reset();
                 return;
             }
 
-            if (!Mathf.Approximately(analog, 0f))
-                _act.Target = Mathf.Clamp01(_act.Target + (-analog) * holdSpeed * Time.deltaTime);
+            // 홀드는 마일스톤으로 양자화한다.
+            float dt = Time.deltaTime;
+            _drivenFrame = Time.frameCount;
+            float move = holdStep.Advance((-analog) * holdSpeed * dt, dt);
+            if (!Mathf.Approximately(move, 0f))
+                _act.Target = Mathf.Clamp01(_act.Target + move);
         }
 
         /// <summary>피스톤·프레스는 축이 비대칭이라 화면 기준 보정을 쓰지 않는다(클래스 주석).</summary>

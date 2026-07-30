@@ -74,6 +74,11 @@ namespace Game.View
         [Tooltip("홀드를 놓았을 때 가장 가까운 칸으로 붙일지. 기본 끔(크립은 미세 조정용).")]
         public bool snapAnalog = false;
 
+        [Header("마일스톤 (홀드 전용 — 6DoF 떨림·튐 차단, §6.2)")]
+        [Tooltip("홀드 이동을 딸깍 단위로 양자화한다. 스텝 ÷ 간격 = 최대 속도이므로 " +
+                 "moveSpeed(2)와 간격(0.0833)에서 유도한 0.17이 기본이다.")]
+        public MilestoneStepper creepStep = new MilestoneStepper(0.17f);
+
         /// <summary>앵커 기준 현재 이동량(부모 공간 단위).</summary>
         public float Offset { get; private set; }
 
@@ -206,10 +211,15 @@ namespace Game.View
             float rate = accelTime > 1e-4f ? moveSpeed / accelTime : float.MaxValue;
             _vel = Mathf.MoveTowards(_vel, target, rate * dt);
 
-            if (!Mathf.Approximately(_vel, 0f))
+            // 요구량을 마일스톤으로 양자화한다 — 0 아니면 정확히 ±스텝(§MilestoneStepper).
+            // ⚠️ _vel이 0이어도 Advance는 불러야 한다: 쿨다운을 흘려보내고 잔량을 소진해야
+            //    손을 뗀 뒤 밀린 딸깍이 다음 조종 첫 프레임에 튀지 않는다.
+            float move = creepStep.Advance(_vel * dt, dt);
+
+            if (!Mathf.Approximately(move, 0f))
             {
-                float next = Mathf.Clamp(Offset + _vel * dt, rangeMin, rangeMax);
-                if (Mathf.Approximately(next, Offset)) _vel = 0f;   // 범위 끝에 닿으면 정지
+                float next = Mathf.Clamp(Offset + move, rangeMin, rangeMax);
+                if (Mathf.Approximately(next, Offset)) { _vel = 0f; creepStep.Reset(); }   // 범위 끝
                 else Offset = next;
             }
 
@@ -261,6 +271,7 @@ namespace Game.View
             _flicking = false;
             _vel = 0f;
             _analog = 0f;
+            creepStep.Reset();   // 잔량이 남으면 재시작 첫 프레임에 튄다
             Offset = 0f;
             _lastCell = 0;
             WorldDelta = Vector3.zero;

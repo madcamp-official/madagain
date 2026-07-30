@@ -569,13 +569,89 @@ MonoBehaviour:
   head: {fileID: 8864121716839687759}
   axis: {x: 1, y: 0, z: 0}
   invertAnchorEnd: 0
-  strokeLength: 7.5
+  strokeMin: 0
+  strokeMax: 7.5
+  startExtension: 0
   useLinearMotion: 1
   linearDuration: 1
+  flickDuration: 0.2
   drive:
     frequency: 10
     damping: 0.6
-  debugPreview: 1
+  debugPreview: 0
+  _parts:
+  - t: {fileID: 2246604305158538058}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.13532083
+    length0: 0.14869793
+  - t: {fileID: 6814210465445287899}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.106863536
+    length0: 0.2024321
+  - t: {fileID: 2350546197332809336}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.13838907
+    length0: 0.14581574
+  - t: {fileID: 8044234280821843301}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.10306375
+    length0: 0.20145382
+  - t: {fileID: 5540688520815775712}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.10533749
+    length0: 0.23186976
+  - t: {fileID: 3552815359950512834}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.15291369
+    length0: 0.1675852
+  - t: {fileID: 5213398609462527173}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.15624462
+    length0: 0.013632342
+  - t: {fileID: 3506198360058814640}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.18094166
+    length0: 0.11270003
+  - t: {fileID: 1460927418514279710}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.13443132
+    length0: 0.05715318
+  - t: {fileID: 8708200191812886936}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.15419179
+    length0: 0.16534734
+  - t: {fileID: 3860929726270311439}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.18925856
+    length0: 0.11195512
+  - t: {fileID: 1202065159869003051}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.12608163
+    length0: 0.1813729
+  - t: {fileID: 4549956188292094919}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.16540995
+    length0: 0.015883356
+  - t: {fileID: 8350844109044127805}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: 0.1332009
+    length0: 0.21892823
+  _headHomePos: {x: 0, y: 0, z: 0}
+  _homeCaptured: 1
 --- !u!1 &1473161580597530032
 GameObject:
   m_ObjectHideFlags: 0

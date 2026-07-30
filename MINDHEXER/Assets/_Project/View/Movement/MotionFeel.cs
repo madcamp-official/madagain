@@ -158,6 +158,20 @@ namespace Game.View
                  "켤 것 — 몸이나 카메라에 붙은 경우 켜면 시점 소유자와 싸운다. GameBoot이 자동으로 켠다.")]
         public bool ownsRotation = false;
 
+        /// <summary>
+        /// 다른 연출이 얹는 <b>FOV 가산분</b>(도). 빙의 흡입 줌(<see cref="PossessionTransition"/>) 등이 쓴다.
+        ///
+        /// <para><b>왜 여기로 받는가</b>: 카메라의 FOV와 위치를 실제로 기록하는 곳은 이 컴포넌트
+        /// <b>하나뿐</b>이어야 한다. 바깥에서 <c>camera.fieldOfView</c>를 직접 쓰면 이쪽 계산이 매 프레임
+        /// 덮어써서 조용히 무효가 된다(카메라 소유권 사고와 같은 종류). 그래서 값만 받아 합산한다.</para>
+        ///
+        /// <para>쓰는 쪽이 <b>0으로 되돌릴 책임</b>을 진다 — 여기서 자동으로 감쇠시키지 않는다.</para>
+        /// </summary>
+        [System.NonSerialized] public float ExternalFovOffset;
+
+        /// <summary>다른 연출이 얹는 <b>월드 위치 가산분</b>(m). 빙의 흡입 돌리 등. 규약은 위와 같다.</summary>
+        [System.NonSerialized] public Vector3 ExternalPosOffset;
+
         struct Fx { public bool active; public float amp, dur, t; }
         Fx _launch, _land, _settle;       // 아래로(침하)
         Fx _launchKick, _landKick;        // 위로(킥)
@@ -349,14 +363,17 @@ namespace Game.View
             CurrentRoll = roll * rollScale + _carryRoll.Value * rollScale;
 
             if (_cam != null && _baseFov > 0f)
-                _cam.fieldOfView = _baseFov + _carryFov.Value * posScale;
+                _cam.fieldOfView = _baseFov + _carryFov.Value * posScale + ExternalFovOffset;
 
             // 카메라 흡수 지연 — 갑자기 밀린 순간 화면이 살짝 뒤처졌다가 짧게 따라잡는다.
             // 실제 게임플레이 위치(CharacterController)는 호출자가 이미 정확히 반영했으니 안 건드리고,
             // 여기 순수 시각적 오프셋만 지수 감쇠로 원위치(0)로 되돌린다 — 뚝뚝 끊기던 걸 흡수한다.
             _posLag = Vector3.Lerp(_posLag, Vector3.zero, 1f - Mathf.Exp(-carryPosLagDecay * dt));
 
-            _appliedPos = Vector3.up * ((kick - dip) * posScale) + _posLag * posScale;
+            // ExternalPosOffset도 _appliedPos에 함께 담는다 — Update의 되돌리기가 같은 값을 빼야
+            // 누적되지 않는다. 따로 더하면 되돌리기가 그만큼을 놓쳐 카메라가 계속 밀려난다.
+            _appliedPos = Vector3.up * ((kick - dip) * posScale) + _posLag * posScale
+                        + ExternalPosOffset * posScale;
             transform.position += _appliedPos;
 
             // 롤 — [CamRig]에 붙었을 때만 직접 적용한다(이 트랜스폼의 유일한 작성자이므로 대입이 정당).

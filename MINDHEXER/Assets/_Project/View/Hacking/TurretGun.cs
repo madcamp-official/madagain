@@ -3,22 +3,31 @@ using UnityEngine;
 namespace Game.View
 {
     /// <summary>
-    /// 터렛의 위협 로직 — 총구가 향한 방향으로 레이캐스트해서 <b>플레이어가 정면에 걸리면 즉발로 쏜다.</b>
+    /// 터렛의 사격 — 총구가 향한 방향으로 레이캐스트해서 정면에 걸린 것을 즉발로 쏜다.
     /// 벽에 가려지면(레이가 다른 지형에 먼저 맞으면) 당연히 안 맞는다.
     ///
-    /// <para><b>안 쏘는 경우 셋</b>:
-    ///  · 경비병(<see cref="HackableKind.Guard"/>) — 평상시든 <see cref="Hackable.everHacked"/>든 상관없이 아군 취급.
-    ///  · <b>빙의당한 경비병</b> — 몸 이동 빙의 중엔 플레이어 리그가 경비병 자리로 옮겨가 있으므로,
-    ///    맞은 게 리그의 콜라이더라도 <see cref="ViewEntryController.Current"/>.AllowsMove가 true면 쏘지 않는다.
-    ///  · <b>한 번이라도 해킹된 터렛 자신</b> — <see cref="Hackable.everHacked"/>가 true면 영구 무력화(발사 로직 자체를 끈다).</para>
+    /// <para><b>★ 쏘는 대상은 "지금 조종 중인가"로 갈린다</b>(기초_설계안 §6.2).
+    /// <list type="table">
+    /// <item><term>조종 중 아님</term><description><b>플레이어만</b> 쏜다. 경비병은 아군이라 안 쏜다.</description></item>
+    /// <item><term>조종 중</term><description><b>경비병만</b> 쏜다. 플레이어는 안 쏜다.</description></item>
+    /// </list></para>
     ///
-    /// <para><b>즉발 사망은 플레이스홀더다.</b> 정식 사망/리스폰 시스템이 아직 없어서, 맞으면
-    /// 시작 지점으로 순간이동만 시킨다. 연출·게임오버 UI 등은 별도로 만들어야 한다.</para>
+    /// <para><b>기준이 <see cref="Hackable.everHacked"/>가 아니라 <see cref="CaptureState.Captured"/>다.</b>
+    /// 한 번 해킹했다고 영구히 아군이 되는 게 아니다 — <b>손을 떼면 다시 나를 쏜다.</b>
+    /// 그래서 "겨눠 놓고 지나가기"가 안 통하고, 지나가는 동안 계속 붙잡고 있어야 한다.
+    /// 아군 판정을 영구화하면 터렛은 "한 번 켜면 이기는 버튼"이 된다.</para>
     ///
-    /// <para><b>플레이어 조종 사격</b>: 터렛을 빙의한 상태에서 좌클릭 — <see cref="TickPlayerFire"/>를
-    /// <see cref="HackDriver"/>가 <c>HexInput.primary</c>/<c>primaryHeld</c>로 매 프레임 구동한다(그
-    /// 필드 자체는 이미 있었는데 아무도 안 읽고 있었다). 히트스캔, 경비병 한 방. 시각 연출이 아직
-    /// 없어서 결과를 콘솔 로그로만 알린다(사용자 지시) — 실제 파괴는 경비병 세션의 파괴 시스템에 연결 예정.</para>
+    /// <para><b>빙의당한 경비병은 어느 모드에서도 안 쏜다.</b> 몸 이동 빙의 중엔 플레이어 리그가
+    /// 경비병 자리에 겹쳐 있어서 콜라이더만으로는 구분이 안 된다 — 실체는 "내가 들어가 있는 몸"이므로
+    /// 위협 모드에서도(플레이어니까) 조종 모드에서도(내 몸이니까) 쏘지 않는다.</para>
+    ///
+    /// <para><b>조준은 플레이어가, 발사는 터렛이.</b> 발사 버튼이 없다 — 플레이어가 하는 일은
+    /// <see cref="RotationPlatform"/>으로 <b>각도를 돌리는 것</b> 하나뿐이고, 조준선에 경비병이
+    /// 들어오면 알아서 쏜다. 퍼즐이 "각도 맞추기"로 깔끔하게 환원된다.
+    /// (예전의 빙의 + 좌클릭 반자동 사격은 삭제됐다 — 터렛은 더 이상 빙의 대상이 아니다.)</para>
+    ///
+    /// <para><b>즉발 사망은 플레이스홀더다.</b> 정식 사망/리스폰 시스템이 아직 없어서, 플레이어는
+    /// 시작 지점으로 순간이동만 시킨다. 경비병은 <see cref="GuardDestruction"/>이 있으면 파괴한다.</para>
     /// </summary>
     [RequireComponent(typeof(Hackable))]
     public class TurretGun : MonoBehaviour
@@ -36,23 +45,33 @@ namespace Game.View
         [Tooltip("발사 후 다음 판정까지 최소 간격(초). 연사 스팸 방지용 — 즉발 사망 자체는 그대로.")]
         public float fireInterval = 0.2f;
 
-        [Header("임시 시각화 — 감지범위 원기둥")]
-        [Tooltip("총구에서 뻗는 반투명 빨강 원기둥으로 감지 범위를 표시(정식 연출 전 임시).")]
+        [Header("위험 표시")]
+        [Tooltip("총구에서 뻗는 사선을 흑백 노이즈 띠로 표시(§7). 조종 중일 때는 자동으로 꺼진다 " +
+                 "— 그때는 나를 쏘지 않으므로 위험 표시가 거짓이 된다.")]
         public bool showRangeGizmo = true;
 
-        public float gizmoRadius = 0.15f;
-        public Color gizmoColor = new Color(1f, 0.15f, 0.1f, 0.22f);
+        [Header("발사 연출")]
+        [Tooltip("반동 애니메이션을 재생할 Animator(터렛 Head). 비우면 자식에서 찾는다.\n" +
+                 "구입 애셋(Smart Turret Template)의 컨트롤러에 이미 반동 상태가 들어 있어 그걸 그대로 쓴다.")]
+        public Animator fireAnimator;
 
-        [Header("플레이어 조종 사격")]
-        [Tooltip("좌클릭 발사 간격(초). 누르고 있으면 이 간격마다 단발이 반복된다(연사 아님, 반자동).")]
-        public float playerFireInterval = 0.25f;
+        [Tooltip("반동 애니메이션 트리거 이름. 애셋 컨트롤러 기준 'Shot'.")]
+        public string fireTrigger = "Shot";
 
-        [Tooltip("플레이어 사격 사거리(m). 감지 range와 별개로 둘 수 있게 분리.")]
-        public float playerFireRange = 40f;
+        [Tooltip("발사 소리. 비우면 무음.")]
+        public AudioClip shotClip;
+
+        [Tooltip("소리를 낼 AudioSource. 비우면 자식에서 찾는다.")]
+        public AudioSource audioSource;
+
+        [Tooltip("총구에 붙일 발사 이펙트 프리팹. 비우면 없음.")]
+        public GameObject muzzleFlash;
+
+        [Tooltip("발사 이펙트 자동 정리 시간(초).")]
+        public float muzzleFlashLife = 2f;
 
         Hackable _hackable;
         float _cooldown;
-        float _playerCooldown;
         Transform _gizmo;
 
         Transform Muzzle => muzzle != null ? muzzle : transform;
@@ -60,88 +79,96 @@ namespace Game.View
         void Awake()
         {
             _hackable = GetComponent<Hackable>();
+            if (fireAnimator == null) fireAnimator = GetComponentInChildren<Animator>();
+            if (audioSource == null) audioSource = GetComponentInChildren<AudioSource>();
             if (showRangeGizmo) BuildRangeGizmo();
         }
 
-        void Update()
+        /// <summary>
+        /// 발사 연출 — 반동·소리·총구 섬광. <b>판정과 분리</b>돼 있어 무엇을 맞혔는지와 무관하게 같다.
+        ///
+        /// <para>반동은 애니메이션이 담당한다. 코드로 총구를 흔들면 <see cref="RotationPlatform"/>이
+        /// 매 프레임 <c>localRotation</c>을 대입하므로 즉시 지워진다 — 회전 소유자가 하나라는 규칙
+        /// (§카메라 소유권과 같은 문제)이 여기서도 적용된다. Animator는 그 아래 본을 움직이므로 안 싸운다.</para>
+        /// </summary>
+        void PlayFireFx()
         {
-            bool disabled = _hackable.everHacked;
-            if (_gizmo != null) _gizmo.gameObject.SetActive(!disabled && showRangeGizmo);
-            if (disabled) return;   // 한 번이라도 해킹되면 영구 무력화
+            if (fireAnimator != null && !string.IsNullOrEmpty(fireTrigger))
+                fireAnimator.SetTrigger(fireTrigger);
 
-            if (_cooldown > 0f) { _cooldown -= Time.deltaTime; return; }
+            if (audioSource != null && shotClip != null)
+                audioSource.PlayOneShot(shotClip, Random.Range(0.75f, 1f));
 
-            if (TryHitPlayer(out FirstPersonPlayer player))
+            if (muzzleFlash != null)
             {
-                Fire(player);
-                _cooldown = fireInterval;
+                var fx = Instantiate(muzzleFlash, Muzzle);
+                if (muzzleFlashLife > 0f) Destroy(fx, muzzleFlashLife);
             }
-        }
-
-        bool TryHitPlayer(out FirstPersonPlayer player)
-        {
-            player = null;
-            Transform m = Muzzle;
-            if (!Physics.Raycast(m.position, m.forward, out RaycastHit hit, range, hitMask, QueryTriggerInteraction.Ignore))
-                return false;
-
-            // 경비병(아군) — 해킹 여부 무관, 터렛은 경비병을 절대 쏘지 않는다.
-            var hitHackable = hit.collider.GetComponentInParent<Hackable>();
-            if (hitHackable != null && hitHackable.kind == HackableKind.Guard) return false;
-
-            var fpp = hit.collider.GetComponentInParent<FirstPersonPlayer>();
-            if (fpp == null) return false;
-
-            // 빙의당한 경비병 — 플레이어 리그가 경비병 자리로 옮겨가 있는 상태(몸 이동 빙의)라
-            // 맞은 게 리그 콜라이더여도 지금은 "경비병"으로 취급해 쏘지 않는다.
-            if (ViewEntryController.Current != null && ViewEntryController.Current.AllowsMove) return false;
-
-            player = fpp;
-            return true;
         }
 
         /// <summary>
-        /// 플레이어가 이 터렛을 빙의한 상태에서 좌클릭 구동. <see cref="HackDriver"/>가 매 프레임 호출한다.
-        /// pressed=이번 프레임 눌림(엣지), held=계속 눌려 있음. 첫 프레임은 즉시 발사, 누르고 있으면
-        /// <see cref="playerFireInterval"/>마다 반복 — "꾹 누르면 단발로 툭툭툭"(반자동, 완전자동 아님).
+        /// 지금 플레이어가 이 터렛을 조종하고 있는가.
+        ///
+        /// <para><see cref="Hackable.everHacked"/>가 아니라 <see cref="CaptureState.Captured"/>를 본다 —
+        /// <see cref="HackDriver.SetControlled"/>가 조종 대상만 Captured로 두고 손을 떼면 None으로
+        /// 돌린다. 그래서 이 한 줄이 곧 "지금 붙잡고 있는가"다.</para>
         /// </summary>
-        public void TickPlayerFire(bool pressed, bool held)
-        {
-            if (_playerCooldown > 0f) _playerCooldown -= Time.deltaTime;
-            if (!pressed && !held) return;
-            if (_playerCooldown > 0f) return;
+        bool BeingDriven => _hackable != null && _hackable.captureState == CaptureState.Captured;
 
-            _playerCooldown = playerFireInterval;
-            FirePlayerShot();
-        }
-
-        void FirePlayerShot()
+        void Update()
         {
+            // 감지 범위 표시는 조종 중이 아닐 때만 = 나를 위협하는 동안만.
+            if (_gizmo != null) _gizmo.gameObject.SetActive(showRangeGizmo && !BeingDriven);
+
+            if (_cooldown > 0f) { _cooldown -= Time.deltaTime; return; }
+
             Transform m = Muzzle;
+            if (!Physics.Raycast(m.position, m.forward, out RaycastHit hit, range, hitMask,
+                                 QueryTriggerInteraction.Ignore))
+                return;   // 벽에 먼저 맞으면 그게 결과다 — 엄폐가 통한다
 
-            // 히트스캔 — 즉시 판정, 탄속·예측 없음.
-            if (!Physics.Raycast(m.position, m.forward, out RaycastHit hit, playerFireRange, hitMask, QueryTriggerInteraction.Ignore))
-            {
-                Debug.Log($"[Turret] 발사(플레이어) — 빗나감. 사거리 {playerFireRange}m 안에 아무것도 없음.");
-                return;
-            }
+            // 몸 이동 빙의 중엔 플레이어 리그가 경비병 자리에 겹쳐 있어 콜라이더만으로는 구분이 안 된다.
+            // 그 몸은 "내가 들어가 있는 것"이므로 어느 모드에서도 쏘지 않는다.
+            bool possessedBody = ViewEntryController.Current != null && ViewEntryController.Current.AllowsMove;
 
             var hitHackable = hit.collider.GetComponentInParent<Hackable>();
-            if (hitHackable != null && hitHackable.kind == HackableKind.Guard)
+            bool hitGuard = hitHackable != null && hitHackable.kind == HackableKind.Guard;
+
+            if (BeingDriven)
             {
-                // TODO: 실제 파괴는 미연결 — 시각 확인 전까지 콘솔로만(사용자 지시). 경비병 세션의
-                // 파괴 시스템(Entities/GuardDestruction 등)이 붙으면 여기서 호출하면 된다.
-                Debug.Log($"[Turret] 발사(플레이어) — 경비병 명중, 1발 즉사: {hitHackable.name} " +
-                          $"(거리 {hit.distance:F1}m)");
+                // 조종 중 — 경비병만.
+                if (!hitGuard || possessedBody) return;
+                PlayFireFx();
+                KillGuard(hitHackable, hit);
             }
             else
             {
-                Debug.Log($"[Turret] 발사(플레이어) — 명중했지만 경비병 아님: {hit.collider.name} " +
-                          $"(거리 {hit.distance:F1}m)");
+                // 조종 중 아님 — 플레이어만. 경비병은 아군이라 건드리지 않는다.
+                if (hitGuard || possessedBody) return;
+                var fpp = hit.collider.GetComponentInParent<FirstPersonPlayer>();
+                if (fpp == null) return;
+                PlayFireFx();
+                KillPlayer(fpp);
             }
+
+            _cooldown = fireInterval;
         }
 
-        void Fire(FirstPersonPlayer player)
+        void KillGuard(Hackable guard, RaycastHit hit)
+        {
+            var destruction = guard.GetComponent<GuardDestruction>();
+            if (destruction != null && !destruction.Destroyed)
+            {
+                destruction.Destruct((hit.point - Muzzle.position).normalized);
+                Debug.Log($"[Turret] 사살 — 경비병 파괴: {guard.name} (거리 {hit.distance:F1}m)");
+                return;
+            }
+
+            // 파괴 컴포넌트가 없는 경비병 — 조용히 아무 일도 안 일어나면 원인을 못 찾으므로 남긴다.
+            Debug.Log($"[Turret] 경비병 명중했으나 GuardDestruction이 없어 파괴하지 못함: {guard.name}");
+        }
+
+        void KillPlayer(FirstPersonPlayer player)
         {
             Debug.Log($"[Turret] 사살 — {_hackable.kind}({name})가 플레이어를 조준선에서 포착.");
 
@@ -160,27 +187,21 @@ namespace Game.View
             player.VerticalVelocity = 0f;
         }
 
+        /// <summary>
+        /// 사선을 <see cref="DangerZoneVisual"/>(흑백 노이즈)에 맡긴다 — 경비병 부채꼴과 <b>같은 재질</b>을
+        /// 쓰므로 위험 신호가 한 가지 언어로 통일된다(§7).
+        ///
+        /// <para>예전의 반투명 빨강 원기둥은 지웠다. 흑백 맵에 빨강 하나만 떠 있어 눈에는 띄었지만
+        /// 경비병 위험 표시와 생김새가 달라 "같은 종류의 위험"으로 안 읽혔다.</para>
+        /// </summary>
         void BuildRangeGizmo()
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            go.name = "[TurretRangeGizmo]";
-            var col = go.GetComponent<Collider>();
-            if (col != null) Destroy(col);   // 시각화 전용 — 물리·레이캐스트에 안 걸리게
-
-            var rend = go.GetComponent<MeshRenderer>();
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-            mat.SetFloat("_Surface", 1f);       // Transparent
-            mat.SetFloat("_Blend", 0f);
-            mat.SetColor("_BaseColor", gizmoColor);
-            mat.renderQueue = 3000;
-            rend.sharedMaterial = mat;
-
+            var go = new GameObject("[TurretDangerZone]");
             go.transform.SetParent(Muzzle, false);
-            // Unity 원기둥은 로컬 Y축이 길이 방향 — 총구 forward(Z)로 90도 돌리고, 절반 앞으로 밀어
-            // 원기둥의 한쪽 끝이 총구에 오게 한다(중심 기준이라 length*0.5만큼 offset).
-            go.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            go.transform.localPosition = new Vector3(0f, 0f, range * 0.5f);
-            go.transform.localScale = new Vector3(gizmoRadius * 2f, range * 0.5f, gizmoRadius * 2f);
+
+            var vis = go.AddComponent<DangerZoneVisual>();
+            vis.turret = this;
+            vis.guard = null;   // 부모 체인에서 경비병을 잘못 집지 않게 명시적으로 비운다
 
             _gizmo = go.transform;
         }

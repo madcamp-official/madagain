@@ -81,8 +81,13 @@ namespace Game.View
                  "다시 넣고 싶으면 끄고 아래 drive(PD) 값을 쓰면 된다(로직은 그대로 남겨뒀다).")]
         public bool useLinearMotion = true;
 
-        [Tooltip("선형일 때 0→1 도달 시간(초). 반대 방향도 대칭으로 같은 시간.")]
+        [Tooltip("홀드로 움직일 때 0→1 도달 시간(초). 반대 방향도 대칭으로 같은 시간.")]
         public float linearDuration = 1f;
+
+        [Tooltip("플릭(더블클릭)일 때 0→1 도달 시간(초). ★ 홀드보다 훨씬 짧아야 한다 — 플릭은 " +
+                 "'끝에서 끝까지 쾅'이 전부인데 홀드와 같은 시간이면 차이가 안 느껴진다(실제로 그랬다).\n" +
+                 "프레스는 더 짧게(0.12쯤) 줘서 '쾅'을, 피스톤은 0.2쯤으로 '철컥'을 만든다.")]
+        public float flickDuration = 0.2f;
 
         public PdApproach drive = new PdApproach();
         float _linearT;
@@ -92,8 +97,31 @@ namespace Game.View
                  "붙으면 끄지 않으면 Space가 조종 입력을 덮어쓴다. 그래서 기본은 꺼짐이다.")]
         public bool debugPreview = false;
 
-        /// <summary>0=완전 수축, 1=완전 신장. 외부(조종 스킴)가 이 값을 밀어넣는다.</summary>
-        public float Target { get => drive.Target; set => drive.Target = Mathf.Clamp01(value); }
+        /// <summary>
+        /// 0=완전 수축, 1=완전 신장. 외부(조종 스킴)가 이 값을 밀어넣는다.
+        ///
+        /// <para>여기로 넣으면 <b>홀드 속도</b>(<see cref="linearDuration"/>)로 간다. 플릭은
+        /// <see cref="Flick"/>을 쓸 것 — 대입 한 번으로 두 속도를 구분할 방법이 없어 진입점을 나눴다.</para>
+        /// </summary>
+        public float Target
+        {
+            get => drive.Target;
+            set { drive.Target = Mathf.Clamp01(value); _flickMove = false; }
+        }
+
+        /// <summary>
+        /// 플릭 이동 — <see cref="flickDuration"/>으로 빠르게 간다. 도착하면 자동으로 홀드 속도로 돌아온다.
+        ///
+        /// <para>도중에 홀드가 들어오면(<see cref="Target"/> 대입) 플릭이 취소되고 홀드 속도로 바뀐다 —
+        /// 손으로 잡으면 기계가 느려지는 게 자연스럽다.</para>
+        /// </summary>
+        public void Flick(float target)
+        {
+            drive.Target = Mathf.Clamp01(target);
+            _flickMove = true;
+        }
+
+        bool _flickMove;
 
         /// <summary>지금 신장 비율(0~1). 도착 여부 판단 등에 쓴다.</summary>
         public float Current => useLinearMotion ? _linearT : drive.Value;
@@ -122,6 +150,7 @@ namespace Game.View
             t = Mathf.Clamp01(t);
             drive.SnapTo(t);
             _linearT = t;
+            _flickMove = false;
             if (_parts != null)
             {
                 // 스냅은 순간이동이라 위에 탄 플레이어를 같이 끌고 가면 안 된다 → 이번 Apply만 운반을 끈다.
@@ -307,8 +336,10 @@ namespace Game.View
 
             if (useLinearMotion)
             {
-                float rate = 1f / Mathf.Max(0.001f, linearDuration);
+                float dur = _flickMove ? flickDuration : linearDuration;
+                float rate = 1f / Mathf.Max(0.001f, dur);
                 _linearT = Mathf.MoveTowards(_linearT, drive.Target, rate * Time.deltaTime);
+                if (_flickMove && Mathf.Approximately(_linearT, drive.Target)) _flickMove = false;
                 Apply(_linearT);
             }
             else

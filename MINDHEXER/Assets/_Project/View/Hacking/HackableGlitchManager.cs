@@ -39,62 +39,57 @@ namespace Game.View
         [Tooltip("모든 Hackable에 강제 적용할 해킹가능거리(m). overrideHackRange가 켜져 있을 때만 적용됨.")]
         public float hackRangeOverride = 20f;
 
-        [Header("기준 = 해킹가능거리(hackRange). 그 안쪽은 항상 최대, 벗어나면 fadeDistance만큼 더 흐려짐")]
-        [Tooltip("hackRange를 벗어난 뒤 추가로 흐려지는 거리(m). 이 거리만큼 더 멀어지면 바닥값(Floor)에 도달.")]
-        public float fadeDistance = 10f;
+        [Header("상태별 세기 — ★ 거리 비례는 폐기. 사거리 안/밖의 이진 판정만 쓴다")]
+        [Tooltip("조준 중 + 해킹가능거리 안. ★ 이것이 '최대'다 — 사거리 밖에서는 조준해도 0이다.")]
+        [Range(0f, 1f)] public float gazeDensity = 0.55f;
+        [Range(0f, 1f)] public float gazeAlpha = 0.8f;
 
-        [Tooltip("hackRange 밖에서의 감쇠 지수. 클수록 hackRange를 벗어나자마자 확 죽는다.")]
-        public float power = 3f;
+        [Tooltip("패턴을 푸는 중(captureState = Hacking). 조준을 놓쳐도 계속 치지직거린다.")]
+        [Range(0f, 1f)] public float hackingDensity = 0.6f;
+        [Range(0f, 1f)] public float hackingAlpha = 0.85f;
 
-        [Header("밀도(선 개수) — hackRange 안쪽=Max, 밖=거리에 따라 Floor까지")]
-        [Tooltip("아무리 멀어도 유지하는 최소 밀도. 예전 '가까이서 보던' 밀도 수준을 바닥으로 잡는다 — " +
-                 "이보다 낮으면 듬성듬성해서 안 보인다.")]
-        [Range(0f, 1f)] public float densityFloor = 0.85f;
+        [Tooltip("조종 중(captureState = Captured). 아주 낮게 지속 — '내가 잡고 있다'만 알린다.")]
+        [Range(0f, 1f)] public float controlDensity = 0.12f;
+        [Range(0f, 1f)] public float controlAlpha = 0.4f;
 
-        [Tooltip("hackRange 안쪽(=해킹 가능)일 때의 밀도. 사실상 최대.")]
-        [Range(0f, 1f)] public float densityMax = 0.97f;
+        [Tooltip("한 번이라도 해킹된 것(everHacked). 조종 중이 아니어도 아주 작게 지속 — " +
+                 "'여기는 이미 열었다'는 흔적.")]
+        [Range(0f, 1f)] public float hackedDensity = 0.06f;
+        [Range(0f, 1f)] public float hackedAlpha = 0.3f;
 
-        [Header("불투명도(켜진 선의 진하기) — 밀도보다 덜 떨어지게 바닥을 높게 잡는다")]
-        [Tooltip("아무리 멀어도 유지하는 최소 불투명도. 밀도(densityFloor)보다 높게 — " +
-                 "선이 줄어드는 건 괜찮아도 남은 선까지 흐릿해지면 안 보인다.")]
-        [Range(0f, 1f)] public float alphaFloor = 0.8f;
+        [Tooltip("밀도·불투명도·모드가 <b>사라지는</b> 속도.")]
+        public float responseSpeed = 6f;
 
-        [Tooltip("hackRange 안쪽일 때의 불투명도. 사실상 최대.")]
-        [Range(0f, 1f)] public float alphaMax = 1f;
+        [Tooltip("★ <b>차오르는</b> 속도. 5면 0→0.55가 약 0.11초. " +
+                 "사라지는 중에 다시 조준하면 남은 값에서 이어 오른다(0으로 리셋되지 않는다).")]
+        public float riseSpeed = 5f;
 
-        [Header("조준(IsGazed) — 2D 최댓값과 동일. 3D다움은 웨이브 왜곡만 담당")]
-        [Range(0f, 1f)] public float gazeDensity = 0.97f;
-        [Range(0f, 1f)] public float gazeAlpha = 1f;
+        [Header("셰이더 — 가로줄 스캔 노이즈")]
+        [Tooltip("치지직 색. 색 신호는 폐기했으므로 무채색이다 — 화면 전체 흑백 후처리를 어차피 함께 탄다.")]
+        public Color glitchColor = new Color(1f, 1f, 1f, 1f);
 
-        [Tooltip("밀도·불투명도·모드 전환 속도(1/초에 가까운 감쇠). 뚝 끊기지 않고 부드럽게 튀도록.")]
-        public float responseSpeed = 10f;
-
-        [Header("셰이더 — 인광 톤 + 가로줄 스캔 노이즈")]
-        [Tooltip("치지직 색. 형광 초록 인광 톤(§7 색언어의 '해킹 가능=초록'과 맞춘다).")]
-        public Color glitchColor = new Color(0.3f, 1.4f, 0.5f, 1f);
-
-        [Tooltip("가로줄 밀도(화면비 기준). VHS 스캔라인처럼 줄 하나당 밝기 하나.")]
-        public float rowCount = 220f;
+        [Tooltip("가로줄 밀도(화면비 기준). VHS 스캔라인처럼 줄 하나당 밝기 하나. 220 → 110 (절반).")]
+        public float rowCount = 110f;
 
         [Tooltip("줄 갱신 속도(초당 스텝). 노이즈가 얼마나 빨리 바뀌는지.")]
         public float scrollSpeed = 18f;
 
-        [Tooltip("트래킹 에러(줄이 옆으로 튀는 것) 발생 확률.")]
-        [Range(0f, 1f)] public float tearChance = 0.06f;
+        [Tooltip("트래킹 에러(줄이 옆으로 튀는 것) 발생 확률. ★ 0 — 점이 좌우로 날뛰어 보이는 원인이었다. " +
+                 "가로선은 순수 직선이어야 한다.")]
+        [Range(0f, 1f)] public float tearChance = 0f;
 
-        [Header("3D(조준) 전용 — 가로선을 꼬불꼬불하게(림글로우·팝·플리커·HDR부스트는 눈아프다는 " +
-                 "피드백으로 전부 제거, 이 웨이브 왜곡 하나로 2D와 구분한다)")]
-        [Tooltip("가로선 꼬불거림 진폭(uv 단위, 대략 미터).")]
-        public float waveAmp = 0.03f;
+        [Header("가로선 왜곡 — ★ 전부 0. 순수 직선이어야 한다(꼬불거림 폐기)")]
+        [Tooltip("가로선 꼬불거림 진폭. ★ 0 = 직선. 조준 시 선이 물결치던 원인이었다.")]
+        public float waveAmp = 0f;
 
-        [Tooltip("꼬불거림 공간 주파수(1/m). 클수록 잔물결이 촘촘해진다.")]
+        [Tooltip("꼬불거림 공간 주파수(1/m). waveAmp가 0이면 의미 없다.")]
         public float waveFreq = 6f;
 
-        [Tooltip("꼬불거림 속도.")]
+        [Tooltip("꼬불거림 속도. waveAmp가 0이면 의미 없다.")]
         public float waveSpeed = 2.5f;
 
-        [Tooltip("3D(조준) 시 진폭·속도 배율 — 2D 대비 몇 배로 격렬해지는지.")]
-        public float wave3DMult = 1.6f;
+        [Tooltip("조준 시 진폭 배율. ★ 0 — 조준해도 흔들리지 않는다.")]
+        public float wave3DMult = 0f;
 
         [Header("켜진 선의 밝기 (불투명도와 무관하게 항상 고정 — 강도는 alphaFloor/Max가 담당)")]
         public float lineBrightness = 1f;
@@ -170,6 +165,9 @@ namespace Game.View
                 Hackable h = Hackable.All[i];
                 if (h == null) continue;
 
+                // ★ 보스는 더 이상 해킹 대상이 아니다 — 치지직을 걸지 않는다.
+                if (h.kind == HackableKind.Boss) continue;
+
                 if (overrideHackRange) h.hackRange = hackRangeOverride;
 
                 if (!_entries.TryGetValue(h, out Entry e))
@@ -180,31 +178,50 @@ namespace Game.View
                 if (e == null || e.renderers.Length == 0) continue;   // glowRenderers 미지정 — 조용히 스킵
 
                 float dist = Vector3.Distance(viewerPos, h.transform.position);
-                float targetDensity, targetAlpha, targetMode;
+                bool inRange = dist <= Mathf.Max(0.01f, h.hackRange);
 
-                if (h.IsGazed)
+                // ── 상태 → 목표 세기 ────────────────────────────────────
+                // ★ 거리 비례는 폐기했다. 거리는 "사거리 안인가"라는 <b>이진 판정</b>으로만 쓴다 —
+                //   조준해도 사거리 밖이면 0이다. 손이 닿는지가 곧 켜짐/꺼짐이 된다.
+                //
+                // 상태가 겹칠 때는 <b>더 센 쪽</b>을 쓴다(Max). 예: 이미 해킹한 것을 다시 조준하면
+                // 흔적(약함)이 아니라 조준(강함)이 보여야 한다.
+                float targetDensity = 0f, targetAlpha = 0f, targetMode = 0f;
+
+                if (h.captureState == CaptureState.Hacking)
                 {
-                    targetDensity = gazeDensity;
-                    targetAlpha = gazeAlpha;
-                    targetMode = 1f;
+                    // 패턴을 푸는 중 — 조준을 놓쳐도 계속 치지직거린다.
+                    targetDensity = hackingDensity; targetAlpha = hackingAlpha; targetMode = 1f;
                 }
-                else
+                else if (h.captureState == CaptureState.Captured)
                 {
-                    // hackRange 안쪽은 무조건 최대(t=1) — "해킹 가능 = 최대 치지직"이 거리와 무관하게 즉시 읽혀야 한다.
-                    float hackRange = Mathf.Max(0.01f, h.hackRange);
-                    float t = dist <= hackRange
-                        ? 1f
-                        : Mathf.Clamp01(1f - (dist - hackRange) / Mathf.Max(0.01f, fadeDistance));
-                    float shaped = Mathf.Pow(t, power);
-
-                    targetDensity = Mathf.Lerp(densityFloor, densityMax, shaped);
-                    targetAlpha = Mathf.Lerp(alphaFloor, alphaMax, shaped);
-                    targetMode = 0f;
+                    // 조종 중 — 아주 낮게 지속.
+                    targetDensity = controlDensity; targetAlpha = controlAlpha;
+                }
+                else if (h.everHacked)
+                {
+                    // 한 번이라도 열었던 것 — 조종 중이 아니어도 아주 작게 남는다.
+                    targetDensity = hackedDensity; targetAlpha = hackedAlpha;
                 }
 
-                e.smoothIntensity = Mathf.MoveTowards(e.smoothIntensity, targetDensity, responseSpeed * dt);
-                e.smoothAlpha = Mathf.MoveTowards(e.smoothAlpha, targetAlpha, responseSpeed * dt);
-                e.smoothMode = Mathf.MoveTowards(e.smoothMode, targetMode, responseSpeed * dt);
+                // ★ 조준 강조는 <b>아직 손대지 않은 대상에만</b> 붙는다(captureState = None).
+                //   조종 중인 것을 쳐다봤을 때 더 강해지면 안 된다 — 이미 잡고 있으니 조준할 이유가 없고,
+                //   "조준 = 해킹할 수 있다"는 신호가 흐려진다. 패턴 푸는 중도 자기 세기를 유지한다.
+                if (h.captureState == CaptureState.None && h.IsGazed && inRange)
+                {
+                    targetDensity = gazeDensity; targetAlpha = gazeAlpha; targetMode = 1f;
+                }
+
+                // 차오를 때와 사라질 때 속도를 따로 둔다 — "빠르게 차오르는" 느낌이 이 비대칭에서 나온다.
+                float rise = Mathf.Max(0.01f, riseSpeed) * dt;
+                float fall = Mathf.Max(0.01f, responseSpeed) * dt;
+
+                e.smoothIntensity = Mathf.MoveTowards(e.smoothIntensity, targetDensity,
+                                        targetDensity > e.smoothIntensity ? rise : fall);
+                e.smoothAlpha = Mathf.MoveTowards(e.smoothAlpha, targetAlpha,
+                                        targetAlpha > e.smoothAlpha ? rise : fall);
+                e.smoothMode = Mathf.MoveTowards(e.smoothMode, targetMode,
+                                        targetMode > e.smoothMode ? rise : fall);
 
                 Apply(e);
             }

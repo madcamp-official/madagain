@@ -4,9 +4,18 @@ using UnityEngine;
 namespace Game.View
 {
     /// <summary>
-    /// 회전 조종 기믹 — 중심축을 기준으로 <see cref="riderRoot"/>만 돌고, 그 위에 선 것을 함께 실어
-    /// 돌린다. 구조는 <see cref="RailSet"/>(§6.2)과 비슷하지만(앵커 기준 범위, 크립+플릭) 코드는
-    /// 별도다 — 이동이 아니라 회전이라 라이더 이송 계산이 다르다.
+    /// 회전 조종 — 중심축을 기준으로 <see cref="riderRoot"/>만 돌린다. 구조는 <see cref="RailSet"/>(§6.2)과
+    /// 비슷하지만(앵커 기준 범위, 크립+플릭) 코드는 별도다 — 이동이 아니라 회전이라 라이더 이송 계산이 다르다.
+    ///
+    /// <para><b>회전판과 터렛이 이 하나를 같이 쓴다</b>(기초_설계안 §6.2). 둘의 차이는
+    /// <see cref="carryRiders"/> 하나뿐이다 — 회전판은 위에 선 것을 실어 나르고, 터렛은 아무도 안 탄다.
+    /// 조작 문법(크립·플릭·격자·범위)이 같은데 클래스를 나누면 값 튜닝을 두 번 하게 되므로 합쳐 둔다.
+    /// 나중에 정말 갈라지면 그때 뽑는다.</para>
+    ///
+    /// <para><b>각도 제한은 기본으로 풀려 있다</b>(±360). 터렛처럼 한 바퀴 돌아야 하는 것이 기본이고,
+    /// 제한은 문·다리처럼 물리적으로 못 도는 것에만 좁혀서 준다. 완전 무한 회전(랩어라운드)은
+    /// 지원하지 않는다 — ±360이면 퍼즐에선 사실상 무제한이고, 랩을 넣으면
+    /// <see cref="GetNormalized"/>(VR 위치 제어의 기준)가 정의되지 않는다.</para>
     ///
     /// <para><b>몸체는 돌지 않는다.</b> 이 컴포넌트가 붙은 트랜스폼(하우징)은 고정이고,
     /// <see cref="riderRoot"/>(터닝 플랫폼 비주얼 + 그 위 라이더)만 자기 원점을 축으로 돈다.
@@ -33,11 +42,12 @@ namespace Game.View
         public Vector3 axis = Vector3.up;
 
         [Header("회전 범위 (부착 시 각도=0 기준, RailSet의 rangeMin/Max와 동일 개념)")]
-        [Tooltip("0(부착 각도)에서 음(−) 방향 한계(도).")]
-        public float rangeMinDeg = -90f;
+        [Tooltip("0(부착 각도)에서 음(−) 방향 한계(도). 기본은 −360 = 사실상 제한 없음.\n" +
+                 "제한을 두려면 값을 좁힐 것(예: 문·다리처럼 물리적으로 못 도는 것).")]
+        public float rangeMinDeg = -360f;
 
-        [Tooltip("0(부착 각도)에서 양(+) 방향 한계(도).")]
-        public float rangeMaxDeg = 90f;
+        [Tooltip("0(부착 각도)에서 양(+) 방향 한계(도). 기본은 +360 = 사실상 제한 없음.")]
+        public float rangeMaxDeg = 360f;
 
         [Header("조종 감각")]
         [Tooltip("홀드 시 크립 각속도(도/초).")]
@@ -58,7 +68,17 @@ namespace Game.View
         [Tooltip("홀드를 놓았을 때 가장 가까운 격자로 붙일지. 기본 끔(크립은 미세 조정용).")]
         public bool snapAnalog = false;
 
+        [Header("마일스톤 (홀드 전용 — 6DoF 떨림·튐 차단, §6.2)")]
+        [Tooltip("홀드 회전을 딸깍 단위로 양자화한다. 스텝 ÷ 간격 = 최대 각속도이므로 " +
+                 "rotateSpeedDeg(60)와 간격(0.0833)에서 유도하면 정확히 5도가 나온다.")]
+        public MilestoneStepper creepStep = new MilestoneStepper(5f);
+
         [Header("라이더 감지")]
+        [Tooltip("회전면 위에 선 것을 같이 돌릴지. ★ 터렛처럼 <b>아무도 올라타지 않는</b> 회전체는 꺼야 한다 — " +
+                 "켜 두면 매 프레임 씬의 CharacterController를 훑고 SphereCast를 쏘는 헛일을 한다.\n" +
+                 "발판·회전판은 켠 채로 둘 것.")]
+        public bool carryRiders = true;
+
         [Tooltip("발 밑 이 거리 안에서 riderRoot가 잡히면 '올라타 있다'로 본다(m).")]
         public float probeDistance = 0.35f;
 
@@ -151,8 +171,11 @@ namespace Game.View
             Quaternion deltaRot = worldRot * Quaternion.Inverse(_prevWorldRotation);
             _prevWorldRotation = worldRot;
 
-            deltaRot.ToAngleAxis(out float deltaDeg, out _);
-            if (!Mathf.Approximately(deltaDeg, 0f)) CarryRiders(deltaRot);
+            if (carryRiders)
+            {
+                deltaRot.ToAngleAxis(out float deltaDeg, out _);
+                if (!Mathf.Approximately(deltaDeg, 0f)) CarryRiders(deltaRot);
+            }
 
             _analog = 0f;   // 매 프레임 소비. HackDriver는 입력이 있을 때만 Drive를 부른다.
         }
@@ -171,10 +194,14 @@ namespace Game.View
             float rate = accelTime > 1e-4f ? rotateSpeedDeg / accelTime : float.MaxValue;
             _vel = Mathf.MoveTowards(_vel, target, rate * dt);
 
-            if (!Mathf.Approximately(_vel, 0f))
+            // 요구량을 마일스톤으로 양자화 — 0 아니면 정확히 ±스텝(§MilestoneStepper).
+            // _vel이 0이어도 불러야 쿨다운·잔량이 정리된다(RailSet과 같은 이유).
+            float move = creepStep.Advance(_vel * dt, dt);
+
+            if (!Mathf.Approximately(move, 0f))
             {
-                float next = Mathf.Clamp(AngleOffset + _vel * dt, rangeMinDeg, rangeMaxDeg);
-                if (Mathf.Approximately(next, AngleOffset)) _vel = 0f;   // 범위 끝에 닿으면 정지
+                float next = Mathf.Clamp(AngleOffset + move, rangeMinDeg, rangeMaxDeg);
+                if (Mathf.Approximately(next, AngleOffset)) { _vel = 0f; creepStep.Reset(); }   // 범위 끝
                 else AngleOffset = next;
             }
 
@@ -270,6 +297,7 @@ namespace Game.View
             _flicking = false;
             _vel = 0f;
             _analog = 0f;
+            creepStep.Reset();   // 잔량이 남으면 재시작 첫 프레임에 튄다
             AngleOffset = 0f;
             if (riderRoot != null)
             {

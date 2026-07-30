@@ -1,0 +1,11 @@
+# scene	hierarchyPath	slotIndex	originalMaterialPath
+Assets/_Project/Scenes/HackSandbox.unity	RailSet/Rails/Rail_0/Bar_L	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Scenes/HackSandbox.unity	RailSet/Rails/Rail_0/Bar_R	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Scenes/HackSandbox.unity	RailSet/Rails/Rail_1/Bar_L	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Scenes/HackSandbox.unity	RailSet/Rails/Rail_1/Bar_R	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Scenes/HackSandbox.unity	RailSet/Rails/Rail_2/Bar_L	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Scenes/HackSandbox.unity	RailSet/Rails/Rail_2/Bar_R	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Scenes/HackSandbox.unity	RailSet/Rails/Rail_3/Bar_L	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Scenes/HackSandbox.unity	RailSet/Rails/Rail_3/Bar_R	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Scenes/HackSandbox.unity	RailSet/Rails/Rail_4/Bar_L	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Scenes/HackSandbox.unity	RailSet/Rails/Rail_4/Bar_R	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat

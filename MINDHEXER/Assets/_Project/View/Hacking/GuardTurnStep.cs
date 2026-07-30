@@ -240,6 +240,51 @@ namespace Game.View
             }
         }
 
+        /// <summary>
+        /// 회전을 <b>중간에 포기</b>하고 다리를 애니메이션에 돌려준다.
+        ///
+        /// <para><b>왜 필요한가</b>: 다리 IK는 이 컴포넌트가 만든 <b>별도 <see cref="HandIK"/>
+        /// 컴포넌트</b>가 매 프레임 적용한다. 그래서 이 컴포넌트만 <c>enabled = false</c>로 끄면
+        /// IK는 <b>계속 돌면서</b> 마지막 weight·타깃을 유지한다 — 회전 도중(발이 들린 순간)에 껐다면
+        /// 그 발이 <b>영구히 공중에 뜬 채로 남는다</b>(실제로 겪은 버그: 해킹당한 경비병이 한쪽 발을
+        /// 들고 굳음).</para>
+        ///
+        /// <para>그래서 끄기 전에 반드시 이걸 불러 weight를 0으로 되돌려야 한다. 완료 콜백은
+        /// 부르지 않는다 — 완료가 아니라 포기이므로 대기 중인 쪽이 오해하면 안 된다.</para>
+        /// </summary>
+        public void ReleaseLegs()
+        {
+            if (_legL != null) _legL.weight = 0f;
+            if (_legR != null) _legR.weight = 0f;
+            _phase = Phase.Idle;
+            _t = 0f;
+            _onComplete = null;
+        }
+
+        /// <summary>
+        /// 다리 IK를 <b>영구히 죽인다</b>(고장 등). 되돌리는 경로는 두지 않는다.
+        ///
+        /// <para><b>왜 weight=0으로는 부족한가</b>: <see cref="HandIK"/>는 weight가 0이면
+        /// <b>아무것도 안 할 뿐 이미 써 놓은 뼈 회전을 되돌리지 않는다</b>(0&lt;weight&lt;1 구간에서만
+        /// 원래 자세로 Slerp한다). 게다가 <see cref="HandIK"/>는 <b>별도 컴포넌트</b>라
+        /// <see cref="GuardTurnStep"/>만 꺼도 계속 살아 있어서, 누군가 weight를 다시 올리면
+        /// 그대로 되살아난다 — 실제로 해킹당한 경비병이 한쪽 발을 든 채 굳었다.</para>
+        ///
+        /// <para>그래서 컴포넌트와 홀더 오브젝트까지 꺼서 <b>되살아날 경로 자체를 없앤다.</b>
+        /// 이후 뼈는 Animator가 온전히 소유한다.</para>
+        /// </summary>
+        public void ShutDown()
+        {
+            ReleaseLegs();
+
+            if (_legL != null) { _legL.enabled = false; _legL.gameObject.SetActive(false); }
+            if (_legR != null) { _legR.enabled = false; _legR.gameObject.SetActive(false); }
+            if (_targetL != null) _targetL.gameObject.SetActive(false);
+            if (_targetR != null) _targetR.gameObject.SetActive(false);
+
+            _hasLegs = false;   // 남은 코드가 실수로 다시 손대지 못하게
+        }
+
         void EndTurn()
         {
             transform.rotation = _turnTo;

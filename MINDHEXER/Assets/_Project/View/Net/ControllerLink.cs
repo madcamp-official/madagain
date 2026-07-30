@@ -126,22 +126,48 @@ namespace Game.View
             for (int i = 0; i < Touches.Length; i++) Touches[i].id = -1;
         }
 
+        [Tooltip("기본 포트가 막혀 있으면 다음 포트로 이 횟수만큼 옮겨 가며 시도한다. " +
+                 "에디터를 여러 개 띄우거나 이전 실행이 소켓을 못 닫고 죽었을 때 그냥 못 켜지는 것을 막는다.")]
+        public int portFallbackTries = 8;
+
+        /// <summary>실제로 붙은 포트. 기본 포트가 막혀 옮겨 갔을 수 있으므로 컨트롤러 쪽에 이 값을 알려야 한다.</summary>
+        public int ActivePort { get; private set; } = -1;
+
         void OnEnable()
         {
-            try
+            ActivePort = -1;
+            System.Exception last = null;
+
+            // 포트를 하나씩 올려 가며 시도한다. 실패 원인 1위는 <b>같은 포트를 쥔 좀비 소켓</b>이다 —
+            // 에디터가 Play 중 죽으면 프로세스는 사라져도 소켓이 남아, 죽일 프로세스조차 없다(실제로 겪음).
+            // 그래서 "고칠 수 없는 포트"를 붙잡고 실패하는 대신 옆 포트로 비켜 간다.
+            for (int i = 0; i <= Mathf.Max(0, portFallbackTries); i++)
             {
-                _udp = new UdpClient(port);
-                _running = true;
-                _thread = new Thread(ReceiveLoop) { IsBackground = true, Name = "MHX-ControllerRx" };
-                _thread.Start();
-                Debug.Log($"[ControllerLink] UDP {port} 수신 시작");
+                int tryPort = port + i;
+                try
+                {
+                    var udp = new UdpClient();
+                    // 좀비 소켓·TIME_WAIT가 남아 있어도 붙을 수 있게. 독점 사용은 요구하지 않는다.
+                    udp.ExclusiveAddressUse = false;
+                    udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                    udp.Client.Bind(new IPEndPoint(IPAddress.Any, tryPort));
+
+                    _udp = udp;
+                    ActivePort = tryPort;
+                    _running = true;
+                    _thread = new Thread(ReceiveLoop) { IsBackground = true, Name = "MHX-ControllerRx" };
+                    _thread.Start();
+
+                    if (tryPort == port) Debug.Log($"[ControllerLink] UDP {tryPort} 수신 시작");
+                    else Debug.LogWarning($"[ControllerLink] UDP {tryPort} 수신 시작 — 기본 포트 {port}이 " +
+                                          $"사용 중이라 옮겼습니다. ★ 컨트롤러(휴대폰2)도 {tryPort}로 보내야 합니다.");
+                    return;
+                }
+                catch (SocketException e) { last = e; }
             }
-            catch (SocketException e)
-            {
-                // 포트 선점(다른 에디터 인스턴스·이전 실행 잔재)이 가장 흔한 원인이다.
-                Debug.LogError($"[ControllerLink] UDP {port} 바인드 실패 — {e.Message}");
-                enabled = false;
-            }
+
+            Debug.LogError($"[ControllerLink] UDP {port}~{port + portFallbackTries} 전부 바인드 실패 — {last?.Message}");
+            enabled = false;
         }
 
         void OnDisable()

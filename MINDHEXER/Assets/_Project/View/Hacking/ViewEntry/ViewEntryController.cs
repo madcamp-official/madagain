@@ -38,7 +38,24 @@ namespace Game.View
 
         // ── 몸 이동(경비병) 상태 ──
         bool _bodyMode;
-        Transform _rig;                 // 플레이어 리그 = 카메라 오브젝트(GameBoot 구성)
+
+        /// <summary>
+        /// 옮길 대상 = <b><c>CharacterController</c>가 붙은 트랜스폼</b>(<c>[PlayerBody]</c>).
+        ///
+        /// <para>★ 예전엔 여기에 <b>카메라</b>를 넣었다. 카메라가 곧 리그였던 구 구조의 잔재인데,
+        /// 지금은 <c>[PlayerBody] &gt; [Head] &gt; Main Camera</c> 3층이라 카메라에는 CC가 없다.
+        /// 그래서 빙의하면 <b>몸은 그대로 두고 카메라만</b> 경비병 자리로 날아갔다 — 충돌·이동은
+        /// 원래 자리에서 계속 일어나 회전·이동이 제멋대로였고, 복귀도 카메라만 돌아왔다.</para>
+        /// </summary>
+        Transform _rig;
+
+        /// <summary>
+        /// 시선 트랜스폼(카메라). <b>yaw는 여기서 읽어야 한다</b> — <c>[PlayerBody]</c>는 절대 회전하지
+        /// 않으므로(<see cref="FirstPersonPlayer"/>가 identity로 고정) 몸에서 yaw를 읽으면 항상 0이다.
+        /// 경비병 모델의 방향·본체 셸 방향이 화면과 안 맞던 원인이 이것이다.
+        /// </summary>
+        Transform _view;
+
         Transform _shell;               // 원래 자리에 남는 본체
         float _eyeHeight = 1.6f;        // 리그 원점(눈)에서 발까지
         readonly List<Collider> _offCols = new List<Collider>();
@@ -81,14 +98,24 @@ namespace Game.View
 
         void EnterBody(ViewEntryTarget target, Camera playerCam)
         {
-            _rig = playerCam != null ? playerCam.transform : null;
-            if (_rig == null) { _target = null; return; }
+            // 옮길 것은 카메라가 아니라 몸이다. CharacterController가 붙은 트랜스폼을 찾는다.
+            var fpp = playerCam != null ? playerCam.GetComponentInParent<FirstPersonPlayer>()
+                                        : FirstPersonPlayer.Instance;
+            _rig = fpp != null ? fpp.transform : null;
+            _view = playerCam != null ? playerCam.transform : _rig;
+
+            if (_rig == null)
+            {
+                Debug.LogError("[빙의] 플레이어 몸(FirstPersonPlayer)을 찾지 못해 빙의할 수 없습니다.", this);
+                _target = null;
+                return;
+            }
 
             var cc = _rig.GetComponent<CharacterController>();
             if (cc != null) _eyeHeight = cc.height * 0.5f - cc.center.y;   // 원점에서 발까지
 
             // 원래 자리에 본체를 남긴다 — 이게 취약 표적이자 복귀 지점이다(§6.3).
-            _shell = MakeShell(_rig.position, _rig.eulerAngles.y);
+            _shell = MakeShell(_rig.position, ViewYaw);
 
             // 경비병 본체: 충돌을 끄고(리그 CC가 맡는다) 메시를 숨긴다(눈이 모델 안에 있다).
             _offCols.Clear();
@@ -116,8 +143,12 @@ namespace Game.View
             if (_shell != null) Destroy(_shell.gameObject);
             _shell = null;
             _rig = null;
+            _view = null;
             _bodyMode = false;
         }
+
+        /// <summary>시선의 수평 각도(도). 몸은 회전하지 않으므로 여기서만 읽을 수 있다.</summary>
+        float ViewYaw => _view != null ? _view.eulerAngles.y : 0f;
 
         static void Teleport(Transform rig, Vector3 pos)
         {
@@ -211,10 +242,12 @@ namespace Game.View
             if (_bodyMode)
             {
                 // 경비병이 리그를 따라온다 — 빙의를 풀면 데려간 자리에 그대로 남는다.
+                // 방향은 <b>시선</b>에서 온다 — 몸은 회전하지 않으므로 몸에서 읽으면 항상 0이다.
+                // pitch·roll은 빼야 모델이 기울지 않는다.
                 if (_rig != null && _target != null)
                     _target.transform.SetPositionAndRotation(
                         _rig.position + Vector3.down * _eyeHeight,
-                        Quaternion.Euler(0f, _rig.eulerAngles.y, 0f));   // pitch는 빼야 모델이 안 기운다
+                        Quaternion.Euler(0f, ViewYaw, 0f));
                 return;
             }
 

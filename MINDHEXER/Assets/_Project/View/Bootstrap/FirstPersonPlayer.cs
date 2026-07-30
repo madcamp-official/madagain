@@ -105,6 +105,16 @@ namespace Game.View
         Vector2 _blockDir;
         int _blockFrame = -1;
 
+        /// <summary>
+        /// 씬의 플레이어 본체. 리그가 <see cref="GameBoot"/>에서 <b>런타임에 생성</b>되므로 참조를
+        /// 인스펙터로 물릴 수 없다 — 위협(경비병 감지 등)이 "플레이어가 어디 있나"를 알아야 하는데
+        /// 매 프레임 <c>FindFirstObjectByType</c>을 도는 건 낭비라 여기서 한 번만 잡아 둔다.
+        /// </summary>
+        public static FirstPersonPlayer Instance { get; private set; }
+
+        void OnEnable() { Instance = this; }
+        void OnDisable() { if (Instance == this) Instance = null; }
+
         void Awake()
         {
             _cc = GetComponent<CharacterController>();

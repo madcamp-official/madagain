@@ -10,10 +10,15 @@ namespace Game.EditorTools
     /// <summary>
     /// Hackable·TallCity 프리팹을 훑어보고 클릭 한 번으로 씬에 배치하는 팔레트 창.
     ///
-    /// <para>세 카테고리를 명확히 분리한다 — Hackable(해킹 가능한 기믹: 경비병, CCTV, 터렛,
-    /// 레일·피스톤·유압프레스 등 외부조종물), TallCity(배경용 사이버펑크 도시 애셋: 벽·바닥·
+    /// <para>세 카테고리를 명확히 분리한다 — Hackable(해킹 가능한 기믹: 외부 조종물인 레일·피스톤·
+    /// 유압프레스·터렛과 빙의 대상인 경비병·로봇팔), TallCity(배경용 사이버펑크 도시 애셋: 벽·바닥·
     /// 다리·전선 등), Sci-Fi(Remesh 실내 환경: 콘솔·파이프·플랫폼 등). 폴더를 실제로 훑어서
     /// 목록을 만들기 때문에 새 프리팹을 추가해도 코드를 안 건드리고 "새로고침"만 누르면 바로 뜬다.</para>
+    ///
+    /// <para><b>보류 그룹</b>(<c>Hackables/Deferred/</c>) — 설계에서 이번 범위 제외로 정한 것들
+    /// (CCTV·회전 장치, 기초_설계안 §6.1). 지우면 되살릴 근거가 사라지므로 <b>남겨 두되 눈에 띄게
+    /// 구분</b>한다: 목록 <b>맨 아래</b>로 내리고, 기본 접힘 + 경고 문구를 단다. 실수로 배치하는
+    /// 사고를 막는 게 목적이지 막아 놓는 게 목적이 아니라, 누르면 배치는 그대로 된다.</para>
     ///
     /// <para>배치 위치는 씬 뷰가 열려 있으면 그 피벗(카메라가 보고 있는 지점)에, 없으면
     /// 원점에 놓는다. 배치 직후 바로 선택되므로 이동 툴로 이어서 옮기면 된다.</para>
@@ -22,7 +27,9 @@ namespace Game.EditorTools
     {
         const string HackableRoot = "Assets/_Project/Prefabs/Hackables";
         const string TallCityRoot = "Assets/_Project/Prefabs/TallCity";
-        const string SciFiRoot    = "Assets/Remesh Games/Sci-Fi Environment/Prefabs";
+        // Sci-Fi는 원본 패키지 폴더가 아니라 <b>우리 프로젝트로 옮겨 온 사본</b>을 가리킨다.
+        // 원본을 그대로 참조하면 재질을 우리 흑백 규격으로 바꿀 수 없다(패키지 갱신 시 되돌아간다).
+        const string SciFiRoot    = "Assets/_Project/Prefabs/SCi";
 
         enum Category { Hackable, TallCity, SciFi }
 
@@ -87,6 +94,9 @@ namespace Game.EditorTools
             }
             into.Sort((a, b) =>
             {
+                // 보류 그룹은 항상 맨 아래 — 목록 위쪽은 '지금 쓰는 것'만 남긴다.
+                int da = IsDeferred(a.group) ? 1 : 0, db = IsDeferred(b.group) ? 1 : 0;
+                if (da != db) return da - db;
                 int g = string.Compare(a.group, b.group, System.StringComparison.OrdinalIgnoreCase);
                 return g != 0 ? g : string.Compare(a.name, b.name, System.StringComparison.OrdinalIgnoreCase);
             });
@@ -132,13 +142,28 @@ namespace Game.EditorTools
             _search = EditorGUILayout.TextField("검색", _search);
         }
 
+        /// <summary>설계에서 이번 범위 제외로 정한 것들이 모인 폴더인가 (기초_설계안 §6.1).</summary>
+        const string DeferredGroup = "Deferred";
+        static bool IsDeferred(string group)
+            => string.Equals(group, DeferredGroup, System.StringComparison.OrdinalIgnoreCase);
+
         void DrawGroup(string group, List<Entry> entries)
         {
-            if (!_groupOpen.TryGetValue(group, out bool open)) { open = true; _groupOpen[group] = open; }
+            bool deferred = IsDeferred(group);
 
-            open = EditorGUILayout.Foldout(open, $"{group} ({entries.Count})", true);
+            // 보류는 기본 접힘 — 평소엔 존재만 보이고 목록을 차지하지 않는다.
+            if (!_groupOpen.TryGetValue(group, out bool open)) { open = !deferred; _groupOpen[group] = open; }
+
+            string title = deferred ? $"보류 — 배치하지 말 것 ({entries.Count})" : $"{group} ({entries.Count})";
+            open = EditorGUILayout.Foldout(open, title, true);
             _groupOpen[group] = open;
             if (!open) return;
+
+            if (deferred)
+                EditorGUILayout.HelpBox(
+                    "설계에서 이번 범위 제외로 정한 것들입니다 (기초_설계안 §6.1 — CCTV·회전 장치).\n" +
+                    "지우지 않고 남겨 둔 것이라 배치 자체는 됩니다. 되살리기로 정한 게 아니면 쓰지 마십시오.",
+                    MessageType.Warning);
 
             EditorGUILayout.BeginVertical(GUI.skin.box);
             for (int i = 0; i < entries.Count; i += Columns)

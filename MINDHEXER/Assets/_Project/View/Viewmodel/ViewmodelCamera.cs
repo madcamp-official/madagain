@@ -43,6 +43,15 @@ namespace Game.View
         public float nearClip = DefNearClip;
         public float farClip = 12f;
 
+        [Header("VR — 오버레이를 쓸 수 없는 경로")]
+        [Tooltip("VR에선 URP 오버레이 카메라가 XR 스테레오를 지원하지 않아 한쪽 눈에만 렌더된다. " +
+                 "그래서 메인 카메라의 근평면을 직접 낮춘다 — 손가락은 카메라에서 몇 cm 앞이라 " +
+                 "0.15로는 통째로 잘린다.")]
+        public float vrNearClip = 0.03f;
+        [Tooltip("근평면을 낮추면 깊이 정밀도가 나빠진다(z-fighting). 원평면을 함께 줄여 되찾는다. " +
+                 "0 이하면 건드리지 않는다.")]
+        public float vrFarClip = 400f;
+
         [Header("카메라 뒤 지오메트리 살리기")]
         [Tooltip("카메라를 이만큼 뒤로 물린다(m). 카메라 뒤에 있던 어깨·팔꿈치가 화면에 들어온다")]
         [Range(0f, 3f)] public float pullBack = 0f;
@@ -55,9 +64,11 @@ namespace Game.View
         Transform vmRoot;
         int layer = -1;
         bool fallbackMode;
+        bool _vrLogged;
 
         public string Status =>
             vmCam != null ? $"분리됨 (레이어 {layerName}, near {nearClip:0.000}, 후퇴 {pullBack:0.00}m)"
+            : VrMode.Enabled ? $"<color=#ffb060>VR 경로</color> — 오버레이 불가, 메인 근평면 {vrNearClip:0.000} / 원평면 {vrFarClip:0}"
             : fallbackMode ? $"<color=#ffb060>대체 모드</color> — '{layerName}' 레이어 없음. Tools/뷰모델/① 로 생성"
             : "설치 대기";
 
@@ -119,8 +130,8 @@ namespace Game.View
         void TryInstall()
         {
             // VR: URP 오버레이 카메라는 XR 스테레오를 지원하지 않아 한쪽 눈에만 렌더된다(스테레오 파괴).
-            //     VR 모드에선 뷰모델 오버레이를 설치하지 않는다(별도 해법 필요 — ADR 대상).
-            if (VrMode.Enabled) return;
+            //     그래서 VR에선 오버레이를 포기하고 메인 카메라의 근평면을 직접 낮춘다.
+            if (VrMode.Enabled) { ApplyVrPath(); return; }
 
             baseCam = Camera.main;
             if (baseCam == null) return;
@@ -179,6 +190,39 @@ namespace Game.View
             Debug.Log($"[ViewmodelCamera] 설치 완료 — {Status}");
         }
 
+        /// <summary>
+        /// VR 경로 — 오버레이 없이 근평면만 낮춘다.
+        ///
+        /// <para><b>왜 이렇게밖에 못 하나</b> — 근평면 클리핑은 <b>투영 단계</b>에서 일어나므로 깊이
+        /// 클리어나 렌더 순서로는 못 고친다. 근평면을 줄이는 것 말고 방법이 없고, VR에선 오버레이
+        /// 카메라를 쓸 수 없다(스테레오가 깨진다). 그래서 메인 카메라를 직접 낮춘다.</para>
+        ///
+        /// <para>대가는 깊이 정밀도다. 근/원 비율이 정밀도를 지배하므로 <b>원평면을 함께 줄여</b>
+        /// 되찾는다 — 0.03/400은 0.15/1000보다 오히려 비율이 낫다.</para>
+        ///
+        /// <para>오버레이가 없으니 뷰모델 레이어를 메인에서 빼면 팔이 통째로 사라진다. 다시 넣어 준다.</para>
+        /// </summary>
+        void ApplyVrPath()
+        {
+            baseCam = Camera.main;
+            if (baseCam == null) return;
+
+            int l = LayerMask.NameToLayer(layerName);
+            if (l >= 0) baseCam.cullingMask |= (1 << l);
+
+            float near = Mathf.Max(0.01f, vrNearClip);
+            baseCam.nearClipPlane = near;
+            if (vrFarClip > 0f) baseCam.farClipPlane = Mathf.Max(vrFarClip, near + 1f);
+
+            if (!_vrLogged)
+            {
+                _vrLogged = true;
+                Debug.Log($"[ViewmodelCamera] VR 경로 — 오버레이 없이 메인 근평면 {near:0.000} / 원평면 " +
+                          $"{baseCam.farClipPlane:0}. 손가락이 잘리면 근평면을 더 낮추고, z-fighting이 " +
+                          $"보이면 원평면을 더 줄이십시오.");
+            }
+        }
+
         void Sync()
         {
             if (baseCam == null) { baseCam = Camera.main; if (baseCam == null) return; }
@@ -202,7 +246,10 @@ namespace Game.View
             else vmCam.fieldOfView = baseCam.fieldOfView;
         }
 
-        public const float DefNearClip = 0.151f;
+        // ★ 0.01. 예전 0.151은 Precog에서 '지저분한 어깨 단면을 잘라내려고' 올려 둔 값이었다.
+        //   전완만 쓰는 지금은 어깨가 없고, 대신 <b>손가락이 카메라에서 몇 cm 앞</b>까지 온다 —
+        //   0.151이면 손가락이 통째로 잘린다. 오버레이 전용 근평면이라 월드 깊이 정밀도와 무관하다.
+        public const float DefNearClip = 0.01f;
         public const float DefPullBack = 0f;
         public const float DefRefDist  = 0.6f;
 

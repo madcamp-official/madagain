@@ -29,8 +29,27 @@ namespace Game.View
         [Tooltip("성공 후 UI를 감출 때까지 지연(초).")]
         public float successHideDelay = 0.2f;
 
-        [Tooltip("패턴 화면 UI. 비우면 로직만(로그).")]
+        [Tooltip("구형 화면 UI(ScreenSpaceOverlay). ★ VR에서 못 쓴다 — 양안에서 어긋나고 후처리를 " +
+                 "안 타 보스전 흑빨에서 UI만 흰색으로 남는다. panel이 있으면 자동으로 꺼진다.")]
         public PatternUI ui;
+
+        [Tooltip("월드스페이스 해킹 패널. 비어 있으면 씬에서 찾는다.")]
+        public HackPanel panel;
+
+        /// <summary>
+        /// 쓸 패널을 확정한다. <b>구형 UI와 겹쳐 그려지는 것을 막는 것이 핵심</b> —
+        /// <c>HackDriver</c>가 <see cref="ui"/>를 자동으로 붙이므로, 패널이 있으면 여기서 꺼야 한다.
+        /// (<c>HackDriver</c>는 다른 작업이 진행 중인 파일이라 건드리지 않는다.)
+        /// </summary>
+        void ResolveView()
+        {
+            if (panel == null) panel = FindFirstObjectByType<HackPanel>();
+            if (panel != null && ui != null && ui.enabled)
+            {
+                ui.Hide();
+                ui.enabled = false;
+            }
+        }
 
         public PatternState State { get; private set; } = PatternState.Idle;
         public DotPattern Target { get; private set; }
@@ -66,15 +85,39 @@ namespace Game.View
             Input.Reset();
             _onTrack = true;
             State = PatternState.InProgress;
-            if (ui != null) ui.Show(Target, Input, NextTargetDot());
+            ResolveView();
+            ViewShow();
         }
+
+        // ── 뷰 호출 한 곳으로 모음 ────────────────────────────────────
+        // 패널이 있으면 패널만, 없으면 구형 UI. 둘을 동시에 그리는 경우는 없다.
+
+        void ViewShow()
+        {
+            if (panel != null) panel.Show(Target, Input, NextTargetDot());
+            else if (ui != null) ui.Show(Target, Input, NextTargetDot());
+        }
+
+        void ViewRefresh()
+        {
+            if (panel != null) panel.Refresh(Input, NextTargetDot());
+            else if (ui != null) ui.Refresh(Input, NextTargetDot());
+        }
+
+        void ViewHide()
+        {
+            if (panel != null) panel.Hide();
+            else if (ui != null) ui.Hide();
+        }
+
+        bool HasView { get { return panel != null || ui != null; } }
 
         /// <summary>취소 — 진행 초기화 + UI 숨김. Space 재탭 등으로 호출.</summary>
         public PatternState Cancel()
         {
             if (State != PatternState.InProgress) return State;
             State = PatternState.Cancelled;
-            if (ui != null) ui.Hide();
+            ViewHide();
             return State;
         }
 
@@ -95,18 +138,18 @@ namespace Game.View
                 if (_onTrack && i >= Target.LineCount)
                 {
                     State = PatternState.Succeeded;
-                    if (ui != null) StartCoroutine(HideAfter(successHideDelay));
+                    if (HasView) StartCoroutine(HideAfter(successHideDelay));
                 }
             }
 
-            if (State == PatternState.InProgress && ui != null) ui.Refresh(Input, NextTargetDot());
+            if (State == PatternState.InProgress) ViewRefresh();
             return State;
         }
 
         IEnumerator HideAfter(float t)
         {
             yield return new WaitForSeconds(t);
-            if (ui != null) ui.Hide();
+            ViewHide();
         }
     }
 }

@@ -38,6 +38,13 @@ namespace Game.View
         [Header("복귀")]
         [Tooltip("끝나면 이 이름의 포즈로 복귀(시퀀스 끝에 자동 추가)")]
         public string basePoseName = "기본포즈";
+
+        /// <summary>
+        /// 포즈 JSON의 <b>루트</b> 위치·회전·스케일까지 적용할지. 기본은 <b>끔</b>.
+        /// 1인칭 구도는 <see cref="PlayerBodyModeController"/>가 단독 소유한다(설계 §3).
+        /// 이식된 Precog 포즈가 rootScale 100을 들고 있어 몸이 100배가 된 사고의 재발 방지.
+        /// </summary>
+        public static bool applyRootTrs;
         public bool holdBaseWhenIdle = true;
         public bool snapReturn = true;
 
@@ -238,7 +245,18 @@ namespace Game.View
         public static void ApplyPose(Transform root, PoseFile pf)
         {
             if (root == null || pf == null) return;
-            if (pf.rootPos != null && pf.rootPos.Length == 3)
+
+            // ★ 루트 TRS는 <b>적용하지 않는다</b>(기본). 1인칭 구도는 PlayerBodyModeController가
+            //   단독 소유한다(설계 §3·§5.2) — 포즈 데이터가 루트를 또 건드리면 소유권이 겹친다.
+            //
+            //   실제로 겹쳐서 사고가 났다: 이식된 Precog 포즈 `pose_기본포즈.json`이
+            //   rootScale [100,100,100] · rootPos [0,-1.5,0]을 들고 있었다. Precog는 FBX 임포트
+            //   스케일이 1/100이라 맞는 값이었지만, 우리 protag_rigged는 뼈 좌표가 이미 미터
+            //   단위다. 그래서 Play를 누르는 순간 몸이 100배(키 75m)가 되어 팔이 화면 밖
+            //   50m 위로 날아갔고, 에디터에서는 정상이라 원인을 찾기 어려웠다.
+            //
+            //   뼈 회전은 그대로 쓴다 — 문제는 루트뿐이었다.
+            if (applyRootTrs && pf.rootPos != null && pf.rootPos.Length == 3)
             {
                 root.localPosition = PoseMath.ToV3(pf.rootPos);
                 if (pf.rootQuat  != null && pf.rootQuat.Length  == 4) root.localRotation = PoseMath.ToQ(pf.rootQuat);

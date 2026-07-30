@@ -1,0 +1,210 @@
+# prefabPath	hierarchyPath	slotIndex	originalMaterialPath
+Assets/_Project/Prefabs/Hackables/Deferred/RotationPlatform.prefab	Riders/Platform	0	Assets/Smart Turret Template/Materials/STT_Found.mat
+Assets/_Project/Prefabs/Hackables/Deferred/RotationPlatform.prefab	Riders/Platform (1)	0	Assets/Smart Turret Template/Materials/STT_Found.mat
+Assets/_Project/Prefabs/Hackables/Deferred/RotationPlatform.prefab	Riders/DirMarker	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/Hackables/ExternalControl/Gantry.prefab	Gantry	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/Hackables/ViewEntry/GuardDebris/GuardPart_ArmLower_L.prefab	GuardPart_ArmLower_L	0	Assets/Robot1F_Workshop_3D/Materials/Robot1_DefaultMaterial_AlbedoTransparency.mat
+Assets/_Project/Prefabs/Hackables/ViewEntry/GuardDebris/GuardPart_ArmLower_R.prefab	GuardPart_ArmLower_R	0	Assets/Robot1F_Workshop_3D/Materials/Robot1_DefaultMaterial_AlbedoTransparency.mat
+Assets/_Project/Prefabs/Hackables/ViewEntry/GuardDebris/GuardPart_ArmUpper_L.prefab	GuardPart_ArmUpper_L	0	Assets/Robot1F_Workshop_3D/Materials/Robot1_DefaultMaterial_AlbedoTransparency.mat
+Assets/_Project/Prefabs/Hackables/ViewEntry/GuardDebris/GuardPart_ArmUpper_R.prefab	GuardPart_ArmUpper_R	0	Assets/Robot1F_Workshop_3D/Materials/Robot1_DefaultMaterial_AlbedoTransparency.mat
+Assets/_Project/Prefabs/Hackables/ViewEntry/GuardDebris/GuardPart_Head.prefab	GuardPart_Head	0	Assets/Robot1F_Workshop_3D/Materials/Robot1_DefaultMaterial_AlbedoTransparency.mat
+Assets/_Project/Prefabs/Hackables/ViewEntry/GuardDebris/GuardPart_LegLower_L.prefab	GuardPart_LegLower_L	0	Assets/Robot1F_Workshop_3D/Materials/Robot1_DefaultMaterial_AlbedoTransparency.mat
+Assets/_Project/Prefabs/Hackables/ViewEntry/GuardDebris/GuardPart_LegLower_R.prefab	GuardPart_LegLower_R	0	Assets/Robot1F_Workshop_3D/Materials/Robot1_DefaultMaterial_AlbedoTransparency.mat
+Assets/_Project/Prefabs/Hackables/ViewEntry/GuardDebris/GuardPart_LegUpper_L.prefab	GuardPart_LegUpper_L	0	Assets/Robot1F_Workshop_3D/Materials/Robot1_DefaultMaterial_AlbedoTransparency.mat
+Assets/_Project/Prefabs/Hackables/ViewEntry/GuardDebris/GuardPart_LegUpper_R.prefab	GuardPart_LegUpper_R	0	Assets/Robot1F_Workshop_3D/Materials/Robot1_DefaultMaterial_AlbedoTransparency.mat
+Assets/_Project/Prefabs/Hackables/ViewEntry/GuardDebris/GuardPart_Torso.prefab	GuardPart_Torso	0	Assets/Robot1F_Workshop_3D/Materials/Robot1_DefaultMaterial_AlbedoTransparency.mat
+Assets/_Project/Prefabs/Hackables/ViewEntry/RobotArm.prefab	RobotArm	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/TallCity/Clouds/ps_clouds prtc.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Clouds/ps_clouds prtc.prefab	ps_clouds prtc	1	
+Assets/_Project/Prefabs/TallCity/Prefab/Bridge/bridge 1 cap.prefab	bridge 1 cap	0	Assets/TallCity/Materials/bridge 1.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Bridge/bridge 1 end.prefab	bridge 1 end	0	Assets/TallCity/Materials/bridge 1.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Bridge/bridge 1 tile.prefab	bridge 1 tile	0	Assets/TallCity/Materials/bridge 1.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Cable/cableprobe 1.prefab	cableprobe 1	0	Assets/TallCity/Materials/cableprobe.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Cable/cableprobe 2.prefab	cableprobe 2	0	Assets/TallCity/Materials/cableprobe.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Cable/cableprobe 3.prefab	cableprobe 3	0	Assets/TallCity/Materials/cableprobe.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Cable/cableprobe 4.prefab	cableprobe 4	0	Assets/TallCity/Materials/cableprobe.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Cable/cableprobe 6.prefab	cableprobe 6	0	Assets/TallCity/Materials/cableprobe.mat
+Assets/_Project/Prefabs/TallCity/Prefab/cableprobe 5.prefab	cableprobe 5	0	Assets/TallCity/Materials/cableprobe.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/clouds.prefab	ps_clouds prtc	0	Assets/TallCity/Clouds/cloud.mat
+Assets/_Project/Prefabs/TallCity/Prefab/door.prefab	door	0	Assets/TallCity/Materials/doorwindow.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Exhaus/exhaus 1.prefab	exhaus 1	0	Assets/TallCity/Materials/exhaus.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Exhaus/exhaus 2.prefab	exhaus 2	0	Assets/TallCity/Materials/exhaus.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Exhaus/exhaus 3.prefab	exhaus 3	0	Assets/TallCity/Materials/exhaus.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Exhaus/exhaus 4.prefab	exhaus 4	0	Assets/TallCity/Materials/exhaus.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Ground/ground cap.prefab	ground cap	0	Assets/TallCity/Materials/border.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Ground/ground corner.prefab	ground corner	0	Assets/TallCity/Materials/border.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Ground/ground corner.prefab	ground corner	1	Assets/TallCity/Materials/ground 2.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Ground/ground corner.prefab	ground corner	2	Assets/TallCity/Materials/border dwn.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Ground/ground side.prefab	ground side	0	Assets/TallCity/Materials/border.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Ground/ground side.prefab	ground side	1	Assets/TallCity/Materials/ground 1.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Ground/ground side.prefab	ground side	2	Assets/TallCity/Materials/border dwn.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Ground/ground sm corner.prefab	ground sm corner	0	Assets/TallCity/Materials/border.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Ground/ground tile.prefab	ground tile	0	Assets/TallCity/Materials/ground tile.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Ground/ground tile.prefab	ground tile	1	Assets/TallCity/Materials/border dwn.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Holder/holder 01.prefab	holder 01	0	Assets/TallCity/Materials/holder 14.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Holder/holder 02.prefab	holder 02	0	Assets/TallCity/Materials/holder 14.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Holder/holder 03.prefab	holder 03	0	Assets/TallCity/Materials/holder 12.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Holder/holder 04.prefab	holder 04	0	Assets/TallCity/Materials/holder 12.mat
+Assets/_Project/Prefabs/TallCity/Prefab/holder 15.prefab	holder 15	0	Assets/TallCity/Materials/holder 15.mat
+Assets/_Project/Prefabs/TallCity/Prefab/hydrant.prefab	hydrant/Circle+031	0	Assets/TallCity/Materials/control.mat
+Assets/_Project/Prefabs/TallCity/Prefab/hydrant.prefab	hydrant/Object1021	0	Assets/TallCity/Materials/control.mat
+Assets/_Project/Prefabs/TallCity/Prefab/lamp.prefab	lamp	0	Assets/TallCity/Materials/lamp.mat
+Assets/_Project/Prefabs/TallCity/Prefab/probe tube.prefab	probe tube	0	Assets/TallCity/Materials/probe 24.mat
+Assets/_Project/Prefabs/TallCity/Prefab/ptobes8.prefab	Group272/Line008	0	Assets/TallCity/Materials/probe tube 3.mat
+Assets/_Project/Prefabs/TallCity/Prefab/ptobes8.prefab	Group272/Line009	0	Assets/TallCity/Materials/probe tube 2.mat
+Assets/_Project/Prefabs/TallCity/Prefab/ptobes8.prefab	Group272/Line010	0	Assets/TallCity/Materials/probe tube 1.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Vehicle/boat.prefab	Box083	0	Assets/TallCity/Materials/motor 3.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Vehicle/boat.prefab	Line006	0	Assets/TallCity/Materials/boat.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Vehicle/boat.prefab	Line006	1	Assets/TallCity/Materials/motor 1.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Vehicle/boat.prefab	Line006	2	Assets/TallCity/Materials/motor 2.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Vehicle/boat.prefab	Line006	3	Assets/TallCity/Materials/control.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Vehicle/Scripted/boat traffic 1.prefab	Box083	0	Assets/TallCity/Materials/motor 3.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Vehicle/Scripted/boat traffic 1.prefab	Line006	0	Assets/TallCity/Materials/boat.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Vehicle/Scripted/boat traffic 1.prefab	Line006	1	Assets/TallCity/Materials/motor 1.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Vehicle/Scripted/boat traffic 1.prefab	Line006	2	Assets/TallCity/Materials/motor 2.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Vehicle/Scripted/boat traffic 1.prefab	Line006	3	Assets/TallCity/Materials/control.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/antenna.prefab	antenna	0	Assets/TallCity/Materials/sphere.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/sphere 1.prefab	sphere 1	0	Assets/TallCity/Materials/sphere.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/sphere 2.prefab	sphere 2	0	Assets/TallCity/Materials/sphere.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 01.prefab	wall 01	0	Assets/TallCity/Materials/wall 01.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 02.prefab	wall 02	0	Assets/TallCity/Materials/wall 02.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 03.prefab	wall 03	0	Assets/TallCity/Materials/wall 03.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 04.prefab	wall 04	0	Assets/TallCity/Materials/wall 04.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 05.prefab	wall 05	0	Assets/TallCity/Materials/wall 05.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 06.prefab	wall 06	0	Assets/TallCity/Materials/wall 06.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 07.prefab	wall 07	0	Assets/TallCity/Materials/wall 07.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 08 b.prefab	wall 08 b	0	Assets/TallCity/Materials/wall 08.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 08.prefab	wall 08	0	Assets/TallCity/Materials/wall 08.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 09 b.prefab	wall 09 b	0	Assets/TallCity/Materials/wall 09.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 09.prefab	wall 09	0	Assets/TallCity/Materials/wall 09.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 10.prefab	wall 10	0	Assets/TallCity/Materials/wall 10.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 11.prefab	wall 11	0	Assets/TallCity/Materials/wall 11.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 13.prefab	wall 13	0	Assets/TallCity/Materials/wall 13.mat
+Assets/_Project/Prefabs/TallCity/Prefab/Wall/wall 15.prefab	wall 15	0	Assets/TallCity/Materials/wall 15.mat
+Assets/_Project/Prefabs/TallCity/Prefab/window 1.prefab	window 1	0	Assets/TallCity/Materials/doorwindow.mat
+Assets/_Project/Prefabs/TallCity/Prefab/window 2.prefab	window 2	0	Assets/TallCity/Materials/doorwindow.mat
+Assets/_Project/Prefabs/SCi/Barrel.prefab	Barrel_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Barrel.prefab	Barrel_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_04.mat
+Assets/_Project/Prefabs/SCi/Barrel.prefab	Barrel_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_04.mat
+Assets/_Project/Prefabs/SCi/Barrel.prefab	Barrel_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_04.mat
+Assets/_Project/Prefabs/SCi/Barrier.prefab	Barrier_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Barrier.prefab	Barrier_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Barriers.mat
+Assets/_Project/Prefabs/SCi/Barrier.prefab	Barrier_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Barriers.mat
+Assets/_Project/Prefabs/SCi/Barrier.prefab	Barrier_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Barriers.mat
+Assets/_Project/Prefabs/SCi/Barrier_04.prefab	Barrier_04_Collider	0	Assets/Remesh Games/Sci-Fi Environment/Meshes/Barrier_04.fbx
+Assets/_Project/Prefabs/SCi/Barrier_04.prefab	Barrier_04_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Barrier_04.prefab	Barrier_04_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Barrier_04.prefab	Barrier_04_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Bridge_01.prefab	Bridge_01_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Bridge_01.prefab	Bridge_01_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Bridge_01.prefab	Bridge_01_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Bridge_01.prefab	Bridge_01_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Bridge_02.prefab	Bridge_02_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Bridge_02.prefab	Bridge_02_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Bridge_02.prefab	Bridge_02_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Bridge_02.prefab	Bridge_02_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Bridge_03.prefab	Bridge_03_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Bridge_03.prefab	Bridge_03_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Bridge_03.prefab	Bridge_03_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Bridge_03.prefab	Bridge_03_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Cable.prefab	Cable_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Cable.prefab	Cable_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Cable.prefab	Cable_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Cable_01.prefab	Cable-01_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Cable_01.prefab	Cable-01_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Cable_01.prefab	Cable-01_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Chain_01.prefab	Chain-01_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Chain_01.prefab	Chain-01_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Chain_01.prefab	Chain-01_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Chain_01.prefab	Chain-01_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Colum.prefab	Colum_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Colum.prefab	Colum_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Colum.prefab	Colum_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Colum.prefab	Colum_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Container.prefab	Container_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Container.prefab	Container_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Container.prefab	Container_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Container.prefab	Container_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Control Console.prefab	Control Console_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Control Console.prefab	Control Console_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Control Consle.mat
+Assets/_Project/Prefabs/SCi/Control Console.prefab	Control Console_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Control Consle.mat
+Assets/_Project/Prefabs/SCi/Control Console.prefab	Control Console_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Control Consle.mat
+Assets/_Project/Prefabs/SCi/Crates.prefab	Crates_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Crates.prefab	Crates_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Crates.mat
+Assets/_Project/Prefabs/SCi/Crates.prefab	Crates_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Crates.mat
+Assets/_Project/Prefabs/SCi/Crates.prefab	Crates_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Crates.mat
+Assets/_Project/Prefabs/SCi/Dam.prefab	Dam	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Dam.prefab	Dam_Collider	0	Assets/Remesh Games/Sci-Fi Environment/Meshes/Dam.fbx
+Assets/_Project/Prefabs/SCi/Fan.prefab	Fan_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Fan.prefab	Fan_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Fan.mat
+Assets/_Project/Prefabs/SCi/Fan.prefab	Fan_LOD0/Fan_0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Fan.mat
+Assets/_Project/Prefabs/SCi/Fan.prefab	Fan_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Fan.mat
+Assets/_Project/Prefabs/SCi/Fan.prefab	Fan_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Fan.mat
+Assets/_Project/Prefabs/SCi/Floor_01.prefab	Floor_01	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Floor.mat
+Assets/_Project/Prefabs/SCi/Floor_01a.prefab	Floor_01a	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Floor.mat
+Assets/_Project/Prefabs/SCi/Gate (16).prefab	Gate	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Gate (16).prefab	Gate	1	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Gate (16).prefab	Gate_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Generator.prefab	Generator_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Generator.prefab	Generator_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Generator.mat
+Assets/_Project/Prefabs/SCi/Generator.prefab	Generator_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Generator.mat
+Assets/_Project/Prefabs/SCi/Generator.prefab	Generator_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Generator.mat
+Assets/_Project/Prefabs/SCi/Ladder_01.prefab	Ladder_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Ladder_01.prefab	Ladder_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Ladder_01.prefab	Ladder_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Ladder_01.prefab	Ladder_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Ladder_02.prefab	Ladder-02_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Ladder_02.prefab	Ladder-02_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Ladder_02.prefab	Ladder-02_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Ladder_02.prefab	Ladder-02_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Light.prefab	Light_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Light.prefab	Light_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Meshes/Light.fbx
+Assets/_Project/Prefabs/SCi/Light.prefab	Light_LOD0	1	Assets/Remesh Games/Sci-Fi Environment/Materials/Emssive Light_Yellow.mat
+Assets/_Project/Prefabs/SCi/Light.prefab	Light_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Meshes/Light.fbx
+Assets/_Project/Prefabs/SCi/Light.prefab	Light_LOD1	1	Assets/Remesh Games/Sci-Fi Environment/Materials/Emssive Light_Yellow.mat
+Assets/_Project/Prefabs/SCi/Light.prefab	Light_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Meshes/Light.fbx
+Assets/_Project/Prefabs/SCi/Light.prefab	Light_LOD2	1	Assets/Remesh Games/Sci-Fi Environment/Materials/Emssive Light_Yellow.mat
+Assets/_Project/Prefabs/SCi/Main Console.prefab	Main Console_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Main Console.prefab	Main Console_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Main Console.mat
+Assets/_Project/Prefabs/SCi/Main Console.prefab	Main Console_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Main Console.mat
+Assets/_Project/Prefabs/SCi/Main Console.prefab	Main Console_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Main Console.mat
+Assets/_Project/Prefabs/SCi/Pipe_01a.prefab	Pipe_01a	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Pipe_01b.prefab	Pipe_01b	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Pipe_01c.prefab	Pipe_01c	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Pipes Cage.prefab	Pipes Cage_Collider	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Pipes Cage.prefab	Pipes Cage_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Pipes Cage.prefab	Pipes Cage_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Pipes Cage.prefab	Pipes Cage_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Platform-01.prefab	Platform-01_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Platform-01.prefab	Platform-01_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_04.mat
+Assets/_Project/Prefabs/SCi/Platform-01.prefab	Platform-01_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_04.mat
+Assets/_Project/Prefabs/SCi/Platform-01.prefab	Platform-01_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_04.mat
+Assets/_Project/Prefabs/SCi/Platform-02 (5).prefab	Platform_02_Collider	0	Assets/Remesh Games/Sci-Fi Environment/Meshes/Platform-02.fbx
+Assets/_Project/Prefabs/SCi/Platform-02 (5).prefab	Platform_02_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Meshes/Platform-02.fbx
+Assets/_Project/Prefabs/SCi/Platform-02 (5).prefab	Platform_02_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Meshes/Platform-02.fbx
+Assets/_Project/Prefabs/SCi/Platform-02 (5).prefab	Platform_02_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Meshes/Platform-02.fbx
+Assets/_Project/Prefabs/SCi/Platform.prefab	Platform	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/SlopeSlides.prefab	SlopeSlides	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_01.mat
+Assets/_Project/Prefabs/SCi/Steps.prefab	Steps_Collider	0	Assets/Remesh Games/Sci-Fi Environment/Meshes/Steps.fbx
+Assets/_Project/Prefabs/SCi/Steps.prefab	Steps_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Steps.prefab	Steps_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Steps.prefab	Steps_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Tank.prefab	Tank_Collider	0	Packages/com.unity.render-pipelines.universal/Runtime/Materials/Lit.mat
+Assets/_Project/Prefabs/SCi/Tank.prefab	Tank_LOD0	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Tank.prefab	Tank_LOD1	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat
+Assets/_Project/Prefabs/SCi/Tank.prefab	Tank_LOD2	0	Assets/Remesh Games/Sci-Fi Environment/Materials/Trim_02.mat

@@ -71,7 +71,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b3de27fbae44c484cbc6dd54861e1698, type: 2}
+  - {fileID: 2100000, guid: d2c0cd404a7f8014f9676658a0b26c28, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -151,7 +151,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.View::Game.View.Hackable
   kind: 6
   controlType: 1
-  patternLineCount: 7
+  patternLineCount: 0
   hackRange: 15
   gazeCollider: {fileID: 0}
   glowRenderers: []
@@ -245,7 +245,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b3de27fbae44c484cbc6dd54861e1698, type: 2}
+  - {fileID: 2100000, guid: d2c0cd404a7f8014f9676658a0b26c28, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -358,7 +358,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b3de27fbae44c484cbc6dd54861e1698, type: 2}
+  - {fileID: 2100000, guid: d2c0cd404a7f8014f9676658a0b26c28, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

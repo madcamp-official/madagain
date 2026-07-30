@@ -41,15 +41,18 @@ namespace Game.View
         [Tooltip("빙의 시점 구동(§2.5). 비우면 자동 추가.")]
         public ViewEntryController viewEntry;
 
+        [Tooltip("빙의 진입·해제 연출(§6.3). 비우면 자동 추가.")]
+        public PossessionTransition transition;
+
         [Tooltip("Space를 이 시간(초) 이상 유지하면 본체 복귀(빙의 중일 때만). 이하로 떼면 평소의 탭 동작.")]
         public float holdThreshold = 0.25f;
 
-        [Tooltip("조준 보정 반경(perp 허용치, m). 크로스헤어가 대상 중심에서 이만큼 벗어나도 조준으로 " +
-                 "인정한다(정확한 raycast 히트 요구 안 함). precog 런지(FindLungeTarget)와 같은 방식.")]
-        public float aimAssistRadius = 1.2f;
-
         [Tooltip("조준 판정 최소 거리(m). 카메라 바로 앞은 제외.")]
         public float aimMinRange = 0.2f;
+
+        [Tooltip("조준 레이 최대 길이(m). ★ hackRange보다 넉넉해야 한다 — 사거리 밖에서도 조준은 되고, " +
+                 "치지직 밀도가 거리에 따라 낮아지는 것으로 '아직 멀다'가 읽혀야 하기 때문.")]
+        public float aimMaxRange = 100f;
 
         /// <summary>입력 출처. 기본 PC(키보드/마우스). VR에선 GameBoot이 네트워크 소스로 교체.</summary>
         public IHexInputSource Source = new PcHexInputSource();
@@ -86,6 +89,7 @@ namespace Game.View
             if (minigame.ui == null) minigame.ui = GetComponent<PatternUI>() ?? gameObject.AddComponent<PatternUI>();
             if (tether == null) tether = GetComponent<ControlTether>() ?? gameObject.AddComponent<ControlTether>();
             if (viewEntry == null) viewEntry = GetComponent<ViewEntryController>() ?? gameObject.AddComponent<ViewEntryController>();
+            if (transition == null) transition = GetComponent<PossessionTransition>() ?? gameObject.AddComponent<PossessionTransition>();
             _fpp = GetComponentInParent<FirstPersonPlayer>();
             _freeLook = GetComponentInParent<FreeLookController>();
         }
@@ -109,10 +113,16 @@ namespace Game.View
                 && _ctx.Current != ControlContext.Player)
             {
                 _holdConsumed = true;          // 이어지는 릴리스는 탭 동작을 하지 않는다
-                viewEntry.Exit(cam);
-                SetPlayerFrozen(false);
-                _ctx.ReturnToBody();
-                Debug.Log("[Hack] 복귀(Space 홀드) → Player");
+
+                // 연출을 거친다 — 실제 복귀는 암전 중에(§6.3). 연출 동안은 얼려 둔다.
+                SetPlayerFrozen(true);
+                transition.BeginExit(cam, () =>
+                {
+                    viewEntry.Exit(cam);
+                    SetPlayerFrozen(false);
+                    _ctx.ReturnToBody();
+                    Debug.Log("[Hack] 복귀(Space 홀드) → Player");
+                });
             }
 
             // 릴리스가 탭 동작을 할 자격이 있는가. 홀드가 이미 소비했으면 없다.
@@ -154,13 +164,8 @@ namespace Game.View
                     if (Controlled != null) DriveExternal(Controlled, input);
                     viewEntry.Tick();   // 빙의 중이면 마우스로 pan/tilt(§2.5)
 
-                    // 빙의 중인 대상에 총(TurretGun)이 있으면 좌클릭으로 사격.
-                    // primary/primaryHeld는 HexInput에 시점진입용으로 이미 있었는데 여기서 처음 쓴다.
-                    if (_ctx.Current == ControlContext.ViewEntry && _ctx.ActiveTarget != null)
-                    {
-                        var gun = _ctx.ActiveTarget.GetComponent<TurretGun>();
-                        if (gun != null) gun.TickPlayerFire(input.primary, input.primaryHeld);
-                    }
+                    // 터렛 좌클릭 사격은 삭제됐다 — 터렛이 빙의 대상에서 외부 조종으로 옮겨가면서
+                    // 발사 버튼 자체가 없어졌다(자동 사격, 기초_설계안 §6.2). 빙의 대상은 경비병·로봇팔뿐이다.
                     break;
                 }
 
@@ -331,11 +336,17 @@ namespace Game.View
                     var vet = target.GetComponent<ViewEntryTarget>();
                     if (vet != null)
                     {
-                        viewEntry.Enter(vet, cam);
-                        // 경비병(allowsMove)은 리그가 통째로 그 몸이 되므로 얼리면 안 된다 —
-                        // 고정 시점(CCTV·터렛)일 때만 본체를 세운다.
-                        SetPlayerFrozen(!vet.allowsMove);
-                        Debug.Log($"[Hack] 빙의: {target.kind} (좌우±{vet.panRange} 상하±{vet.tiltRange})");
+                        // 연출을 거친다 — 실제 진입은 <b>암전 중에</b> 일어나 순간이동이 안 보인다(§6.3).
+                        // 연출 동안에는 눈이 감긴 상태이므로 무조건 얼려 두고, 진입이 끝난 뒤에
+                        // 경비병(allowsMove)만 풀어 준다. 안 얼리면 0.5초를 눈 감고 걸어간다.
+                        SetPlayerFrozen(true);
+                        var t = target;
+                        transition.BeginEnter(cam, vet.transform.position, () =>
+                        {
+                            viewEntry.Enter(vet, cam);
+                            SetPlayerFrozen(!vet.allowsMove);
+                            Debug.Log($"[Hack] 빙의: {t.kind} (좌우±{vet.panRange} 상하±{vet.tiltRange})");
+                        });
                     }
                     else Debug.LogWarning($"[Hack] {target.kind}에 ViewEntryTarget이 없어 빙의 시점을 만들 수 없음.");
                 }
@@ -352,6 +363,27 @@ namespace Game.View
 
         // 빙의 중 본체 정지 — 시점(본체 카메라는 꺼져 있음)과 이동을 함께 막는다.
         // 경비병처럼 이동이 허용되는 대상에선 호출되지 않는다.
+        /// <summary>
+        /// 빙의를 <b>바깥 사정으로</b> 강제 종료한다 — 빙의 중인 몸이 파괴되는 경우 등.
+        ///
+        /// <para><b>왜 공개 메서드인가</b>: 복귀는 <c>Exit</c> 하나가 아니라
+        /// <c>Exit</c> + 얼림 해제 + 컨텍스트 복귀 <b>세 개가 한 세트</b>다. 바깥에서
+        /// <see cref="ViewEntryController.Exit"/>만 부르면 플레이어가 얼어붙은 채 남거나
+        /// ViewEntry 컨텍스트에 갇힌다. 그래서 세트를 여기 한 곳에 묶어 둔다.</para>
+        /// </summary>
+        public void ForceReturnToBody(string reason)
+        {
+            if (_ctx == null || _ctx.Current == ControlContext.Player) return;
+
+            // 강제 복귀는 연출을 태우지 않는다 — 몸이 부서지는 등 <b>사고</b>이므로 즉시 끊어야 한다.
+            // 진행 중이던 연출도 함께 정리해 카메라 오프셋·암전이 남지 않게 한다.
+            if (transition != null) transition.Abort();
+            if (viewEntry != null) viewEntry.Exit(cam);
+            SetPlayerFrozen(false);
+            _ctx.ReturnToBody();
+            Debug.Log($"[Hack] 강제 복귀 → Player ({reason})");
+        }
+
         void SetPlayerFrozen(bool frozen)
         {
             if (_fpp == null) return;
@@ -380,57 +412,40 @@ namespace Game.View
         }
 
         /// <summary>
-        /// 조준 대상 판정 — precog 런지(<c>PlayerCombat.FindLungeTarget</c>/<c>IsLungeable</c>)와 같은 방식.
-        /// 콜라이더에 픽셀 단위로 정확히 맞아야 하는 raycast 대신, 씬의 모든 <see cref="Hackable"/>을
-        /// 조준 레이 기준 <b>perp</b>(레이에서 벗어난 수직거리)·<b>along</b>(레이 앞쪽 거리)으로 평가한다.
-        /// LOS는 대상마다 라캐스트 1번으로 확인(벽 뒤는 걸러짐) — "정확한 가려짐 판정"과 "관대한 조준"을
-        /// 동시에 얻는다. Hackable 수가 적어(씬당 수십 개 이하) 매 프레임 다 돌아도 부담 없다.
+        /// 조준 대상 판정 — <b>순수 레이캐스트</b>. 화면 중앙에서 쏜 레이가 <b>가장 먼저</b> 맞은 것이
+        /// <see cref="Hackable"/>이면 그것이 대상이고, 아니면 대상이 없다.
+        ///
+        /// <para>예전에는 precog 런지와 같은 관대한 방식이었다 — 모든 <see cref="Hackable"/>을 훑어
+        /// 레이에서 벗어난 수직거리(perp)가 <c>aimAssistRadius</c> 안이면 조준으로 인정했다.
+        /// 크로스헤어를 정확히 맞추지 않아도 잡히는 대신, <b>겨냥하지 않은 것이 잡히는</b> 문제가 있었다.
+        /// 조준 = 치지직의 유일한 스위치가 된 지금은 그 오작동이 그대로 화면에 드러난다.</para>
+        ///
+        /// <para>가려짐 판정이 <b>공짜로 정확해진다</b> — 벽이 먼저 맞으면 그 벽에서 레이가 멈추므로
+        /// 별도 LOS 검사가 필요 없다. 관대한 방식에서는 대상마다 레이를 한 번씩 더 쏴야 했다.</para>
+        ///
+        /// <para>조준 자체는 <see cref="aimMaxRange"/>까지 된다 — 해킹 사거리(<c>hackRange</c>) 밖에서도
+        /// 조준은 잡히고, 치지직 밀도가 낮아지는 것으로 "아직 멀다"가 읽힌다. 사거리는 해킹 시작과
+        /// 밀도 곡선이 판단한다.</para>
         /// </summary>
         Hackable FindAimedHackable()
         {
             Camera c = ActiveCam;
             if (c == null) return null;
 
-            Vector3 eye = c.transform.position;
-            Vector3 dir = c.transform.forward;
+            // ★ transform.forward가 아니라 <b>뷰포트 중앙</b>에서 레이를 만든다.
+            //   transform.forward는 "카메라가 향한 축"일 뿐이고, 투영이 조금이라도 비대칭이면
+            //   화면 중앙과 어긋난다(VR 양안 투영은 원래 비대칭이다). ViewportPointToRay는
+            //   투영행렬에서 직접 뽑으므로 <b>화면 중앙 픽셀</b>이 보증된다.
+            Ray ray = c.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
-            Hackable best = null;
-            float bestPerp = float.MaxValue;
-            float bestAlong = float.MaxValue;
+            RaycastHit hit;
+            if (!Physics.Raycast(ray, out hit, aimMaxRange))
+                return null;
 
-            for (int i = 0; i < Hackable.All.Count; i++)
-            {
-                Hackable h = Hackable.All[i];
-                if (h == null) continue;
+            if (hit.distance < aimMinRange) return null;
 
-                Collider col = h.gazeCollider != null ? h.gazeCollider : h.GetComponentInChildren<Collider>();
-                if (col == null) continue;
-
-                Vector3 center = col.bounds.center;
-                float radius = col.bounds.extents.magnitude;   // 구 근사 — 정밀도보다 저렴함 우선
-
-                Vector3 v = center - eye;
-                float along = Vector3.Dot(v, dir);
-                if (along < aimMinRange || along > h.hackRange + radius) continue;
-
-                float perp = (v - dir * along).magnitude;
-                if (perp > aimAssistRadius + radius) continue;
-
-                // LOS: 벽 등 다른 것에 먼저 가려지면 제외. 대상 자신의 표면에 먼저 맞는 건 정상(안 가려짐).
-                float len = v.magnitude;
-                if (len > 1e-4f && Physics.Raycast(eye, v / len, out RaycastHit hit, len))
-                {
-                    var hitH = hit.collider.GetComponentInParent<Hackable>();
-                    if (hitH != h) continue;
-                }
-
-                bool better = perp < bestPerp - 1e-5f
-                    || (Mathf.Abs(perp - bestPerp) <= 1e-5f && along < bestAlong);
-                if (!better) continue;
-
-                best = h; bestPerp = perp; bestAlong = along;
-            }
-            return best;
+            // 자식 콜라이더에 맞아도 부모의 Hackable을 찾아 올라간다.
+            return hit.collider.GetComponentInParent<Hackable>();
         }
     }
 }

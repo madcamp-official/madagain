@@ -4697,13 +4697,39 @@ MonoBehaviour:
   head: {fileID: 761540845212916262}
   axis: {x: 0, y: -1, z: 0}
   invertAnchorEnd: 1
-  strokeLength: 1
+  strokeMin: 0
+  strokeMax: 1
+  startExtension: 0
   useLinearMotion: 1
   linearDuration: 1
+  flickDuration: 0.12
   drive:
     frequency: 4
     damping: 1
-  debugPreview: 1
+  debugPreview: 0
+  _parts:
+  - t: {fileID: 2846569105200142146}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: -0.7558503
+    length0: 0.4635952
+  - t: {fileID: 1296407629233876407}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: -0.74674726
+    length0: 0.4521882
+  - t: {fileID: 970185421685857920}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: -0.7454145
+    length0: 0.4531987
+  - t: {fileID: 4529616123623157643}
+    homePos: {x: 0, y: 0, z: 0}
+    homeScaleAxis: 1
+    anchorEndLocal: -0.75604784
+    length0: 0.44361988
+  _headHomePos: {x: 0, y: 0, z: 0}
+  _homeCaptured: 1
 --- !u!1 &3635245253601126961
 GameObject:
   m_ObjectHideFlags: 0
