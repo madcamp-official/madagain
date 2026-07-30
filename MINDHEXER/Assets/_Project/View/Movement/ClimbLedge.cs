@@ -158,8 +158,40 @@ namespace Game.View
 
         // ── 기즈모: 잡는 선 + 착지 방향. 도달 불가 높이면 빨강. ──────────────
 
+#if UNITY_EDITOR
+        /// <summary>
+        /// 등반 기즈모(선·화살표·"설 바닥 없음" 라벨)를 그릴지. <b>Tools/기즈모</b> 메뉴로 켜고 끈다.
+        ///
+        /// <para>레벨에 <see cref="ClimbLedge"/>가 수백 개라 라벨이 화면을 덮어 배치·조명 작업이
+        /// 불가능해진다. 판정에는 영향이 없고 <b>표시만</b> 사라진다.</para>
+        ///
+        /// <para><see cref="UnityEditor.EditorPrefs"/>에 저장하므로 에디터를 껐다 켜도 유지된다.
+        /// 매 기즈모 호출마다 EditorPrefs를 읽으면 느리므로 한 번 읽고 캐시한다.</para>
+        /// </summary>
+        public const string ShowGizmosPref = "MINDHEXER.ClimbLedge.ShowGizmos";
+        static int _showCache = -1;   // -1 = 아직 안 읽음
+
+        public static bool ShowGizmos
+        {
+            get
+            {
+                if (_showCache < 0) _showCache = UnityEditor.EditorPrefs.GetBool(ShowGizmosPref, true) ? 1 : 0;
+                return _showCache == 1;
+            }
+            set
+            {
+                _showCache = value ? 1 : 0;
+                UnityEditor.EditorPrefs.SetBool(ShowGizmosPref, value);
+                UnityEditor.SceneView.RepaintAll();
+            }
+        }
+#endif
+
         void OnDrawGizmos()
         {
+#if UNITY_EDITOR
+            if (!ShowGizmos) return;
+#endif
             if (Box == null) return;
             Transform t = transform;
             Vector3 c = Box.center, e = Box.size * 0.5f;
