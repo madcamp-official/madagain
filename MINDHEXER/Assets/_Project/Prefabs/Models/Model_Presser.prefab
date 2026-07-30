@@ -6270,7 +6270,6 @@ GameObject:
   m_Component:
   - component: {fileID: 761540845212916262}
   - component: {fileID: 4078030640372220432}
-  - component: {fileID: 8307562263058393229}
   - component: {fileID: 919114674079967538}
   m_Layer: 0
   m_Name: Head
@@ -6410,21 +6409,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.35390028, y: 0.83092684, z: 0.35421252}
   m_Center: {x: 0.1587621, y: 0.5565551, z: -0.0005345128}
---- !u!114 &8307562263058393229
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5238890816481146453}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8dfd0d25d3fcb3a41b14f3bc5fe86d37, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.View::Game.View.WalkSurfaceCollider
-  actuator: {fileID: 763262504890888197}
-  box: {fileID: 4078030640372220432}
-  invertAnchorSide: 0
 --- !u!114 &919114674079967538
 MonoBehaviour:
   m_ObjectHideFlags: 0

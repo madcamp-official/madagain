@@ -159,6 +159,11 @@ namespace Game.View
 
         void LateUpdate()
         {
+            // Awake에서 한 번 확인해도 충분하지 않다 — riderRoot는 Play 도중에 파괴될 수 있고
+            // (파괴 연출·씬 정리 등), 그러면 매 프레임 MissingReferenceException이 터진다.
+            // ★ `== null`로 비교해야 한다. 유니티가 오버로드한 비교라 <b>파괴된 객체도</b> 잡는다.
+            if (riderRoot == null) { enabled = false; return; }
+
             float dt = Time.deltaTime;
             if (dt <= 0f) { _analog = 0f; return; }
 

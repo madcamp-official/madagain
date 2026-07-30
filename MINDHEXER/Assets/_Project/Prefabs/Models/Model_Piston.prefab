@@ -102,6 +102,7 @@ GameObject:
   - component: {fileID: 350480154593936098}
   - component: {fileID: 3993622694846055094}
   - component: {fileID: 8982176458565187537}
+  - component: {fileID: 2449785561411345890}
   m_Layer: 0
   m_Name: Head
   m_TagString: Untagged
@@ -202,6 +203,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.View::Game.View.RailPlatform
   probeDistance: 0.35
+--- !u!114 &2449785561411345890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 554969372907668355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5abb777edc057040a9a14750a34510d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.ClimbLedge
+  climbableFaces: 15
+  useColliderTop: 1
+  customHeight: 1
+  landingInset: 0.45
+  grabRegions: []
+  gizmoMaxClimbHeight: 4
 --- !u!1 &604577761284115820
 GameObject:
   m_ObjectHideFlags: 0
