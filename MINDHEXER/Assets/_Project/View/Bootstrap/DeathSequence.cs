@@ -48,6 +48,15 @@ namespace Game.View
         public WakeUpSequence wakeUp;
         public FirstPersonPlayer body;
 
+        [Header("소리")]
+        [Tooltip("부활(기상 시작) 순간 재생. 게임 시작 인트로(PlayIntro)에는 안 낀다 — " +
+                 "TickBlack을 거치는 실제 사망→부활에서만 울린다.")]
+        public AudioClip reviveClip;
+
+        [Range(0f, 1f)] public float reviveVolume = 0.8f;
+
+        AudioSource _sfx;
+
         /// <summary>
         /// 암전이 완전히 덮인 순간. <b>여기서 판을 초기화하고 플레이어를 부활 지점으로 옮긴다.</b>
         /// 화면이 검으므로 순간이동이 보이지 않는다.
@@ -93,6 +102,14 @@ namespace Game.View
             if (wakeUp == null) wakeUp = FindAnyObjectByType<WakeUpSequence>();
             if (wakeUp == null) wakeUp = gameObject.AddComponent<WakeUpSequence>();
             if (body == null) body = FirstPersonPlayer.Instance;
+
+            if (_sfx == null)
+            {
+                _sfx = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
+                _sfx.playOnAwake = false;
+                _sfx.spatialBlend = 0f;   // 2D — 특정 위치가 아니라 플레이어 상태 신호다
+            }
+            if (reviveClip == null) reviveClip = Resources.Load<AudioClip>("Sfx/revival");
         }
 
         /// <summary>사망 연출 시작. 이미 진행 중이면 무시한다(같은 프레임에 여러 번 깔리는 경우).</summary>
@@ -162,6 +179,7 @@ namespace Game.View
 
             _phase = Phase.Glitch;
             _t = 0f;
+            if (reviveClip != null && _sfx != null) _sfx.PlayOneShot(reviveClip, reviveVolume);
             if (wakeUp != null) wakeUp.Play();   // 치지직과 겹쳐 기상이 시작된다
         }
 

@@ -94,6 +94,22 @@ namespace Game.View
         [Header("켜진 선의 밝기 (불투명도와 무관하게 항상 고정 — 강도는 alphaFloor/Max가 담당)")]
         public float lineBrightness = 1f;
 
+        [Header("소리 — 조준 시 TV 노이즈")]
+        [Tooltip("아직 해킹 안 한 대상(captureState=None)을 사거리 안에서 조준하는 동안 재생. " +
+                 "패턴 풀이가 시작되거나(Hacking) 조준을 놓치면 멎는다 — 치지직 강조와 같은 조건이다.")]
+        public AudioClip gazeNoiseClip;
+
+        [Range(0f, 1f)] public float gazeNoiseVolume = 0.5f;
+
+        [Tooltip("조준을 잡았을 때 볼륨이 올라오는 시간(초).")]
+        public float gazeNoiseFadeIn = 0.08f;
+
+        [Tooltip("조준을 놓쳤을 때 볼륨이 잦아드는 시간(초).")]
+        public float gazeNoiseFadeOut = 0.25f;
+
+        AudioSource _noiseSrc;
+        float _noiseVol;
+
         static readonly int IntensityId = Shader.PropertyToID("_GlitchIntensity");
         static readonly int ModeId = Shader.PropertyToID("_GlitchMode");
         static readonly int AlphaId = Shader.PropertyToID("_LineAlpha");
@@ -136,6 +152,13 @@ namespace Game.View
 
             _glitchMat = new Material(shader) { name = "HackGlitch (runtime shared)" };
             _mpb = new MaterialPropertyBlock();
+
+            _noiseSrc = gameObject.AddComponent<AudioSource>();
+            _noiseSrc.playOnAwake = false;
+            _noiseSrc.loop = true;
+            _noiseSrc.spatialBlend = 0f;   // 2D — 특정 대상 위치가 아니라 "지금 조준 중"이라는 플레이어 상태 신호
+            _noiseSrc.volume = 0f;
+            if (gazeNoiseClip == null) gazeNoiseClip = Resources.Load<AudioClip>("Sfx/hack_noise");
         }
 
         void Update()
@@ -159,6 +182,7 @@ namespace Game.View
 
             Vector3 viewerPos = _viewer.transform.position;
             float dt = Time.deltaTime;
+            bool anyGazeHint = false;
 
             for (int i = 0; i < Hackable.All.Count; i++)
             {
@@ -212,6 +236,7 @@ namespace Game.View
                 if (h.captureState == CaptureState.None && h.IsGazed && inRange)
                 {
                     targetDensity = gazeDensity; targetAlpha = gazeAlpha; targetMode = 1f;
+                    anyGazeHint = true;
                 }
 
                 // 차오를 때와 사라질 때 속도를 따로 둔다 — "빠르게 차오르는" 느낌이 이 비대칭에서 나온다.
@@ -226,6 +251,18 @@ namespace Game.View
                                         targetMode > e.smoothMode ? rise : fall);
 
                 Apply(e);
+            }
+
+            if (gazeNoiseClip != null)
+            {
+                float target = anyGazeHint ? gazeNoiseVolume : 0f;
+                float time = anyGazeHint ? gazeNoiseFadeIn : gazeNoiseFadeOut;
+                float rate = (time > 1e-4f ? gazeNoiseVolume / time : 999f) * dt;
+                _noiseVol = Mathf.MoveTowards(_noiseVol, target, rate);
+
+                if (anyGazeHint && !_noiseSrc.isPlaying) { _noiseSrc.clip = gazeNoiseClip; _noiseSrc.Play(); }
+                _noiseSrc.volume = _noiseVol;
+                if (!anyGazeHint && _noiseVol <= 0.0001f && _noiseSrc.isPlaying) _noiseSrc.Stop();
             }
         }
 
