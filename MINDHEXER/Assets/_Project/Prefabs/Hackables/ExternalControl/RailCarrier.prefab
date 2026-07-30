@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 7775872473555631903}
   - component: {fileID: 8946132241387759597}
   - component: {fileID: 6433873643312432204}
+  - component: {fileID: 4687052799909351922}
   m_Layer: 0
   m_Name: RailCarrier
   m_TagString: Untagged
@@ -212,6 +213,22 @@ MonoBehaviour:
     moveSpeed: 3
     flickDistance: 50
     flickSpeed: 300
+--- !u!114 &4687052799909351922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3165375372365975267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2ec2b85d446436e97bf14825c4382b1, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Game.View::Game.View.RailCarrierMoveSound
+  reelClip: {fileID: 8300000, guid: 37fe3769ae4e8ed4ba784bfcea5813e4, type: 3}
+  volume: 0.8
+  headTime: 1
+  tailTime: 1
 --- !u!1001 &1999097339000696629
 PrefabInstance:
   m_ObjectHideFlags: 0

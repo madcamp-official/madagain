@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude mcp *)",
+      "Bash(find /c/Users/user/madagain -maxdepth 2 -iname \"*.mcp.json\" -o -iname \"mcp.json\" 2>/dev/null; echo \"---\"; find /c/Users/user -maxdepth 3 -iname \"*.mcp.json\" 2>/dev/null)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -)",
+      "Bash(python3 -c \"import uuid; print\\(uuid.uuid4\\(\\).hex\\)\")",
+      "Bash(powershell -Command \"[guid]::NewGuid\\(\\).ToString\\('N'\\)\")",
+      "Bash(powershell -Command ' *)"
+    ]
+  }
+}
