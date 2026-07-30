@@ -9,9 +9,6 @@
 
 전체 기술 명세: [docs/SYB/SPEC.md](docs/SYB/SPEC.md) · 게임 설계 정본: [docs/KJH/design/기초_설계안.md](docs/KJH/design/기초_설계안.md)
 
-<<<<<<< Updated upstream
-전체 기술 명세는 [docs/SPEC.md](docs/SPEC.md) 참고.
-=======
 ---
 
 ## 개발 목적
@@ -57,20 +54,12 @@
   양쪽 Unity 프로젝트가 임베드한다 → 필드 불일치 원천 차단.
 
 아키텍처·와이어 포맷·페어링 절차: [docs/SYB/ARCHITECTURE.md](docs/SYB/ARCHITECTURE.md) · [docs/SYB/NETWORK_PROTOCOL.md](docs/SYB/NETWORK_PROTOCOL.md)
->>>>>>> Stashed changes
 
 ## 레포 구성
 
 ```
 madagain/
-<<<<<<< Updated upstream
 ├── docs/                         # 명세 · 아키텍처 · 프로토콜 · 셋업 · 테스트 체크리스트
-=======
-├── MINDHEXER/            # 🎮 S24+ 카드보드 VR 게임 본체 (Unity 6000.5.4f1)
-│                         #    Cardboard XR 렌더링, 레벨(TallCity), 적/기믹, 해킹, 오브젝트 조종
-├── controller-s10e/      # 📱 S10e 원격 컨트롤러 앱 (조이스틱 + 스와이프 해킹 패드 + 센서 스트리밍)
-├── headset-s24/          #    S24+ 네트워킹 초기 스캐폴드/프로토타입 (게임 본체는 MINDHEXER)
->>>>>>> Stashed changes
 ├── shared/
 │   └── com.mindhexer.shared/   # 두 앱이 임베드하는 공유 UPM 패키지
 │                               # (InputPacket, 직렬화, 시퀀스 검증, UDP/WebSocket/RTT/디스커버리, 페어링)
@@ -86,18 +75,6 @@ madagain/
 
 ---
 
-<<<<<<< Updated upstream
-1. **Unity 2022.3 LTS**(Android Build Support 모듈 포함) 설치. 두 프로젝트 모두 동일 버전 권장.
-2. Cardboard XR Plugin, WebSocketSharp(DLL) 등 **UPM 밖에서 받아야 하는 의존성**은
-   [docs/SETUP.md](docs/SETUP.md)의 안내를 따를 것.
-3. 두 폰을 같은 로컬망(또는 S24+ 핫스팟)에 두고 빌드/실행. 연결 절차는 [docs/NETWORK_PROTOCOL.md](docs/NETWORK_PROTOCOL.md) 참고.
-
-## 개발 규약
-
-- `main`은 항상 빌드 가능 상태 유지. 기능 작업은 `feat/*`, 버그는 `fix/*`.
-- 패킷 구조체·프로토콜 상수를 바꾸면 **반드시 `shared` 패키지에서** 바꾼다(양쪽 자동 반영).
-- 2인/7일 작업 분배는 [docs/SPEC.md](docs/SPEC.md) 6절 참고. **1일차 UDP Ping-Pong 검증이 최우선 마감 항목.**
-=======
 ## 배포 방법
 
 두 개의 안드로이드 앱을 각 폰에 빌드해 설치한다. (엔진: **Unity 6000.5.4f1**, Android Build Support 포함)
@@ -144,4 +121,3 @@ _(작성 예정 — 데모 영상, 스크린샷, 실기기 플레이 GIF, 발표
 - 기능 작업은 `feat/*`, 버그는 `fix/*` 브랜치. (현재 활성 예: `feat/level-SYB`)
 - **패킷 구조체·프로토콜 상수를 바꾸면 반드시 `shared/com.mindhexer.shared`에서** 바꾼다(양쪽 자동 반영).
 - 개인 문서는 `docs/<이름>/`에 자유롭게, **둘이 합의한 것만** [docs/shared/](docs/shared/)로 승격한다.
->>>>>>> Stashed changes

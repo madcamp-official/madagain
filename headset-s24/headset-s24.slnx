@@ -1,0 +1,4 @@
+﻿<Solution>
+  <Project Path="MindHexer.Headset.csproj" />
+  <Project Path="MindHexer.Shared.csproj" />
+</Solution>
