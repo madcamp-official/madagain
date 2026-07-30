@@ -30,6 +30,10 @@ namespace Game.View
         [Tooltip("홀드 1초당 움직이는 스트로크 비율. 1이면 1초에 완전 수축↔완전 신장.")]
         public float holdSpeed = 0.6f;
 
+        [Tooltip("끄면 홀드를 무시하고 플릭만 받는다. 추격 중 대왕프레스처럼 '한 방'만 허용할 때.\n" +
+                 "★ 기본은 켜짐이다 — 평상시 대왕프레스는 일반 유압프레스와 완전히 같아야 한다.")]
+        public bool allowHold = true;
+
         [Header("플릭(더블클릭 = 끝에서 끝)")]
         [Tooltip("끄면 플릭을 무시하고 홀드만 받는다. 압사 위험이 있는 프레스를 느리게만 쓰고 싶을 때.")]
         public bool allowFlick = true;
@@ -103,6 +107,8 @@ namespace Game.View
                 holdStep.Reset();
                 return;
             }
+
+            if (!allowHold) { holdStep.Reset(); return; }   // 플릭 전용 모드 — 홀드는 아예 안 받는다
 
             // 홀드는 마일스톤으로 양자화한다.
             float dt = Time.deltaTime;

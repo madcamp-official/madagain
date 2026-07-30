@@ -106,7 +106,47 @@ namespace Game.View
         public float Target
         {
             get => drive.Target;
-            set { drive.Target = Mathf.Clamp01(value); _flickMove = false; }
+            set { drive.Target = Mathf.Min(Mathf.Clamp01(value), _limitT); _flickMove = false; }
+        }
+
+        /// <summary>
+        /// 신장 <b>상한</b>(0~1). 기본 1 = 제한 없음 = 지금까지와 완전히 같은 동작.
+        ///
+        /// <para><b>왜 여기인가</b>: 홀드·플릭·서보·<c>debugPreview</c>가 전부 <see cref="Target"/>과
+        /// <see cref="Flick"/> 두 곳으로 모이므로, 거기서 한 번 자르면 <b>어떤 경로로도 상한을 못 넘는다.</b>
+        /// 경로마다 막으면 반드시 하나를 빠뜨린다.</para>
+        ///
+        /// <para>용례: 대왕프레스가 보스 머리에 닿는 높이에서 멈춰야 한다(더 내려갈 수 있어도, 플릭이어도).
+        /// 낑김을 관리하는 쪽이 이 값을 소유하고, 끝나면 1로 되돌린다.</para>
+        ///
+        /// <para>직렬화하지 않는다 — 프리팹에 굳어 버리면 "프레스가 왜 덜 내려가지"를 추적하기 어렵다.
+        /// 런타임 소유자만 만진다.</para>
+        /// </summary>
+        public float LimitT
+        {
+            get => _limitT;
+            set => _limitT = Mathf.Clamp01(value);
+        }
+        float _limitT = 1f;
+
+        /// <summary>상한이 걸려 있고 거기에 닿았는가. 상한이 1이면(제한 없음) 항상 false다.</summary>
+        public bool AtLimit => _limitT < 1f - 1e-4f && Current >= _limitT - 1e-4f;
+
+        /// <summary>
+        /// 헤드에 실려 움직이는 <paramref name="faceWorldNow"/> 지점이 <paramref name="worldStop"/>에
+        /// 닿게 되는 t(0~1). <see cref="LimitT"/>에 넣을 값을 구하는 용도다.
+        ///
+        /// <para>축 방향 성분만 본다 — 두 점이 옆으로 어긋나 있어도 "축을 따라 얼마나 더 가야 하는가"만
+        /// 답한다. 지금 자세를 기준으로 재므로 홈 위치를 따로 알 필요가 없다.</para>
+        /// </summary>
+        public float TThatBrings(Vector3 faceWorldNow, Vector3 worldStop)
+        {
+            float span = strokeMax - strokeMin;
+            if (Mathf.Abs(span) < 1e-6f) return _appliedT;
+
+            float more = Vector3.Dot(worldStop - faceWorldNow, ExtendWorld);
+            float now = Mathf.LerpUnclamped(strokeMin, strokeMax, _appliedT);
+            return Mathf.Clamp01((now + more - strokeMin) / span);
         }
 
         /// <summary>
@@ -117,7 +157,7 @@ namespace Game.View
         /// </summary>
         public void Flick(float target)
         {
-            drive.Target = Mathf.Clamp01(target);
+            drive.Target = Mathf.Min(Mathf.Clamp01(target), _limitT);
             _flickMove = true;
         }
 
@@ -333,6 +373,10 @@ namespace Game.View
                 var kb = UnityEngine.InputSystem.Keyboard.current;
                 if (kb != null) Target = kb.spaceKey.isPressed ? 1f : 0f;
             }
+
+            // 목표를 이미 잡아 둔 뒤에 상한이 내려올 수도 있다(보스가 자리를 잡는 중 등).
+            // 매 프레임 다시 자르면 그 경우에도 헤드가 상한까지 되돌아온다 — 튀지 않고 제 속도로.
+            if (drive.Target > _limitT) drive.Target = _limitT;
 
             if (useLinearMotion)
             {
