@@ -36,6 +36,12 @@ namespace Game.View
         [Tooltip("월드스페이스 해킹 패널. 비어 있으면 씬에서 찾는다.")]
         public HackPanel panel;
 
+        [Header("소리 — 창이 열릴 때 한 번")]
+        [Tooltip("패턴 창이 열리는 순간(Begin) 재생.")]
+        public AudioClip openClip;
+
+        [Range(0f, 1f)] public float openVolume = 0.8f;
+
         [Header("소리 — 점 연결마다 번갈아 재생")]
         [Tooltip("점 하나 연결될 때마다 이 둘을 번갈아 재생한다(같은 소리 연타 대신 딸깍이는 느낌).")]
         public AudioClip tickA;
@@ -84,6 +90,7 @@ namespace Game.View
             //   Resources 폴더 관례로 자동 로드한다 — 인스펙터에 직접 물리면 그 값이 우선한다.
             if (tickA == null) tickA = Resources.Load<AudioClip>("Sfx/PatternTick/puzzle_tick1");
             if (tickB == null) tickB = Resources.Load<AudioClip>("Sfx/PatternTick/puzzle_tick2");
+            if (openClip == null) openClip = Resources.Load<AudioClip>("Sfx/puzzle_open");
         }
 
         /// <summary>점 하나가 연결된 순간(성공·오답 무관) — tickA/B를 번갈아 낸다.</summary>
@@ -123,6 +130,7 @@ namespace Game.View
             State = PatternState.InProgress;
             ResolveView();
             ViewShow();
+            if (openClip != null && tickAudio != null) tickAudio.PlayOneShot(openClip, openVolume);
         }
 
         // ── 뷰 호출 한 곳으로 모음 ────────────────────────────────────
