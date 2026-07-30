@@ -22,12 +22,31 @@ Shader "MINDHEXER/OneBit"
 
         [Toggle] _UseGlobal ("전역 값 사용(패널로 조절)", Float) = 1
 
+        // ★ 전역값 세트 선택 — 손·거미(플레이어)와 해킹 대상은 서로 다른 대비가 필요하다.
+        //   플레이어 팔은 거의 검은 재질이고 해킹 대상은 밝은 금속이라, 한 세트로 맞추면 한쪽이 죽는다.
+        [Toggle] _HackSet ("해킹 대상 세트 사용(끄면 플레이어 세트)", Float) = 0
+
         _Levels     ("계단 수(2=완전 흑백)", Range(2,8)) = 4
         _InBlack    ("입력 검정점",          Range(0,1)) = 0
         _InWhite    ("입력 흰색점",          Range(0,1)) = 0.5
-        [Toggle] _Invert ("반전",           Float)      = 1
+        [Toggle] _Invert ("반전",           Float)      = 0
         _Dither     ("디더(계단 경계 흩기)", Range(0,1)) = 0
         _LightWrap  ("라이트 랩(형태 유지)", Range(0,1)) = 0.35
+
+        // ★★★ 비활성화됨(사용자 지시) — 씬 조명과 무관하게 밝아지는 게 원치 않는 동작이었다
+        //     (작업용 조명을 꺼도 안 어두워짐). 슬라이더는 남겨 두되 프로퍼티 기본값을 0으로 낮춰
+        //     새로 만드는 재질이 이 영향을 안 받게 한다. 실제 강제는 OneBitControl.Apply()가 한다
+        //     (전역값을 매 프레임 0으로 덮어씀) — 되돌리려면 그쪽 강제만 풀면 된다.
+        _AmbientFloor ("자체 밝기 바닥 (비활성화됨)", Range(0,2)) = 0
+
+        // ★ 금속(스페큘러 워크플로) 재질을 위한 보조 입력.
+        //   금속은 자기 색이 거의 없어 알베도를 검정으로 두고 형태를 스페큘러 맵에 담는다
+        //   (실측: probe base 의 _BaseMap 표준편차 0.0000, _SpecGlossMap 표준편차 0.1148).
+        //   알베도만 읽으면 그런 재질은 통째로 검정이 된다 — 실제로 그랬다.
+        //   기본값을 "black"으로 둬야 스페큘러 맵이 없는 재질(플레이어 손 등)이 영향을 안 받는다.
+        //   ⚠️ "white"로 두면 맵 없는 재질이 전부 하얗게 날아간다.
+        _SpecGlossMap ("스페큘러 맵(형태 보조)", 2D) = "black" {}
+        _SpecWeight   ("스페큘러 가중", Range(0,2)) = 1
     }
 
     SubShader
@@ -59,24 +78,40 @@ Shader "MINDHEXER/OneBit"
                 float4 _BaseMap_ST;
                 half4  _BaseColor;
                 half   _UseGlobal;
+                half   _HackSet;
                 half   _Levels;
                 half   _InBlack;
                 half   _InWhite;
                 half   _Invert;
                 half   _Dither;
                 half   _LightWrap;
+                half   _AmbientFloor;
+                half   _SpecWeight;
             CBUFFER_END
 
             TEXTURE2D(_BaseMap);
             SAMPLER(sampler_BaseMap);
 
+            TEXTURE2D(_SpecGlossMap);
+            SAMPLER(sampler_SpecGlossMap);
+
             // 전역 — CBUFFER 밖에 둬야 SRP Batcher와 싸우지 않는다.
+            // 두 세트: 접두사 없음 = 플레이어(손·거미), H = 해킹 대상.
             half _OneBitLevels;
             half _OneBitInBlack;
             half _OneBitInWhite;
             half _OneBitInvert;
             half _OneBitDither;
             half _OneBitLightWrap;
+            half _OneBitAmbient;
+
+            half _OneBitHLevels;
+            half _OneBitHInBlack;
+            half _OneBitHInWhite;
+            half _OneBitHInvert;
+            half _OneBitHDither;
+            half _OneBitHLightWrap;
+            half _OneBitHAmbient;
 
             struct Attributes
             {
@@ -118,14 +153,32 @@ Shader "MINDHEXER/OneBit"
 
             half4 frag(Varyings IN) : SV_Target
             {
-                half levels  = _UseGlobal > 0.5h ? _OneBitLevels    : _Levels;
-                half inBlack = _UseGlobal > 0.5h ? _OneBitInBlack   : _InBlack;
-                half inWhite = _UseGlobal > 0.5h ? _OneBitInWhite   : _InWhite;
-                half invert  = _UseGlobal > 0.5h ? _OneBitInvert    : _Invert;
-                half dither  = _UseGlobal > 0.5h ? _OneBitDither    : _Dither;
-                half wrap    = _UseGlobal > 0.5h ? _OneBitLightWrap : _LightWrap;
+                // 어느 전역 세트를 읽을지 먼저 고른다(플레이어 / 해킹 대상).
+                bool hackSet = _HackSet > 0.5h;
+                half gLevels   = hackSet ? _OneBitHLevels    : _OneBitLevels;
+                half gInBlack  = hackSet ? _OneBitHInBlack   : _OneBitInBlack;
+                half gInWhite  = hackSet ? _OneBitHInWhite   : _OneBitInWhite;
+                half gInvert   = hackSet ? _OneBitHInvert    : _OneBitInvert;
+                half gDither   = hackSet ? _OneBitHDither    : _OneBitDither;
+                half gWrap     = hackSet ? _OneBitHLightWrap : _OneBitLightWrap;
+                half gAmbient  = hackSet ? _OneBitHAmbient   : _OneBitAmbient;
+
+                half levels  = _UseGlobal > 0.5h ? gLevels  : _Levels;
+                half inBlack = _UseGlobal > 0.5h ? gInBlack : _InBlack;
+                half inWhite = _UseGlobal > 0.5h ? gInWhite : _InWhite;
+                half invert  = _UseGlobal > 0.5h ? gInvert  : _Invert;
+                half dither  = _UseGlobal > 0.5h ? gDither  : _Dither;
+                half wrap    = _UseGlobal > 0.5h ? gWrap    : _LightWrap;
+                half ambient = _UseGlobal > 0.5h ? gAmbient : _AmbientFloor;
 
                 half3 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv).rgb * _BaseColor.rgb;
+
+                // ★ 금속 재질은 알베도가 검정이고 형태가 스페큘러 맵에 있다. 둘 중 밝은 쪽을 쓴다.
+                //   · 알베도가 있는 재질(플레이어 손): 스페큘러 맵이 없어 검정이므로 albedo가 이긴다
+                //   · 금속 재질(probe base): 알베도가 0이므로 스페큘러가 이긴다
+                //   더하지 않고 max를 쓰는 이유 — 둘 다 있는 재질에서 밝기가 두 배로 뜨지 않게.
+                half3 spec = SAMPLE_TEXTURE2D(_SpecGlossMap, sampler_SpecGlossMap, IN.uv).rgb * _SpecWeight;
+                albedo = max(albedo, spec);
                 float3 N = normalize(IN.normalWS);
 
                 // 조명 — 형태를 남기기 위한 것이지 색을 위한 게 아니다.
@@ -154,7 +207,11 @@ Shader "MINDHEXER/OneBit"
                 }
                 #endif
 
-                half3 lit = albedo * (SampleSH(N) + light);
+                // ★ ambient(자체 밝기 바닥)를 더한다 — 씬에 라이트가 없어도 알베도의 명암이 그대로
+                //   휘도로 올라오므로 형태가 보인다. 이게 없으면 환경광(예: 0.04)만 남아 휘도가 0.02
+                //   근처에 깔리고, inWhite를 아무리 내려도 통째로 검정이 된다(실제로 겪음).
+                //   조명은 '형태를 더하는' 역할이 되고, 보일지 말지는 이 값이 보장한다.
+                half3 lit = albedo * (SampleSH(N) + ambient + light);
 
                 half lum = dot(lit, half3(0.2126h, 0.7152h, 0.0722h));
 

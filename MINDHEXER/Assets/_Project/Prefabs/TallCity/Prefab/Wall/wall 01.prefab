@@ -72,7 +72,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0ab57df404f65f14582b7c3ff926d6f5, type: 2}
+  - {fileID: 2100000, guid: b3de27fbae44c484cbc6dd54861e1698, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -133,6 +133,7 @@ MonoBehaviour:
   useColliderTop: 1
   customHeight: 1
   landingInset: 0.45
+  grabRegions: []
   gizmoMaxClimbHeight: 2
 --- !u!1001 &1060449460716196744
 PrefabInstance:
