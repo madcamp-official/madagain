@@ -39,20 +39,21 @@ namespace Game.EditorTools
                 _cells = EditorGUILayout.IntField("칸 수 ±", _cells);
                 if (GUILayout.Button("범위를 ±N칸으로"))
                 {
-                    Undo.RecordObject(rs, "Rail range by cells");
-                    rs.rangeMax = _cells * rs.cellLength;
+                    Undo.RecordObject(rs, "Rail range by steps");
+                    rs.rangeMax = _cells * rs.stepTarget;
                     rs.rangeMin = -rs.rangeMax;
                     EditorUtility.SetDirty(rs);
                 }
             }
 
             float span = rs.rangeMax - rs.rangeMin;
-            float cells = rs.cellLength > 1e-4f ? span / rs.cellLength : 0f;
             EditorGUILayout.HelpBox(
-                $"이동 폭 {span:0.###} (레일 {cells:0.##}칸)\n" +
-                $"앵커 기준 {rs.rangeMin:0.###} ~ {rs.rangeMax:0.###}\n" +
-                "플릭 1회 = 레일 1칸. 홀드는 연속 크립.",
+                $"이동 폭 {span:0.###}   (앵커 기준 {rs.rangeMin:0.###} ~ {rs.rangeMax:0.###})\n" +
+                $"눈금 {rs.Grid.Count}개 — 플릭 1회 = 눈금 한 칸. 홀드는 연속 크립.\n" +
+                DescribeSteps(rs),
                 MessageType.Info);
+
+            WarnShortTail(rs);
 
             // 레일이 짧으면 끝까지 갔을 때 레일 끝이 시야에 드러난다.
             if (TryRailLengthAlongAxis(rs, out float railTotal))
@@ -74,6 +75,32 @@ namespace Game.EditorTools
                     "레일에 콜라이더가 있습니다. 세트가 통째로 미끄러지므로 레일 콜라이더는 벽을 뚫고 지나갑니다.\n" +
                     "레일은 렌더러만 두고, 콜라이더는 라이더(벽·발판)에만 두십시오.",
                     MessageType.Warning);
+        }
+
+        /// <summary>실제로 만들어진 칸 크기를 알려 준다. 가운데는 항상 목표 간격이고 양 끝만 다르다.</summary>
+        static string DescribeSteps(RailSet rs)
+        {
+            var g = rs.Grid;
+            if (g.Count < 2) return "눈금이 없습니다 — 이동 범위가 0입니다.";
+            return $"목표 간격 {rs.stepTarget:0.###} · 양 끝 칸 " +
+                   $"{g[1] - g[0]:0.###} / {g[g.Count - 1] - g[g.Count - 2]:0.###}";
+        }
+
+        /// <summary>끝 자투리가 너무 짧으면 그 한 번의 플릭이 '안 움직인 것처럼' 보인다.</summary>
+        static void WarnShortTail(RailSet rs)
+        {
+            var g = rs.Grid;
+            if (g.Count < 2) return;
+
+            float t = Mathf.Max(1e-4f, rs.stepTarget);
+            float worst = Mathf.Min(g[1] - g[0], g[g.Count - 1] - g[g.Count - 2]);
+            if (worst >= t * 0.5f) return;
+
+            EditorGUILayout.HelpBox(
+                $"끝 칸이 {worst:0.###}로 목표 간격 {t:0.###}의 절반보다 짧습니다 — 그 한 번의 플릭은 " +
+                "거의 안 움직인 것처럼 보입니다.\n" +
+                "tailMergeRatio를 올려 직전 칸에 합치거나, 범위 끝을 목표 간격의 배수에 가깝게 끄십시오.",
+                MessageType.Warning);
         }
 
         // ── 툴 동작 ───────────────────────────────────────────────────────
@@ -116,9 +143,9 @@ namespace Game.EditorTools
             { Debug.LogWarning("[RailSet] 기준 레일에 Renderer가 없습니다."); return; }
 
             Undo.RecordObject(rs, "Measure rail length");
-            rs.cellLength = worldLen / rs.ParentScaleAlongAxis;
+            rs.stepTarget = worldLen / rs.ParentScaleAlongAxis;
             EditorUtility.SetDirty(rs);
-            Debug.Log($"[RailSet] 레일 1칸 = {rs.cellLength:0.###} (월드 {worldLen:0.###})");
+            Debug.Log($"[RailSet] 목표 간격을 레일 1칸에 맞춤 = {rs.stepTarget:0.###} (월드 {worldLen:0.###})");
         }
 
         /// <summary>레일 전체가 축 방향으로 차지하는 길이(부모 공간 단위).</summary>
@@ -189,17 +216,17 @@ namespace Game.EditorTools
             Handles.SphereHandleCap(0, anchor, Quaternion.identity, hs, EventType.Repaint);
             Handles.Label(anchor + Vector3.up * hs * 2f, "앵커");
 
-            // 칸 눈금 — 플릭이 떨어지는 지점
-            if (rs.cellLength > 1e-4f)
+            // 눈금 — 플릭이 떨어지는 지점. 범위 양 끝(자투리 칸)도 눈금이라 같이 찍는다.
+            // 예전엔 Ceil/Floor로 배수만 찍어 끝 지점이 빠졌는데, 플릭은 끝까지 갈 수 있어
+            // 보이는 것과 실제 동작이 어긋났다.
+            var grid = rs.Grid;
+            for (int i = 0; i < grid.Count; i++)
             {
-                Handles.color = new Color(1f, 1f, 1f, 0.6f);
-                int lo = Mathf.CeilToInt(rs.rangeMin / rs.cellLength);
-                int hi = Mathf.FloorToInt(rs.rangeMax / rs.cellLength);
-                for (int i = lo; i <= hi; i++)
-                {
-                    Vector3 p = anchor + ax * (i * rs.cellLength * scale);
-                    Handles.SphereHandleCap(0, p, Quaternion.identity, HandleUtility.GetHandleSize(p) * 0.05f, EventType.Repaint);
-                }
+                Vector3 p = anchor + ax * (grid[i] * scale);
+                bool end = i == 0 || i == grid.Count - 1;
+                Handles.color = end ? new Color(1f, 0.6f, 0.2f, 0.9f) : new Color(1f, 1f, 1f, 0.6f);
+                Handles.SphereHandleCap(0, p, Quaternion.identity,
+                                        HandleUtility.GetHandleSize(p) * (end ? 0.07f : 0.05f), EventType.Repaint);
             }
 
             // 양 끝 고스트 — 끝까지 갔을 때 레일 끝이 드러나는지 눈으로 확인
@@ -276,7 +303,7 @@ namespace Game.EditorTools
             rs.riderRoot = riders.transform;
             rs.referenceRail = rails.transform.GetChild(0);
             rs.axis = Vector3.right;
-            rs.cellLength = cellLen;
+            rs.stepTarget = cellLen;
             rs.rangeMax = 2f * cellLen;
             rs.rangeMin = -rs.rangeMax;
 

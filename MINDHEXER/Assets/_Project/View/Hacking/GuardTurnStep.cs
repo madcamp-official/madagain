@@ -55,13 +55,20 @@ namespace Game.View
         [Header("디버그")]
         public bool logTurns;
 
+        [Tooltip("한쪽 다리가 찌그러지는 증상 진단용 — 1초마다 좌우 무릎 굽힘·IK weight·회전 단계를 찍는다.\n" +
+                 "가장 먼저 켜진 경비병 하나만 찍는다(웨이브 8기가 동시에 스팸하지 않게).")]
+        public bool logLegDiag;
+
+        static GuardTurnStep _diagOwner;   // 여러 기가 동시에 찍지 않도록 첫 번째만 소유
+        float _diagT;
+
         Animator _anim;
         Transform _chest;
         HandIK _legL, _legR;
         Transform _targetL, _targetR;
 
         bool _hasLegs;
-        Vector3 _offsetL, _offsetR;         // 루트 로컬 XZ 오프셋(엉덩이 대비 발 위치) — 회전 시작마다 매번 새로 캡처
+        Vector3 _offsetL, _offsetR;         // 루트→발 오프셋. 회전만 벗겨낸 값이고 단위는 월드(스케일 안 나눔) — Capture() 주석 참조
         Quaternion _localRotL, _localRotR;  // 루트 로컬 발 회전 — 회전 시작마다 매번 새로 캡처
         Vector3 _plantedPosL, _plantedPosR; // 지금 각 발이 실제로 붙어 있는 월드 위치
         Quaternion _plantedRotL, _plantedRotR;
@@ -122,8 +129,15 @@ namespace Game.View
         void Capture()
         {
             if (!_hasLegs) return;
-            _offsetL = transform.InverseTransformPoint(_legL.end.position);
-            _offsetR = transform.InverseTransformPoint(_legR.end.position);
+            // 회전만 벗겨낸 오프셋 — 스케일로 나누지 않는다. InverseTransformPoint를 쓰면 값이
+            // lossyScale로 나뉘어 나오는데, TickStep은 이걸 `transform.position + landRot * offset`
+            // 으로 월드 단위처럼 그대로 더한다(스케일을 다시 곱하지 않는다). 그래서 스케일 2인
+            // 경비병(HackSandbox·Stage_1)에서는 발 목표가 실제 거리의 절반, 즉 골반 바로 아래에
+            // 찍혔고, HandIK가 dist를 dMin(=kneeMaxFlex 155°에서의 도달거리)으로 클램프하면서
+            // 무릎을 155°까지 접고 hipMaxCone 70°로 허벅지를 비틀었다 — 한쪽 다리가 찌그러져
+            // 말리는 증상의 원인. 아래 _localRot* 가 이미 쓰는 "회전만" 방식으로 통일한다.
+            _offsetL = Quaternion.Inverse(transform.rotation) * (_legL.end.position - transform.position);
+            _offsetR = Quaternion.Inverse(transform.rotation) * (_legR.end.position - transform.position);
             _localRotL = Quaternion.Inverse(transform.rotation) * _legL.end.rotation;
             _localRotR = Quaternion.Inverse(transform.rotation) * _legR.end.rotation;
             _plantedPosL = _legL.end.position; _plantedRotL = _legL.end.rotation;
@@ -164,6 +178,7 @@ namespace Game.View
 
         void LateUpdate()
         {
+            TickLegDiag();   // Idle(=걷는 중)에도 찍어야 하므로 아래 early return 앞에 둔다
             if (_phase == Phase.Idle) return;
             _t += Time.deltaTime;
 
@@ -178,6 +193,57 @@ namespace Game.View
             _targetL.position = _plantedPosL; _targetL.rotation = _plantedRotL;
             _targetR.position = _plantedPosR; _targetR.rotation = _plantedRotR;
             // 지금 움직이는 중인 발은 아래 Tick*에서 _plantedPos/Rot를 직접 매 프레임 덮어써 반영한다.
+        }
+
+        /// <summary>
+        /// 한쪽 다리 찌그러짐 진단용 계측. 정적 분석으로는 원인을 특정할 수 없어(리그·클립·Avatar·
+        /// 레이어 마스크 전부 좌우 대칭으로 확인됨) 실제 값을 찍는다. 판독법:
+        ///
+        /// <list type="bullet">
+        ///  <item><b>weight가 0이 아닌데 phase=Idle</b> → IK weight 고착. 회전을 끝내지 못한 경로가 있다.</item>
+        ///  <item><b>weight 0인데 knee L/R 차이가 큼</b> → IK 무관. Animator 출력 자체가 비대칭
+        ///        = 휴머노이드 리타게팅 문제(Avatar T-포즈·본 축).</item>
+        ///  <item><b>reach &gt; 1.0</b> → 발 목표가 다리 길이보다 멀어 HandIK가 dMax로 클램프 중
+        ///        (다리가 억지로 펴진다). scale 값이 1이 아니면 스케일 경로도 같이 의심한다.</item>
+        /// </list>
+        /// knee는 허벅지 방향과 정강이 방향 사이 각도다 — 0=완전히 편 상태, 클수록 접힌 상태.
+        /// </summary>
+        void TickLegDiag()
+        {
+            if (!logLegDiag || !_hasLegs) return;
+            if (_diagOwner == null) _diagOwner = this;
+            if (_diagOwner != this) return;
+
+            _diagT += Time.deltaTime;
+            if (_diagT < 1f) return;
+            _diagT = 0f;
+
+            var clips = _anim.GetCurrentAnimatorClipInfo(0);
+            string clip = clips.Length > 0 && clips[0].clip != null ? clips[0].clip.name : "(없음)";
+
+            Debug.Log($"[GuardLegDiag] {name} clip={clip} phase={_phase} scale={transform.lossyScale.x:F2}" +
+                      $" | weight L={_legL.weight:F2} R={_legR.weight:F2}" +
+                      $" | knee L={KneeFlex(_legL):F0}° R={KneeFlex(_legR):F0}°" +
+                      $" | reach L={ReachRatio(_legL):F2} R={ReachRatio(_legR):F2}");
+        }
+
+        /// <summary>허벅지 방향과 정강이 방향 사이 각도. 0=편 상태, 155에 가까우면 최대 굴곡 클램프에 닿은 것.</summary>
+        static float KneeFlex(HandIK leg)
+        {
+            Vector3 thigh = leg.lower.position - leg.upper.position;
+            Vector3 shin  = leg.end.position   - leg.lower.position;
+            if (thigh.sqrMagnitude < 1e-8f || shin.sqrMagnitude < 1e-8f) return 0f;
+            return Vector3.Angle(thigh, shin);
+        }
+
+        /// <summary>골반→발목표 거리 ÷ 다리 전체 길이. 1을 넘으면 다리가 닿을 수 없는 곳을 가리키는 중.</summary>
+        static float ReachRatio(HandIK leg)
+        {
+            if (leg.target == null) return 0f;
+            float len = Vector3.Distance(leg.upper.position, leg.lower.position)
+                      + Vector3.Distance(leg.lower.position, leg.end.position);
+            if (len < 1e-5f) return 0f;
+            return Vector3.Distance(leg.upper.position, leg.target.position) / len;
         }
 
         float CurrentLeadDeg()

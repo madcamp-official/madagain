@@ -42,6 +42,7 @@ namespace Game.View
         {
             public Vector3 idleLocalR, idleLocalL, idleEulerR, idleEulerL;
             public float idleWeight, idleGripR, idleGripL;
+            public MantleRig.IdleFingerPose idleFingerR, idleFingerL;
             public Vector3 handEulerR, handEulerL;
             public float gazeAmount, gazeMaxDeg;
             public float anchorRadius, anchorSpread;
@@ -116,15 +117,17 @@ namespace Game.View
             _mantle.driveIdlePose = GUILayout.Toggle(_mantle.driveIdlePose, " 기본 자세를 IK로 잡기 (끄면 모델 T포즈)");
             _mantle.idleWeight = F("IK 가중치", _mantle.idleWeight, 0f, 1f);
 
-            GUILayout.Label("<b>오른손 — 전완을 가로로, 손목 아래에 거미</b>", Rich());
+            GUILayout.Label("<b>오른손 — 오른쪽 아래에서 들어와 손등이 보인다</b>", Rich());
             _mantle.idleLocalR = V3("  위치", _mantle.idleLocalR, -0.8f, 0.8f);
             _mantle.idleEulerR = V3("  회전", _mantle.idleEulerR, -180f, 180f);
-            _mantle.idleGripR  = F("  손가락 말림", _mantle.idleGripR, 0f, 1f);
+            _mantle.idleGripR  = F("  공통 말림", _mantle.idleGripR, 0f, 1f);
+            Fingers("  R", _mantle.idleFingerR);
 
             GUILayout.Label("<b>왼손 — 평소엔 화면 밖</b>", Rich());
             _mantle.idleLocalL = V3("  위치", _mantle.idleLocalL, -0.8f, 0.8f);
             _mantle.idleEulerL = V3("  회전", _mantle.idleEulerL, -180f, 180f);
-            _mantle.idleGripL  = F("  손가락 말림", _mantle.idleGripL, 0f, 1f);
+            _mantle.idleGripL  = F("  공통 말림", _mantle.idleGripL, 0f, 1f);
+            Fingers("  L", _mantle.idleFingerL);
 
             GUILayout.Label("<b>손 뼈 축 보정 (등반에도 함께 적용)</b>", Rich());
             _mantle.handEulerR = V3("  R 보정", _mantle.handEulerR, -180f, 180f);
@@ -200,6 +203,7 @@ namespace Game.View
                 s.idleEulerR = _mantle.idleEulerR; s.idleEulerL = _mantle.idleEulerL;
                 s.idleWeight = _mantle.idleWeight;
                 s.idleGripR = _mantle.idleGripR;   s.idleGripL = _mantle.idleGripL;
+                s.idleFingerR = _mantle.idleFingerR; s.idleFingerL = _mantle.idleFingerL;
                 s.handEulerR = _mantle.handEulerR; s.handEulerL = _mantle.handEulerL;
             }
             if (_spider != null) { s.gazeAmount = _spider.gazeAmount; s.gazeMaxDeg = _spider.gazeMaxDeg; }
@@ -230,6 +234,9 @@ namespace Game.View
                     _mantle.idleEulerR = s.idleEulerR; _mantle.idleEulerL = s.idleEulerL;
                     _mantle.idleWeight = s.idleWeight;
                     _mantle.idleGripR = s.idleGripR;   _mantle.idleGripL = s.idleGripL;
+                    // 옛 저장 파일엔 손가락별 값이 없다 — null이면 코드 기본값을 유지한다.
+                    if (s.idleFingerR != null) _mantle.idleFingerR = s.idleFingerR;
+                    if (s.idleFingerL != null) _mantle.idleFingerL = s.idleFingerL;
                     _mantle.handEulerR = s.handEulerR; _mantle.handEulerL = s.handEulerL;
                 }
                 if (_spider != null) { _spider.gazeAmount = s.gazeAmount; _spider.gazeMaxDeg = s.gazeMaxDeg; }
@@ -252,6 +259,21 @@ namespace Game.View
         {
             if (_rich == null) _rich = new GUIStyle(GUI.skin.label) { richText = true, wordWrap = true };
             return _rich;
+        }
+
+        /// <summary>
+        /// 손가락별 <b>추가</b> 말림. 공통 말림에 더해지므로, 가장 펴진 손가락은 0으로 두고
+        /// 나머지를 올린다. 다섯이 같으면 집게처럼 보인다.
+        /// </summary>
+        static void Fingers(string prefix, MantleRig.IdleFingerPose p)
+        {
+            if (p == null) return;
+            p.index  = F(prefix + " 검지", p.index,  0f, 1f);
+            p.middle = F(prefix + " 중지", p.middle, 0f, 1f);
+            p.ring   = F(prefix + " 약지", p.ring,   0f, 1f);
+            p.pinky  = F(prefix + " 소지", p.pinky,  0f, 1f);
+            p.thumb  = F(prefix + " 엄지", p.thumb,  0f, 1f);
+            p.spread = F(prefix + " 벌림", p.spread, -1f, 1f);
         }
 
         static bool Section(string title, ref bool open)

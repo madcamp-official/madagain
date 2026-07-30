@@ -60,6 +60,9 @@ namespace Game.View
         float _eyeHeight = 1.6f;        // 리그 원점(눈)에서 발까지
         readonly List<Collider> _offCols = new List<Collider>();
 
+        Transform _head;                // [PlayerBody] > [Head] — possessEyeLift를 얹을 곳
+        VrTuning _vrTuning;              // VR에서 [Head] 로컬위치의 실소유자. PC엔 없다(0 고정 규약)
+
         public bool Active => _target != null;
 
         /// <summary>지금 시야를 제공하는 카메라. <b>몸 이동 모드에선 플레이어 카메라를 그대로 쓰므로 null</b>.</summary>
@@ -117,6 +120,12 @@ namespace Game.View
             // 원래 자리에 본체를 남긴다 — 이게 취약 표적이자 복귀 지점이다(§6.3).
             _shell = MakeShell(_rig.position, ViewYaw);
 
+            // 눈높이는 대상의 진짜 눈높이에 맞추지 않는다(경비병은 스케일 2라 3.6m — 몸 원점/CC는
+            // 그대로 플레이어 것이라 거기까지 올리면 충돌·이동 판정과 어긋난다). 대신 [Head]만
+            // 살짝 들어올려 "평소보다 눈높이가 높다"는 인상만 준다. 몸 원점(=충돌박스)은 안 건드린다.
+            _head = _rig.Find("[Head]");
+            ApplyPossessLift(target.possessEyeLift);
+
             // 경비병 본체: 충돌을 끄고(리그 CC가 맡는다) 메시를 숨긴다(눈이 모델 안에 있다).
             _offCols.Clear();
             foreach (var c in target.GetComponentsInChildren<Collider>(true))
@@ -140,11 +149,31 @@ namespace Game.View
             }
             _offCols.Clear();
 
+            ApplyPossessLift(0f);   // [Head] 원복 — 몸을 원래 자리로 되돌리기 전에 할 필요는 없지만 순서 무관
+            _head = null;
+
             if (_shell != null) Destroy(_shell.gameObject);
             _shell = null;
             _rig = null;
             _view = null;
             _bodyMode = false;
+        }
+
+        /// <summary>[Head]에 빙의 리프트를 얹는다/원복한다. VR은 [Head] 위치를 VrTuning이 소유하므로
+        /// 그쪽에 값만 넘기고, PC는 [Head] 위치가 항상 0으로 고정돼 있던 자리라 여기서 직접 쓴다.</summary>
+        void ApplyPossessLift(float lift)
+        {
+            if (_head == null) return;
+
+            if (VrMode.Enabled)
+            {
+                if (_vrTuning == null) _vrTuning = FindFirstObjectByType<VrTuning>();
+                if (_vrTuning != null) _vrTuning.SetPossessLift(lift);
+            }
+            else
+            {
+                _head.localPosition = Vector3.up * lift;
+            }
         }
 
         /// <summary>시선의 수평 각도(도). 몸은 회전하지 않으므로 여기서만 읽을 수 있다.</summary>

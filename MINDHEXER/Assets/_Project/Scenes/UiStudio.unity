@@ -407,7 +407,7 @@ MonoBehaviour:
   viewportMargin: 0
   viewHalfAngleX: 39
   viewHalfAngleY: 24
-  panelAngularSize: 24
+  panelAngularSize: 38.4
   dotInset: 0.16
   borderWidth: 0.0035
   connectorWidth: 0.0025

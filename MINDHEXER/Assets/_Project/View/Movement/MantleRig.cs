@@ -66,18 +66,50 @@ namespace Game.View
         //   목표가 도달거리를 넘으면 IK가 클램프되어 팔이 뻗친 채로 굳으므로 80% 안쪽에 둔다.
         //   GameBoot이 MantleRig을 씬마다 새로 만들므로, 씬 값이 아니라 여기가 기준이 된다.
         //   자세는 <b>오른쪽 아래에서 손이 들어와 손등이 보이는</b> 형태다(가로로 눕히지 않는다).
-        [Tooltip("오른손 위치. 화면 아래쪽 중앙보다 살짝 왼쪽 — 팔은 오른쪽 아래에서 들어온다.")]
-        public Vector3 idleLocalR = new Vector3(0.02f, -0.30f, 0.48f);
+        [Tooltip("오른손 위치. 팔이 오른쪽 아래에서 들어오도록 화면 오른쪽 아래에 둔다.")]
+        public Vector3 idleLocalR = new Vector3(0.13f, -0.20f, 0.42f);
         [Tooltip("왼손 위치. 평소엔 화면 밖에 둔다 — 등반할 때만 들어온다.")]
         public Vector3 idleLocalL = new Vector3(-0.47f, -0.55f, 0.18f);
-        [Tooltip("오른손 회전. 손등이 보이도록(손바닥이 아래) 맞춘다.")]
-        public Vector3 idleEulerR = new Vector3(10f, -30f, 0f);
+        // ★ 손 뼈 축을 실측해 역산한 값이다(추측 아님). R_Hand 로컬에서
+        //   손가락 방향 (-0.555, -0.751, 0.357) · 손등 법선 (-0.808, 0.384, -0.447)을 재고,
+        //   "손가락은 화면 왼쪽·약간 아래, 손등은 카메라 쪽"이 되도록 푼 회전이다.
+        //   ⚠ 아직 눈으로 확인하지 않았다 — F6에서 확정할 것.
+        [Tooltip("오른손 회전. 손등이 카메라를 보고 손가락이 왼쪽·아래로 가도록 맞춘다.")]
+        public Vector3 idleEulerR = new Vector3(344.6f, 312.5f, 339.8f);
         public Vector3 idleEulerL = new Vector3(20f, 30f, 0f);
         [Tooltip("기본 자세에서의 IK 가중치. 1이면 완전히 이 자세, 0이면 모델 쉬는 자세.")]
         [Range(0f, 1f)] public float idleWeight = 1f;
-        [Tooltip("기본 자세 손가락. 거미를 받치므로 꽉 쥐지 않고 살짝만 만다.")]
-        [Range(0f, 1f)] public float idleGripR = 0.25f;
+        [Tooltip("기본 자세 손가락의 <b>공통</b> 말림. 아래 손가락별 값이 여기에 더해진다.")]
+        [Range(0f, 1f)] public float idleGripR = 0.15f;
         [Range(0f, 1f)] public float idleGripL = 0.15f;
+
+        [Tooltip("손가락별 <b>추가</b> 말림. 다섯이 같은 양으로 말리면 집게처럼 보인다 — " +
+                 "실제로 힘을 뺀 손은 검지가 가장 펴지고 새끼로 갈수록 말린다.")]
+        public IdleFingerPose idleFingerR = new IdleFingerPose { index = 0f, middle = 0.20f, ring = 0.35f, pinky = 0.45f, thumb = 0.45f, spread = -0.2f };
+        public IdleFingerPose idleFingerL = new IdleFingerPose { index = 0f, middle = 0.15f, ring = 0.25f, pinky = 0.35f, thumb = 0.35f, spread = -0.1f };
+
+        /// <summary>
+        /// 기본 자세의 손가락별 <b>추가</b> 말림.
+        ///
+        /// <para><b>왜 단일값으로는 안 되는가</b> — <see cref="FingerPoser"/>의 말림은
+        /// <c>clamp01(grip + 손가락별값 + sustainGrip)</c>이다. Idle이 <c>SetSustain</c> 하나만 쓰면
+        /// 다섯 손가락이 <b>정확히 같은 각도</b>로 말려 집게가 된다. 힘을 뺀 손은 그렇게 생기지 않았다.</para>
+        ///
+        /// <para>더하기만 되므로 <see cref="idleGripR"/>을 <b>가장 덜 말린 손가락</b>에 맞추고
+        /// 나머지를 여기서 올린다. 등반 중에는 <c>ApplyClimbFingers</c>가 다섯 개를 매 프레임
+        /// 전부 덮으므로 이 값이 새어 나가지 않는다.</para>
+        /// </summary>
+        [System.Serializable]
+        public class IdleFingerPose
+        {
+            [Range(0f, 1f)] public float thumb;
+            [Range(0f, 1f)] public float index;
+            [Range(0f, 1f)] public float middle;
+            [Range(0f, 1f)] public float ring;
+            [Range(0f, 1f)] public float pinky;
+            [Tooltip("벌림. 음수면 손가락이 모인다.")]
+            [Range(-1f, 1f)] public float spread;
+        }
 
         [Header("대기 위치 park (카메라 기준 — 화면 아래)")]
         [Tooltip("오른손 대기 지점. 화면 밖으로 나가야 교대가 안 보인다.")]
@@ -432,8 +464,20 @@ namespace Game.View
             }
 
             // 손가락 — 거미를 받치는 살짝 편 손. 등반의 꽉 쥠과 달라야 한다.
-            if (fingerR != null) fingerR.SetSustain(idleGripR);
-            if (fingerL != null) fingerL.SetSustain(idleGripL);
+            // 공통 말림은 sustain으로, 손가락별 차이는 개별 값으로 준다(둘은 더해진다).
+            if (fingerR != null) { fingerR.SetSustain(idleGripR); ApplyIdleFingers(fingerR, idleFingerR); }
+            if (fingerL != null) { fingerL.SetSustain(idleGripL); ApplyIdleFingers(fingerL, idleFingerL); }
+        }
+
+        static void ApplyIdleFingers(FingerPoser f, IdleFingerPose p)
+        {
+            if (f == null || p == null) return;
+            f.thumb  = p.thumb;
+            f.index  = p.index;
+            f.middle = p.middle;
+            f.ring   = p.ring;
+            f.pinky  = p.pinky;
+            f.spread = p.spread;
         }
 
         /// <summary>
@@ -535,8 +579,16 @@ namespace Game.View
         {
             if (_resolved && (handIkR != null || handIkL != null)) { _usingIk = true; return; }
 
+            // ★ 반드시 <b>우리 리그 안</b>에서만 찾는다. 예전엔 FindObjectsByType으로 씬 전체를
+            //   훑었는데, 그러면 우리 손이 아닌 IK를 집어간다 — 실제로 겪은 버그: 경비병의
+            //   다리 IK(GuardTurnStep이 런타임에 만드는 [GuardLegIK_R])가 handIkR로 잡혀
+            //   MantleRig가 그 weight를 1로 몰았고, 경비병 오른다리가 걷는 동안 공중의 옛 목표를
+            //   붙잡은 채 뻣뻣하게 펴져 있었다. 왼다리가 멀쩡했던 건 IsLeft가 "[GuardLegIK_L]"을
+            //   (_L이 아니라 _L]로 끝나서) 왼쪽으로 판정하지 못해 handIkL이 비었기 때문이다.
+            //   손 IK는 원래 플레이어 계층(뷰모델) 안에 있으므로 범위를 좁혀도 잃는 것이 없고,
+            //   못 찾으면 _usingIk=false로 IK 없는 경로를 타는 것이 맞는 동작이다.
             if (handIkR == null || handIkL == null)
-                foreach (var ik in FindObjectsByType<HandIK>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                foreach (var ik in GetComponentsInChildren<HandIK>(true))
                 {
                     if (ik.target == null) continue;   // 타깃 없는 IK는 몰 수 없다
                     if (IsLeft(ik.end, ik.gameObject.name)) { if (handIkL == null) handIkL = ik; }
@@ -544,7 +596,7 @@ namespace Game.View
                 }
 
             if (fingerR == null || fingerL == null)
-                foreach (var fp in FindObjectsByType<FingerPoser>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                foreach (var fp in GetComponentsInChildren<FingerPoser>(true))
                 {
                     Transform root = fp.handRoot != null ? fp.handRoot : fp.transform;
                     if (IsLeft(root, fp.gameObject.name)) { if (fingerL == null) fingerL = fp; }

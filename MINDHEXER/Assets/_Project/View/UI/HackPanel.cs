@@ -68,7 +68,7 @@ namespace Game.View
         [Range(5f, 60f)] public float viewHalfAngleY = 24f;
 
         [Tooltip("중앙 정사각 패널의 각크기.")]
-        [Range(4f, 50f)] public float panelAngularSize = 24f;
+        [Range(4f, 50f)] public float panelAngularSize = 38.4f;
 
         [Tooltip("점을 사각형 안쪽으로 들이는 비율. 사각형이 점 네 개를 여유 있게 감싼다.")]
         [Range(0f, 0.45f)] public float dotInset = 0.16f;

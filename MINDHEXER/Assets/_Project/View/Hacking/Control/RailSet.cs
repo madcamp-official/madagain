@@ -35,9 +35,9 @@ namespace Game.View
         [Tooltip("함께 실려 가는 것들의 부모. 터렛·벽·발판·중첩 레일 세트.")]
         public Transform riderRoot;
 
-        [Tooltip("툴의 '레일 길이 측정' 버튼이 참고하는 오브젝트. <b>선택 사항</b> — 칸 간격은 아래 " +
-                 "cellLength가 소유하며, 이 필드는 그 값을 '모델에서 재서 채워 주는' 편의 기능일 뿐이다. " +
-                 "비워 두고 cellLength를 직접 넣어도 완전히 정상이다.")]
+        [Tooltip("툴의 '레일 길이 측정' 버튼이 참고하는 오브젝트. <b>선택 사항</b> — 딸깍 간격은 아래 " +
+                 "stepTarget이 소유하며, 이 필드는 그 값을 '모델에서 재서 채워 주는' 편의 기능일 뿐이다. " +
+                 "비워 두고 stepTarget을 직접 넣어도 완전히 정상이다.")]
         public Transform referenceRail;
 
         [Header("트랙 (축은 이 트랜스폼의 로컬 기준)")]
@@ -45,11 +45,13 @@ namespace Game.View
         public Vector3 axis = Vector3.right;
 
         [FormerlySerializedAs("railLength")]   // 기존 씬/프리팹의 값을 그대로 물려받는다
-        [Tooltip("플릭 1회 이동량 = 스냅 격자 간격. 단위는 '부모 공간'(localPosition과 같은 단위).\n" +
+        [FormerlySerializedAs("cellLength")]
+        [Tooltip("플릭 1회 <b>목표</b> 이동량. 단위는 '부모 공간'(localPosition과 같은 단위).\n" +
                  "★ <b>레일 모델의 실제 길이와 무관하다.</b> 퍼즐에 맞는 값을 자유롭게 넣으면 된다 — " +
-                 "모델이 2m짜리여도 칸 간격을 3으로 두면 3씩 움직인다(§6.2 '균등 간격이 아니라 퍼즐에 맞는 지점').\n" +
+                 "모델이 2m짜리여도 여기에 3을 넣으면 3씩 움직인다(§6.2 '균등 간격이 아니라 퍼즐에 맞는 지점').\n" +
+                 "눈금은 앵커에서 이 간격으로 찍히고, 범위 양 끝에 남는 자투리가 마지막 눈금이 된다.\n" +
                  "툴의 '레일 길이 측정'은 모델에서 재서 이 값을 채워 주는 편의 버튼일 뿐, 강제가 아니다.")]
-        public float cellLength = 2f;
+        public float stepTarget = 2f;
 
         [Header("이동 범위 (앵커=배치 위치 기준, 부모 공간 단위)")]
         [Tooltip("앵커에서 음(−) 방향 한계.")]
@@ -57,6 +59,13 @@ namespace Game.View
 
         [Tooltip("앵커에서 양(+) 방향 한계.")]
         public float rangeMax = 4f;
+
+        [Tooltip("범위 끝에 남는 자투리가 <b>목표 간격 × 이 비율</b>보다 짧으면, 직전 눈금을 버리고 " +
+                 "끝 눈금에 합친다.\n" +
+                 "예) 목표 5, 범위 −5.1 → 합치지 않으면 눈금이 0·−5·−5.1이라 마지막 플릭이 0.1만 " +
+                 "움직여 '눌렀는데 안 움직인' 것처럼 보인다. 합치면 0·−5.1(한 칸 5.1)이 된다.\n" +
+                 "0이면 합치지 않는다(자투리가 항상 별도 눈금).")]
+        [Range(0f, 1f)] public float tailMergeRatio = 0.5f;
 
         [Header("조종 감각")]
         [Tooltip("홀드 시 크립 속도(단위/초).")]
@@ -88,8 +97,20 @@ namespace Game.View
         /// <summary>플릭·크립이 모두 멈춘 상태.</summary>
         public bool AtRest => !_flicking && Mathf.Approximately(_vel, 0f);
 
-        /// <summary>현재 위치가 몇 번째 칸인지(앵커=0).</summary>
-        public int CurrentCell => cellLength > 1e-4f ? Mathf.RoundToInt(Offset / cellLength) : 0;
+        /// <summary>현재 위치가 앵커에서 몇 번째 눈금인지(앵커=0).</summary>
+        public int CurrentCell { get { EnsureGrid(); return NearestIndex(Offset) - _anchorIndex; } }
+
+        /// <summary>
+        /// 플릭이 멈추는 지점들(앵커 기준 오름차순, <c>rangeMin … 0 … rangeMax</c>).
+        ///
+        /// <para><b>간격은 목표값 그대로다.</b> 범위를 균등 분할하지 않는다 — 앵커에서
+        /// <see cref="stepTarget"/>씩 눈금을 찍고, 양 끝에 남는 자투리를 마지막 눈금으로 둔다.
+        /// 그래서 (ㄱ) 간격이 목표에서 벗어나지 않고, (ㄴ) 앵커가 항상 눈금 위에 있으며,
+        /// (ㄷ) 범위가 비대칭이어도 좌우 간격이 같다. 자투리만 짧다.</para>
+        ///
+        /// <para>너무 짧은 자투리는 <see cref="tailMergeRatio"/>로 직전 눈금에 합친다.</para>
+        /// </summary>
+        public IReadOnlyList<float> Grid { get { EnsureGrid(); return _grid; } }
 
         /// <summary>정지 상태에서 칸이 바뀌었을 때. 퍼즐 조건(게이트 개방 등) 배선용.</summary>
         public event Action<int> OnCellArrived;
@@ -101,6 +122,10 @@ namespace Game.View
         float _flickFrom, _flickTo, _flickT;
         RailPlatform[] _platforms = Array.Empty<RailPlatform>();
         int _lastCell;
+
+        float[] _grid = Array.Empty<float>();
+        int _anchorIndex;
+        float _gMin, _gMax, _gStep, _gMerge;   // 마지막으로 격자를 만든 입력값 — 바뀔 때만 다시 만든다
 
         public Vector3 AxisLocal => axis.sqrMagnitude > 1e-6f ? axis.normalized : Vector3.right;
 
@@ -240,19 +265,78 @@ namespace Game.View
             _vel = 0f;
         }
 
-        /// <summary>현재 칸에서 dir방향 한 칸. 범위를 넘으면 범위 끝에 붙인다(무시하지 않는다).</summary>
+        /// <summary>
+        /// 현재 눈금에서 dir방향 한 칸. 범위 끝을 넘으면 끝에 머문다(무시하지 않는다).
+        ///
+        /// <para>예전엔 <c>round(Offset/간격)</c>으로 칸 번호를 계산했는데, 끝 자투리 자리에서는
+        /// 반올림이 안쪽 칸으로 떨어져 <b>돌아올 때 한 칸을 건너뛰었다</b>(범위 −7·간격 5에서
+        /// −7 → 0으로 점프, −5를 지나침). 지금은 격자 배열의 인덱스를 옮기므로 그런 비대칭이 없다.</para>
+        /// </summary>
         float NextCellTarget(int dir)
         {
-            float unit = Mathf.Max(1e-4f, cellLength);
-            int cell = Mathf.RoundToInt(Offset / unit);
-            return Mathf.Clamp((cell + Mathf.Clamp(dir, -1, 1)) * unit, rangeMin, rangeMax);
+            EnsureGrid();
+            if (_grid.Length == 0) return 0f;
+            int i = Mathf.Clamp(NearestIndex(Offset) + Mathf.Clamp(dir, -1, 1), 0, _grid.Length - 1);
+            return _grid[i];
         }
 
-        /// <summary>현재 위치에서 가장 가까운 칸의 앵커 기준 좌표.</summary>
+        /// <summary>현재 위치에서 가장 가까운 눈금의 앵커 기준 좌표.</summary>
         public float NearestCell(float offset)
         {
-            float unit = Mathf.Max(1e-4f, cellLength);
-            return Mathf.Clamp(Mathf.RoundToInt(offset / unit) * unit, rangeMin, rangeMax);
+            EnsureGrid();
+            return _grid.Length == 0 ? 0f : _grid[NearestIndex(offset)];
+        }
+
+        int NearestIndex(float offset)
+        {
+            int best = 0;
+            float bd = float.MaxValue;
+            for (int i = 0; i < _grid.Length; i++)
+            {
+                float d = Mathf.Abs(_grid[i] - offset);
+                if (d >= bd) continue;
+                bd = d; best = i;
+            }
+            return best;
+        }
+
+        /// <summary>입력값이 바뀌었을 때만 격자를 다시 만든다. 에디터에서도 그대로 돈다.</summary>
+        void EnsureGrid()
+        {
+            if (_grid.Length > 0 && _gMin == rangeMin && _gMax == rangeMax
+                && _gStep == stepTarget && _gMerge == tailMergeRatio) return;
+
+            _gMin = rangeMin; _gMax = rangeMax; _gStep = stepTarget; _gMerge = tailMergeRatio;
+
+            var list = new List<float> { 0f };
+            AddSide(list, rangeMin, -1);
+            AddSide(list, rangeMax, +1);
+            list.Sort();
+            _grid = list.ToArray();
+            _anchorIndex = NearestIndex(0f);
+        }
+
+        /// <summary>앵커에서 한쪽 끝까지 눈금을 채운다. 간격은 목표 그대로, 끝 자투리만 짧다.</summary>
+        void AddSide(List<float> into, float limit, int sign)
+        {
+            float span = limit * sign;                    // 항상 0 이상
+            if (span <= 1e-4f) return;
+
+            float step = Mathf.Max(1e-4f, stepTarget);
+            int n = Mathf.FloorToInt(span / step + 1e-4f);
+            float tail = span - n * step;
+
+            if (tail <= 1e-4f)                            // 딱 떨어짐 — 끝이 곧 마지막 눈금
+            {
+                for (int i = 1; i <= n; i++) into.Add(sign * i * step);
+                return;
+            }
+
+            // 자투리가 너무 짧으면 직전 눈금을 버려 마지막 한 칸에 합친다.
+            if (n > 0 && tail < step * tailMergeRatio) n--;
+
+            for (int i = 1; i <= n; i++) into.Add(sign * i * step);
+            into.Add(limit);
         }
 
         /// <summary>기계식 이동 곡선 — 부드럽게 가속·감속하다 목표를 살짝 지나쳐 철컥 안착.</summary>

@@ -58,6 +58,17 @@ namespace Game.View
         [Tooltip("리그가 이미 확보한 기본 눈높이(m). 통합 리그는 몸 원점이 눈높이라 카메라 로컬은 " +
                  "0이 기본 — 튜닝값과 이 값의 차이만 카메라 로컬에 반영한다. GameBoot이 세팅.")]
         public float eyeBase = 0f;
+
+        /// <summary>빙의 중 [Head]에 얹는 추가 리프트(m). ViewEntryController가 소유·기록한다 —
+        /// 여기선 그냥 Apply()가 eyeBase 위에 한 겹 더 얹을 값을 들고 있을 뿐이다.</summary>
+        float _possessLift;
+
+        /// <summary>빙의 진입/복귀 시 ViewEntryController가 부른다. 0으로 부르면 원복.</summary>
+        public void SetPossessLift(float lift)
+        {
+            _possessLift = lift;
+            Apply();
+        }
         [Tooltip("HUD 배치 적용 대상. GameBoot이 세팅.")]
         public VrHudSpace hud;
 
@@ -78,7 +89,7 @@ namespace Game.View
             if (head != null)
             {
                 Vector3 lp = head.localPosition;
-                lp.y = Data.eyeHeight - eyeBase;   // 기본 눈높이는 몸이 갖고, 카메라는 차이만
+                lp.y = Data.eyeHeight - eyeBase + _possessLift;   // 기본 눈높이는 몸이 갖고, 카메라는 차이+빙의 리프트만
                 head.localPosition = lp;
             }
 

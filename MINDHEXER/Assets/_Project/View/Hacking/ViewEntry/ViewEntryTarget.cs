@@ -41,6 +41,12 @@ namespace Game.View
         [Tooltip("빙의 중 WASD 이동 가능 여부. 경비병만 true.")]
         public bool allowsMove;
 
+        [Tooltip("빙의 시 [Head]를 이만큼(m) 더 들어올린다. 몸 원점(=충돌박스)은 그대로 두고 " +
+                 "시점만 살짝 올려 \"평소보다 눈높이가 높다\"는 인상만 준다 — 대상의 실제 눈높이에 " +
+                 "맞추지 않는다(예: 경비병은 스케일 2라 진짜 눈높이가 3.6m지만, 몸 크기가 그대로 " +
+                 "플레이어 것이므로 그 높이까지 올리면 충돌·이동 판정과 시야가 어긋난다).")]
+        public float possessEyeLift;
+
         [Header("차폐")]
         [Tooltip("시야 범위 밖을 가릴지. CCTV·터렛 true, 경비병 false.")]
         public bool useBlocker = true;
@@ -85,6 +91,7 @@ namespace Game.View
                 case HackableKind.Guard:
                     panRange = 180f; tiltRange = 85f;
                     allowsMove = true; useBlocker = false;
+                    possessEyeLift = 0.35f;   // "높아졌다"는 인상만 — 실제 눈높이(스케일 2 기준 3.6m)엔 안 맞춘다
                     break;
                 default:   // CCTV·로봇팔
                     panRange = 45f; tiltRange = 45f;

@@ -70,6 +70,7 @@ namespace Game.View
         Quaternion _turnFrom, _turnTo;
         bool _usingStepTurn;   // 이번 회전을 GuardTurnStep이 맡았으면 true — 폴백 슬러프를 건너뛴다
         bool _nextIsA = true;  // 다음 정지 때 idleClipA/B 중 어느 걸 쓸지 — 정지할 때마다 뒤집는다
+        bool _standStill;      // 웨이포인트 1개 — 도착하면 회전 없이 그대로 서서 자기(Update) 끔
 
         /// <summary>지금 실제로 걷는 중인가(회전·정지 중엔 false). 절차적 숨쉬기 같은 걸 걷기 중엔 끄고 싶을 때 참고.</summary>
         public bool IsWalking => _state == State.Walking;
@@ -82,7 +83,25 @@ namespace Game.View
 
         void Start()
         {
-            if (waypoints == null || waypoints.Length < 2) { enabled = false; return; }
+            // 웨이포인트 0개 = 애초에 제자리 경비병. 1개 = 그 지점까지만 걷고 정지(방향은
+            // 웨이포인트의 회전값을 바라본다 — 빈 오브젝트를 배치해 둔 각도 그대로).
+            // 두 경우 다 Update를 계속 돌 이유가 없으니 자세 하나 잡고 스스로 꺼진다.
+            if (waypoints == null || waypoints.Length == 0)
+            {
+                CrossFadeIdle();
+                enabled = false;
+                return;
+            }
+
+            if (waypoints.Length == 1)
+            {
+                _index = 0;
+                _dir = 1;
+                _state = State.Walking;
+                _standStill = true;
+                PlayWalk();
+                return;
+            }
 
             // 시작 위치는 waypoints[0] 근처라고 가정(씬에서 그렇게 배치) — 첫 목표는 [1].
             _index = 1;
@@ -92,7 +111,8 @@ namespace Game.View
 
         void Update()
         {
-            if (waypoints == null || waypoints.Length < 2) return;
+            if (waypoints == null || waypoints.Length == 0) return;
+            if (waypoints.Length < 2 && !_standStill) return;   // Start()가 이미 정지 모드로 안 잡았으면 배선 안 된 것
 
             switch (_state)
             {
@@ -118,6 +138,19 @@ namespace Game.View
         /// <summary>도착 — Walk→Idle 크로스페이드를 시작하고, 다 끝날 때까지는 회전을 걸지 않는다.</summary>
         void BeginSettle()
         {
+            // 웨이포인트 1개 — 다음 구간이 없으니 방향은 그 지점의 회전값을 그대로 따른다(왕복 없음).
+            // 회전만 한 번 걸고 도착하면 영구 정지 — Update를 계속 돌 이유가 없어 여기서 끈다.
+            if (_standStill)
+            {
+                _pauseDur = endPause;
+                _turnFrom = transform.rotation;
+                _turnTo = waypoints[_index].rotation;
+                CrossFadeIdle();
+                _blendT = 0f;
+                _state = State.Settling;
+                return;
+            }
+
             bool atEnd = (_dir > 0 && _index == waypoints.Length - 1)
                       || (_dir < 0 && _index == 0);
 
@@ -150,6 +183,9 @@ namespace Game.View
 
         void OnTurnFinished()
         {
+            // 웨이포인트 1개 — 방향을 잡았으니 여기서 영구 정지. 걷기로 돌아갈 다음 구간이 없다.
+            if (_standStill) { enabled = false; return; }
+
             CrossFadeWalk();
             _blendT = 0f;
             _state = State.Resuming;

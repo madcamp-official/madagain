@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3082333943134537626}
   - component: {fileID: 19577015273610772}
   - component: {fileID: 8811223344556677001}
+  - component: {fileID: 7491158483383949350}
   m_Layer: 0
   m_Name: Piston
   m_TagString: Untagged
@@ -133,7 +134,186 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.View::Game.View.ActuatorControl
   holdSpeed: 0.6
   allowFlick: 1
+  holdStep:
+    stepSize: 0.05
+    minInterval: 0.0833
+    maxPendingSteps: 2
   actuator: {fileID: 0}
+--- !u!114 &7491158483383949350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5584188272010962687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2c4de175ecd4e2439ffb52ed67ef09f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.View::Game.View.StitchSites
+  sites:
+  - localPos: {x: 2.5475018, y: 0.29022402, z: 0.3798581}
+    localNormal: {x: 0.0016138722, y: -0.1326632, z: -0.9911599}
+    thickness: 0.06777688
+    boneIndex: -1
+  - localPos: {x: 2.6247454, y: 1.0745468, z: 0.8058674}
+    localNormal: {x: -0.00023098278, y: 0.8244592, z: 0.56592137}
+    thickness: 0.04736216
+    boneIndex: -1
+  - localPos: {x: 2.5906332, y: 1.1662248, z: -0.45889178}
+    localNormal: {x: 0.00045267266, y: 0.05887699, z: -0.9982651}
+    thickness: 0.90277696
+    boneIndex: -1
+  - localPos: {x: 2.7827876, y: 0.3931239, z: 0.5585905}
+    localNormal: {x: 0.0011090977, y: -0.529871, z: 0.84807754}
+    thickness: 0.3471228
+    boneIndex: -1
+  - localPos: {x: 5.339471, y: 0.65954, z: -0.10551262}
+    localNormal: {x: -0.11616906, y: 0.99322116, z: 0.004046695}
+    thickness: 0.095796466
+    boneIndex: -1
+  - localPos: {x: 5.359232, y: 0.5844252, z: 0.50465167}
+    localNormal: {x: 0.8779519, y: -0.46761963, z: 0.102627106}
+    thickness: 0.055155825
+    boneIndex: -1
+  - localPos: {x: 3.2706208, y: 1.6640669, z: 0.32384348}
+    localNormal: {x: -0.99999, y: -0.0009044489, z: -0.004385568}
+    thickness: 0.014093997
+    boneIndex: -1
+  - localPos: {x: 3.7545118, y: 1.2019739, z: -0.37666473}
+    localNormal: {x: 0.0035090463, y: 0.00094177463, z: 0.9999934}
+    thickness: 0.09525736
+    boneIndex: -1
+  - localPos: {x: 3.4356275, y: 0.67716193, z: 0.6117634}
+    localNormal: {x: 0.0014689126, y: 0.99999875, z: -0.00068079174}
+    thickness: 0.37089565
+    boneIndex: -1
+  - localPos: {x: 4.1154704, y: 1.9761298, z: 0.6032046}
+    localNormal: {x: -0.0003895595, y: 0.9999999, z: -0.00008107164}
+    thickness: 0.28342363
+    boneIndex: -1
+  - localPos: {x: 4.4464107, y: 1.6923853, z: 0.07284935}
+    localNormal: {x: 0.0011469942, y: 0.9999991, z: -0.00066755695}
+    thickness: 0.11320496
+    boneIndex: -1
+  - localPos: {x: 4.814461, y: 0.039069522, z: -0.47230184}
+    localNormal: {x: 0.000009217852, y: -0.99999994, z: -0.00041448296}
+    thickness: 0.12694043
+    boneIndex: -1
+  - localPos: {x: 4.382574, y: 0.539837, z: -1.1329188}
+    localNormal: {x: 0.000041258216, y: 0.002055297, z: -0.99999785}
+    thickness: 0.6067721
+    boneIndex: -1
+  - localPos: {x: 1.1901032, y: 1.7923189, z: -0.52198726}
+    localNormal: {x: -0.8204669, y: -0.0059705437, z: -0.57166284}
+    thickness: 0.005869595
+    boneIndex: -1
+  - localPos: {x: 3.8140135, y: 1.5321211, z: -0.35245293}
+    localNormal: {x: 0.9999996, y: -0.0009042205, z: 0.000025124495}
+    thickness: 0.22609797
+    boneIndex: -1
+  - localPos: {x: 3.9166589, y: 1.7437263, z: -1.1182435}
+    localNormal: {x: 0.7184309, y: 0.013737539, z: -0.6954627}
+    thickness: 0.45785916
+    boneIndex: -1
+  - localPos: {x: 4.451909, y: 1.1809647, z: 0.79298824}
+    localNormal: {x: 0.0010887401, y: 0.00046285737, z: -0.99999934}
+    thickness: 0.311434
+    boneIndex: -1
+  - localPos: {x: 3.3447044, y: 1.5232627, z: 0.65833896}
+    localNormal: {x: -0.0028540196, y: -0.99999505, z: 0.0013177502}
+    thickness: 0.36275876
+    boneIndex: -1
+  - localPos: {x: 3.5169907, y: 0.78838354, z: -0.44697064}
+    localNormal: {x: -0.9999856, y: 0.00513851, z: 0.0015509168}
+    thickness: 0.012944422
+    boneIndex: -1
+  - localPos: {x: 1.7197276, y: 1.2822816, z: -0.105413176}
+    localNormal: {x: -0.999989, y: 0.004144505, z: 0.0021980742}
+    thickness: 0.00592978
+    boneIndex: -1
+  - localPos: {x: 3.7465463, y: 1.9387684, z: -0.33302623}
+    localNormal: {x: -0.001026022, y: 0.9999989, z: 0.0010667784}
+    thickness: 1.6806599
+    boneIndex: -1
+  - localPos: {x: 1.1884289, y: 1.6222382, z: -0.79502684}
+    localNormal: {x: -0.831673, y: 0.0041821282, z: -0.5552499}
+    thickness: 0.39456022
+    boneIndex: -1
+  - localPos: {x: 5.0596704, y: 0.21032843, z: -1.1963886}
+    localNormal: {x: 0.004011356, y: -0.0004342229, z: -0.9999919}
+    thickness: 0.33676013
+    boneIndex: -1
+  - localPos: {x: 4.8552017, y: 1.9712473, z: -1.1133696}
+    localNormal: {x: 0.0003375934, y: 0.00058141706, z: 0.99999976}
+    thickness: 0.008090343
+    boneIndex: -1
+  - localPos: {x: 0.9751599, y: 1.167041, z: -0.40702742}
+    localNormal: {x: -0.99999565, y: 0.001338622, z: 0.0026190872}
+    thickness: 0.50571364
+    boneIndex: -1
+  - localPos: {x: 3.8931277, y: 1.9048282, z: -1.038671}
+    localNormal: {x: 0.010397531, y: 0.9999446, z: 0.001596372}
+    thickness: 0.3139811
+    boneIndex: -1
+  - localPos: {x: 1.5437077, y: 1.1297879, z: 0.7824204}
+    localNormal: {x: -0.18549173, y: 0.8965967, z: 0.40212825}
+    thickness: 0.12267875
+    boneIndex: -1
+  - localPos: {x: 1.1865776, y: 0.97507346, z: -0.5603706}
+    localNormal: {x: -0.99997294, y: -0.0017808483, z: -0.007134067}
+    thickness: 0.29422143
+    boneIndex: -1
+  - localPos: {x: 4.235187, y: 0.90046155, z: 0.6544262}
+    localNormal: {x: 0.9949643, y: -0.05765491, z: 0.08198734}
+    thickness: 0.13681853
+    boneIndex: -1
+  - localPos: {x: 3.348117, y: 1.2010758, z: -0.50897115}
+    localNormal: {x: 0.0018208527, y: 0.5765635, z: 0.81705034}
+    thickness: 0.294503
+    boneIndex: -1
+  - localPos: {x: 4.655287, y: 1.5790935, z: -0.3081455}
+    localNormal: {x: -0.00010183004, y: -1, z: 0.000212888}
+    thickness: 0.08454946
+    boneIndex: -1
+  - localPos: {x: 3.5408273, y: 0.65694875, z: -0.9970845}
+    localNormal: {x: -0.9999999, y: 0.00039797655, z: -0.000051588013}
+    thickness: 0.27287695
+    boneIndex: -1
+  - localPos: {x: 3.5877848, y: 1.9745766, z: 0.16139367}
+    localNormal: {x: 1, y: -0.00020350168, z: -0.00009870624}
+    thickness: 0.16133887
+    boneIndex: -1
+  - localPos: {x: 3.69451, y: 0.14629932, z: -1.111475}
+    localNormal: {x: -0.0006052214, y: 0.00018948705, z: -0.99999976}
+    thickness: 0.1453742
+    boneIndex: -1
+  - localPos: {x: 3.5405169, y: 1.3006287, z: 0.7066384}
+    localNormal: {x: -0.9999985, y: 0.00095202145, z: 0.0014305966}
+    thickness: 0.19458252
+    boneIndex: -1
+  - localPos: {x: 2.4644501, y: 0.37798506, z: -0.30310214}
+    localNormal: {x: 0.0028311808, y: -0.6354159, z: 0.7721648}
+    thickness: 0.35097358
+    boneIndex: -1
+  - localPos: {x: 1.2782125, y: 0.36933997, z: 0.82619685}
+    localNormal: {x: -0.0024287438, y: -0.0016750166, z: 0.9999956}
+    thickness: 1.6826875
+    boneIndex: -1
+  - localPos: {x: 2.8433936, y: 0.60300535, z: 0.28245997}
+    localNormal: {x: -0.00095376256, y: 0.7229739, z: -0.69087464}
+    thickness: 0.34823608
+    boneIndex: -1
+  - localPos: {x: 4.620522, y: 1.6922662, z: 0.22416039}
+    localNormal: {x: 0.0017015614, y: 0.9999985, z: -0.00033589042}
+    thickness: 0.11308696
+    boneIndex: -1
+  - localPos: {x: 4.292016, y: 1.9762233, z: 0.9088264}
+    localNormal: {x: -0.0003895595, y: 0.9999999, z: -0.00008107164}
+    thickness: 0.30868527
+    boneIndex: -1
+  bones: []
+  bakedCount: 40
 --- !u!1001 &3577604381542304531
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -42,6 +42,12 @@ namespace Game.View
         [Tooltip("레이캐스트가 맞는 레이어(벽 포함 — 벽에 가려지면 당연히 안 맞음).")]
         public LayerMask hitMask = ~0;
 
+        [Tooltip("플레이어 판정만 보이는 레이저보다 이만큼(m) 아래까지 넓힌다. 0이면 끔.\n" +
+                 "레이저를 굵게·낮게 만들면 연출이 죽으므로, 보이는 것은 그대로 두고 판정 띠만 아래로 넓힌다.\n" +
+                 "월드 기준 아래 방향이다 — 플레이어는 바닥에 서 있으므로 총구가 기울어도 이게 맞다.\n" +
+                 "경비병 판정과 보이는 레이저는 이 값에 영향받지 않는다.")]
+        public float playerHitDrop = 0.2f;
+
         [Tooltip("발사 후 다음 판정까지 최소 간격(초). 연사 스팸 방지용 — 즉발 사망 자체는 그대로.")]
         public float fireInterval = 0.2f;
 
@@ -144,14 +150,44 @@ namespace Game.View
             else
             {
                 // 조종 중 아님 — 플레이어만. 경비병은 아군이라 건드리지 않는다.
-                if (hitGuard || possessedBody) return;
-                var fpp = hit.collider.GetComponentInParent<FirstPersonPlayer>();
+                if (possessedBody) return;
+                var fpp = hitGuard ? null : hit.collider.GetComponentInParent<FirstPersonPlayer>();
+                // 레이저가 머리 위로 지나가 안 맞는 문제 — 판정만 아래로 넓힌 두 번째 레이로 한 번 더 본다.
+                if (fpp == null && playerHitDrop > 0f) fpp = PlayerOnDropRay(m);
                 if (fpp == null) return;
                 PlayFireFx();
                 KillPlayer(fpp);
             }
 
             _cooldown = fireInterval;
+        }
+
+        /// <summary>
+        /// 보이는 레이저를 <see cref="playerHitDrop"/>만큼 <b>아래로 평행 이동</b>한 판정 전용 레이.
+        /// 여기에 플레이어가 걸리면 죽는다.
+        ///
+        /// <para><b>왜 필요한가</b>: 터렛이 커서 총구가 높은데, 크기를 줄이면 위압감이 사라진다.
+        /// 그래서 보이는 것(<see cref="DangerZoneVisual"/>이 <see cref="muzzle"/>·<see cref="range"/>·
+        /// beamWidth로 그린다)은 그대로 두고 <b>판정 띠만</b> 아래로 넓힌다.</para>
+        ///
+        /// <para><b>엄폐는 그대로 통한다</b>: 이 레이도 같은 <see cref="hitMask"/>로 따로 쏘므로 벽에
+        /// 막히면 거기서 끝난다. 원래 레이가 벽에 막혀도 이 레이는 그 아래로 지나갈 수 있는데,
+        /// 그건 실제로 0.2m 아래를 지나는 사선이 그렇다는 뜻이라 오히려 맞는 거동이다.</para>
+        ///
+        /// <para>주의: 시작점이 총구에서 <see cref="playerHitDrop"/>만큼 아래라, 그 지점이 터렛 몸체
+        /// 안에 들어갈 만큼 값을 키우면 자기 콜라이더에 막힌다. 0.2 정도에서는 문제없다.</para>
+        /// </summary>
+        FirstPersonPlayer PlayerOnDropRay(Transform m)
+        {
+            Vector3 origin = m.position + Vector3.down * playerHitDrop;
+            if (!Physics.Raycast(origin, m.forward, out RaycastHit hit, range, hitMask,
+                                 QueryTriggerInteraction.Ignore))
+                return null;
+
+            var hackable = hit.collider.GetComponentInParent<Hackable>();
+            if (hackable != null && hackable.kind == HackableKind.Guard) return null;   // 경비병은 아군
+
+            return hit.collider.GetComponentInParent<FirstPersonPlayer>();
         }
 
         void KillGuard(Hackable guard, RaycastHit hit)
